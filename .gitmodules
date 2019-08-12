@@ -1,0 +1,3 @@
+[submodule "deps/StbImageSharp"]
+	path = deps/StbImageSharp
+	url = https://github.com/StbSharp/StbImageSharp.git

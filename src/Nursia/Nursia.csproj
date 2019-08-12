@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)SolutionDefines.targets" />
+
+  <PropertyGroup>
+    <Authors>NursiaTeam</Authors>
+    <Product>Nursia</Product>
+    <Description>Game Engine for MonoGame/FNA</Description>
+    <PackageLicenseUrl>https://en.wikipedia.org/wiki/MIT_License</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/rds1983/Nursia</PackageProjectUrl>
+    <NoWarn>NU1701</NoWarn>
+    <AssemblyName>Nursia</AssemblyName>
+    <RootNamespace>Nursia</RootNamespace>
+    <Version>1.0.0.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DefineConstants>$(DefineConstants);STBSHARP_INTERNAL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <PackageId>Nursia</PackageId>
+    <OutputPath>bin\MonoGame\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(DefineConstants.Contains('FNA'))">
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <PackageId>Nursia.FNA</PackageId>
+    <OutputPath>bin\FNA\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
+    <PackageReference Include="MonoGame.Framework.Portable" PrivateAssets="All" Version="3.6.0.1625" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">
+    <ProjectReference Include="$(FNAProj)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp"/>
+  </ItemGroup>
+</Project>

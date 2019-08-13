@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Nursia
@@ -59,6 +60,25 @@ namespace Nursia
 				return name.Version.ToString();
 			}
 		}
+
+#if MONOGAME
+		private static bool? _isOpenGL;
+		public static bool IsOpenGL
+		{
+			get
+			{
+				if (_isOpenGL == null)
+				{
+					_isOpenGL = (from f in typeof(GraphicsDevice).GetFields(BindingFlags.NonPublic |
+						 BindingFlags.Instance)
+								 where f.Name == "glFramebuffer"
+								 select f).FirstOrDefault() != null;
+				}
+
+				return _isOpenGL.Value;
+			}
+		}
+#endif
 
 		private static string FormatMessage(string message, params object[] args)
 		{

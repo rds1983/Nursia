@@ -37,6 +37,14 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp"/>
+    <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Resources\Effects\DefaultEffect.dx11.mgfxo" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\**\*.*" />
   </ItemGroup>
 </Project>

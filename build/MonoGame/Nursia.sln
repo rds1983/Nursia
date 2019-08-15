@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EAB0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nursia", "..\..\src\Nursia\Nursia.csproj", "{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5CDF6B7A-71F8-43FC-858D-8B75632FBE65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelViewer", "..\..\tools\ModelViewer\ModelViewer.csproj", "{20C455AF-C00E-46AF-86E8-8D946BA640E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,9 +21,16 @@ Global
 		{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20C455AF-C00E-46AF-86E8-8D946BA640E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20C455AF-C00E-46AF-86E8-8D946BA640E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20C455AF-C00E-46AF-86E8-8D946BA640E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20C455AF-C00E-46AF-86E8-8D946BA640E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{20C455AF-C00E-46AF-86E8-8D946BA640E0} = {5CDF6B7A-71F8-43FC-858D-8B75632FBE65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35ACDF4E-2CE2-46B1-A19F-35DC131069A1}

@@ -6,9 +6,9 @@ namespace Nursia.Graphics3D.Modeling
 {
 	public class ModelInstance: ItemWithId
 	{
-		private readonly Model _model;
+		private readonly Sprite3D _model;
 
-		public Model Model
+		public Sprite3D Model
 		{
 			get
 			{
@@ -37,7 +37,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		public BaseMaterial Material { get; set; }
 
-		public ModelInstance(Model model)
+		public ModelInstance(Sprite3D model)
 		{
 			if (model == null)
 			{

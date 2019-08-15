@@ -3,7 +3,7 @@ using Nursia.Graphics3D.Materials;
 
 namespace Nursia.Graphics3D.Modeling
 {
-	public class Model
+	public partial class Sprite3D
 	{
 		public PrimitiveType PrimitiveType { get; private set; }
 

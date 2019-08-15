@@ -1,3 +1,6 @@
 [submodule "deps/StbImageSharp"]
 	path = deps/StbImageSharp
 	url = https://github.com/StbSharp/StbImageSharp.git
+[submodule "deps/MiniJson"]
+	path = deps/MiniJson
+	url = https://github.com/rds1983/MiniJson.git

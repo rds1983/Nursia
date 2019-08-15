@@ -38,6 +38,7 @@
   
   <ItemGroup>
     <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp" />
+    <Compile Include="..\..\deps\MiniJson\**\*.cs" LinkBase="ThirdParty\MiniJson" />
   </ItemGroup>
   
   <ItemGroup>

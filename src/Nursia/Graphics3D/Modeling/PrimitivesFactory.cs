@@ -79,10 +79,10 @@ namespace Nursia.Graphics3D.Modeling
 {
 	public static class PrimitivesFactory
 	{
-		private static Model CreateMesh<T>(GraphicsDevice device, T[] vertices, int[] indices,
+		private static Sprite3D CreateMesh<T>(GraphicsDevice device, T[] vertices, int[] indices,
 			PrimitiveType primitiveType = PrimitiveType.TriangleList) where T : struct, IVertexType
 		{
-			var result = new Model();
+			var result = new Sprite3D();
 			result.Init(device, vertices, indices, primitiveType);
 
 			return result;
@@ -90,7 +90,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region Cube
 
-		public static Model CreateCube(GraphicsDevice device, float size = 1.0f)
+		public static Sprite3D CreateCube(GraphicsDevice device, float size = 1.0f)
 		{
 			var faceNormals = new[]
 			                  	{
@@ -159,7 +159,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region Cylinder
 
-		public static Model CreateCylinder(GraphicsDevice device, float height = 1.0f, float diameter = 1.0f, int tessellation = 32)
+		public static Sprite3D CreateCylinder(GraphicsDevice device, float height = 1.0f, float diameter = 1.0f, int tessellation = 32)
 		{
 			if (tessellation < 3)
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be >= 3");
@@ -264,7 +264,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region Sphere
 
-		public static Model CreateSphere(GraphicsDevice device, float diameter = 1.0f, int tessellation = 16)
+		public static Sprite3D CreateSphere(GraphicsDevice device, float diameter = 1.0f, int tessellation = 16)
 		{
 			if (tessellation < 3) throw new ArgumentOutOfRangeException("tessellation", "Must be >= 3");
 
@@ -333,7 +333,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region Torus
 
-		public static Model CreateTorus(GraphicsDevice device, float diameter = 1.0f, float thickness = 0.33333f, int tessellation = 32)
+		public static Sprite3D CreateTorus(GraphicsDevice device, float diameter = 1.0f, float thickness = 0.33333f, int tessellation = 32)
 		{
 			var vertices = new List<VertexPositionNormalTexture>();
 			var indices = new List<int>();
@@ -393,7 +393,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region XZ Grid
 
-		public static Model CreateXZGrid(GraphicsDevice device, Vector2 size)
+		public static Sprite3D CreateXZGrid(GraphicsDevice device, Vector2 size)
 		{
 			var vertices = new List<VertexPositionNormalTexture>();
 			var indices = new List<int>();

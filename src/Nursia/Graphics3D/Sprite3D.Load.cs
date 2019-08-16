@@ -1,11 +1,10 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using MiniJSON;
+using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-namespace Nursia.Graphics3D.Modeling
+namespace Nursia.Graphics3D
 {
 	partial class Sprite3D
 	{
@@ -23,11 +22,12 @@ namespace Nursia.Graphics3D.Modeling
 
 			var root = (Dictionary<string, object>)Json.Deserialize(json);
 
+			var result = new Sprite3D();
 			var meshes = (List<object>)root["meshes"];
-			foreach(Dictionary<string, object> mesh in meshes)
+			foreach (Dictionary<string, object> meshData in meshes)
 			{
 				// Determine vertex type
-				var declarationTypeName = (string)mesh["declaration"];
+				var declarationTypeName = (string)meshData["declaration"];
 				var declarationType = graphicsAssembly.GetType(vertexName + "." + declarationTypeName);
 
 				if (declarationType == null)
@@ -42,14 +42,37 @@ namespace Nursia.Graphics3D.Modeling
 				}
 
 				var loader = (IVertexLoader)Activator.CreateInstance(loaderType);
-				var vertices = (List<object>)mesh["vertices"];
-				var data = loader.ReadData(vertices);
+				var vertices = (List<object>)meshData["vertices"];
+				var vertexBuffer = loader.CreateVertexBuffer(vertices);
 
-				var k = 5;
+				var parts = (List<object>)meshData["parts"];
+				foreach (Dictionary<string, object> partData in parts)
+				{
+					var id = partData.GetId();
+					var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
+					var indicesData = (List<object>)partData["indices"];
+					var indices = new short[indicesData.Count];
+					for(var i = 0; i < indicesData.Count; ++i)
+					{
+						indices[i] = Convert.ToInt16(indicesData[i]);
+					}
+
+					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits,
+						indices.Length, BufferUsage.None);
+
+					var mesh = new Mesh
+					{
+						Id = id,
+						PrimitiveType = type,
+						IndexBuffer = indexBuffer,
+						VertexBuffer = vertexBuffer
+					};
+
+					result.Meshes.Add(mesh);
+				}
 			}
 
-
-			return null;
+			return result;
 		}
 	}
 }

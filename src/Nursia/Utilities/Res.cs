@@ -35,7 +35,7 @@ namespace Nursia.Utilities
 			var ms = new MemoryStream();
 			using (var input = assembly.OpenStream(assetName))
 			{
-				input.CopyTo(input);
+				input.CopyTo(ms);
 
 				return ms.ToArray();
 			}

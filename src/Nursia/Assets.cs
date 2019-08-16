@@ -25,7 +25,7 @@ namespace Nursia
 				return _defaultEffect[key];
 			}
 
-			var resourceKey = "Effects.DeffaultEffect";
+			var resourceKey = "Resources.Effects.DefaultEffect";
 			if (lightning)
 			{
 				resourceKey += "_LIGHTNING";

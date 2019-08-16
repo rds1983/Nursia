@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Nursia.Graphics3D.Environment
+namespace Nursia.Graphics3D.Lights
 {
 	public class DirectionalLight : BaseLight
 	{

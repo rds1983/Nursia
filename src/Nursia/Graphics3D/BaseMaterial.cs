@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Nursia.Graphics3D.Materials
+namespace Nursia.Graphics3D
 {
 	public class BaseMaterial
 	{

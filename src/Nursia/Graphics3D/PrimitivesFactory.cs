@@ -75,22 +75,19 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.Modeling
+namespace Nursia.Graphics3D
 {
 	public static class PrimitivesFactory
 	{
-		private static Sprite3D CreateMesh<T>(GraphicsDevice device, T[] vertices, int[] indices,
+		private static Mesh CreateMesh<T>(T[] vertices, short[] indices,
 			PrimitiveType primitiveType = PrimitiveType.TriangleList) where T : struct, IVertexType
 		{
-			var result = new Sprite3D();
-			result.Init(device, vertices, indices, primitiveType);
-
-			return result;
+			return Mesh.Create<T>(vertices, indices, primitiveType);
 		}
 
 		#region Cube
 
-		public static Sprite3D CreateCube(GraphicsDevice device, float size = 1.0f)
+		public static Mesh CreateCube(float size = 1.0f)
 		{
 			var faceNormals = new[]
 			                  	{
@@ -110,7 +107,7 @@ namespace Nursia.Graphics3D.Modeling
 			                         		new Vector2(0, 0),
 			                         	};
 			var vertices = new VertexPositionNormalTexture[faceNormals.Length * 4];
-			var indices = new int[faceNormals.Length * 6];
+			var indices = new short[faceNormals.Length * 6];
 
 			size /= 2.0f;
 
@@ -133,13 +130,13 @@ namespace Nursia.Graphics3D.Modeling
 
 				// Six indices (two triangles) per face.
 				var vbase = i * 4;
-				indices[indexCount++] = (vbase + 0);
-				indices[indexCount++] = (vbase + 1);
-				indices[indexCount++] = (vbase + 2);
+				indices[indexCount++] = (short)(vbase + 0);
+				indices[indexCount++] = (short)(vbase + 1);
+				indices[indexCount++] = (short)(vbase + 2);
 
-				indices[indexCount++] = (vbase + 0);
-				indices[indexCount++] = (vbase + 2);
-				indices[indexCount++] = (vbase + 3);
+				indices[indexCount++] = (short)(vbase + 0);
+				indices[indexCount++] = (short)(vbase + 2);
+				indices[indexCount++] = (short)(vbase + 3);
 
 				// Four vertices per face.
 				vertices[vertexCount++] = new VertexPositionNormalTexture((normal - side1 - side2) * size, normal,
@@ -152,20 +149,20 @@ namespace Nursia.Graphics3D.Modeling
 																		  textureCoordinates[3]);
 			}
 
-			return CreateMesh(device, vertices, indices);
+			return CreateMesh(vertices, indices);
 		}
 
 		#endregion
 
 		#region Cylinder
 
-		public static Sprite3D CreateCylinder(GraphicsDevice device, float height = 1.0f, float diameter = 1.0f, int tessellation = 32)
+		public static Mesh CreateCylinder(float height = 1.0f, float diameter = 1.0f, int tessellation = 32)
 		{
 			if (tessellation < 3)
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be >= 3");
 
 			var vertices = new List<VertexPositionNormalTexture>();
-			var indices = new List<int>();
+			var indices = new List<short>();
 
 			height /= 2;
 
@@ -186,20 +183,20 @@ namespace Nursia.Graphics3D.Modeling
 				vertices.Add(new VertexPositionNormalTexture(sideOffset + topOffset, normal, textureCoordinate));
 				vertices.Add(new VertexPositionNormalTexture(sideOffset - topOffset, normal, textureCoordinate + Vector2.UnitY));
 
-				indices.Add(i * 2);
-				indices.Add((i * 2 + 2) % (stride * 2));
-				indices.Add(i * 2 + 1);
+				indices.Add((short)(i * 2));
+				indices.Add((short)((i * 2 + 2) % (stride * 2)));
+				indices.Add((short)(i * 2 + 1));
 
-				indices.Add(i * 2 + 1);
-				indices.Add((i * 2 + 2) % (stride * 2));
-				indices.Add((i * 2 + 3) % (stride * 2));
+				indices.Add((short)(i * 2 + 1));
+				indices.Add((short)((i * 2 + 2) % (stride * 2)));
+				indices.Add((short)((i * 2 + 3) % (stride * 2)));
 			}
 
 			CreateCylinderCap(vertices, indices, tessellation, height, radius, true);
 			CreateCylinderCap(vertices, indices, tessellation, height, radius, false);
 
 			// Create flat triangle fan caps to seal the top and bottom.
-			return CreateMesh(device, vertices.ToArray(), indices.ToArray());
+			return CreateMesh(vertices.ToArray(), indices.ToArray());
 		}
 
 		// Helper computes a point on a unit circle, aligned to the x/z plane and centered on the origin.
@@ -220,7 +217,7 @@ namespace Nursia.Graphics3D.Modeling
 		}
 
 		// Helper creates a triangle fan to close the end of a cylinder.
-		private static void CreateCylinderCap(List<VertexPositionNormalTexture> vertices, List<int> indices, int tessellation, float height, float radius, bool isTop)
+		private static void CreateCylinderCap(List<VertexPositionNormalTexture> vertices, List<short> indices, int tessellation, float height, float radius, bool isTop)
 		{
 			// Create cap indices.
 			for (var i = 0; i < tessellation - 2; i++)
@@ -234,9 +231,9 @@ namespace Nursia.Graphics3D.Modeling
 				}
 
 				var vbase = vertices.Count;
-				indices.Add(vbase);
-				indices.Add(vbase + i1);
-				indices.Add(vbase + i2);
+				indices.Add((short)vbase);
+				indices.Add((short)(vbase + i1));
+				indices.Add((short)(vbase + i2));
 			}
 
 			// Which end of the cylinder is this?
@@ -264,7 +261,7 @@ namespace Nursia.Graphics3D.Modeling
 
 		#region Sphere
 
-		public static Sprite3D CreateSphere(GraphicsDevice device, float diameter = 1.0f, int tessellation = 16)
+		public static Mesh CreateSphere(float diameter = 1.0f, int tessellation = 16)
 		{
 			if (tessellation < 3) throw new ArgumentOutOfRangeException("tessellation", "Must be >= 3");
 
@@ -272,7 +269,7 @@ namespace Nursia.Graphics3D.Modeling
 			var horizontalSegments = tessellation * 2;
 
 			var vertices = new VertexPositionNormalTexture[(verticalSegments + 1) * (horizontalSegments + 1)];
-			var indices = new int[(verticalSegments) * (horizontalSegments + 1) * 6];
+			var indices = new short[(verticalSegments) * (horizontalSegments + 1) * 6];
 
 			var radius = diameter / 2;
 
@@ -316,27 +313,27 @@ namespace Nursia.Graphics3D.Modeling
 					var nextI = i + 1;
 					var nextJ = (j + 1) % stride;
 
-					indices[indexCount++] = (i * stride + j);
-					indices[indexCount++] = (nextI * stride + j);
-					indices[indexCount++] = (i * stride + nextJ);
+					indices[indexCount++] = (short)(i * stride + j);
+					indices[indexCount++] = (short)(nextI * stride + j);
+					indices[indexCount++] = (short)(i * stride + nextJ);
 
-					indices[indexCount++] = (i * stride + nextJ);
-					indices[indexCount++] = (nextI * stride + j);
-					indices[indexCount++] = (nextI * stride + nextJ);
+					indices[indexCount++] = (short)(i * stride + nextJ);
+					indices[indexCount++] = (short)(nextI * stride + j);
+					indices[indexCount++] = (short)(nextI * stride + nextJ);
 				}
 			}
 
-			return CreateMesh(device, vertices, indices);
+			return CreateMesh(vertices, indices);
 		}
 
 		#endregion
 
 		#region Torus
 
-		public static Sprite3D CreateTorus(GraphicsDevice device, float diameter = 1.0f, float thickness = 0.33333f, int tessellation = 32)
+		public static Mesh CreateTorus(float diameter = 1.0f, float thickness = 0.33333f, int tessellation = 32)
 		{
 			var vertices = new List<VertexPositionNormalTexture>();
-			var indices = new List<int>();
+			var indices = new List<short>();
 
 			if (tessellation < 3)
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
@@ -376,27 +373,27 @@ namespace Nursia.Graphics3D.Modeling
 					int nextI = (i + 1) % stride;
 					int nextJ = (j + 1) % stride;
 
-					indices.Add(i * stride + j);
-					indices.Add(i * stride + nextJ);
-					indices.Add(nextI * stride + j);
+					indices.Add((short)(i * stride + j));
+					indices.Add((short)(i * stride + nextJ));
+					indices.Add((short)(nextI * stride + j));
 
-					indices.Add(i * stride + nextJ);
-					indices.Add(nextI * stride + nextJ);
-					indices.Add(nextI * stride + j);
+					indices.Add((short)(i * stride + nextJ));
+					indices.Add((short)(nextI * stride + nextJ));
+					indices.Add((short)(nextI * stride + j));
 				}
 			}
 
-			return CreateMesh(device, vertices.ToArray(), indices.ToArray());
+			return CreateMesh(vertices.ToArray(), indices.ToArray());
 		}
 
 		#endregion
 
 		#region XZ Grid
 
-		public static Sprite3D CreateXZGrid(GraphicsDevice device, Vector2 size)
+		public static Mesh CreateXZGrid(Vector2 size)
 		{
 			var vertices = new List<VertexPositionNormalTexture>();
-			var indices = new List<int>();
+			var indices = new List<short>();
 
 			var index = 0;
 
@@ -408,9 +405,9 @@ namespace Nursia.Graphics3D.Modeling
 				var x = i - half.X;
 
 				vertices.Add(new VertexPositionNormalTexture(new Vector3(x, 0, -half.Y), Vector3.Zero, Vector2.Zero));
-				indices.Add(index++);
+				indices.Add((short)(index++));
 				vertices.Add(new VertexPositionNormalTexture(new Vector3(x, 0, half.Y), Vector3.Zero, Vector2.Zero));
-				indices.Add(index++);
+				indices.Add((short)(index++));
 			}
 
 			// X lines
@@ -419,12 +416,12 @@ namespace Nursia.Graphics3D.Modeling
 				var z = i - half.Y;
 
 				vertices.Add(new VertexPositionNormalTexture(new Vector3(-half.X, 0, z), Vector3.Zero, Vector2.Zero));
-				indices.Add(index++);
+				indices.Add((short)(index++));
 				vertices.Add(new VertexPositionNormalTexture(new Vector3(half.X, 0, z), Vector3.Zero, Vector2.Zero));
-				indices.Add(index++);
+				indices.Add((short)(index++));
 			}
 
-			return CreateMesh(device, vertices.ToArray(), indices.ToArray(), PrimitiveType.LineList);
+			return CreateMesh(vertices.ToArray(), indices.ToArray(), PrimitiveType.LineList);
 		}
 
 		#endregion

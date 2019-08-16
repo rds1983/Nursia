@@ -96,8 +96,7 @@ namespace Nursia.Graphics3D
 
 		protected Camera()
 		{
-			Position = new Vector3(0, 20.0f, 20.0f);
-			PitchAngle = -45.0f;
+			Position = new Vector3(0, 0, 20.0f);
 		}
 
 		private void Invalidate()

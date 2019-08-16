@@ -10,10 +10,10 @@ namespace Nursia.Graphics3D
 	{
 		VertexDeclaration VertexDeclaration { get; }
 
-		object ReadData(List<object> data);
+		VertexBuffer CreateVertexBuffer(List<object> data);
 	}
 
-	public abstract class VertexLoader<T>: IVertexLoader where T: IVertexType
+	public abstract class VertexLoader<T>: IVertexLoader where T: IVertexType, new()
 	{
 		private VertexDeclaration _vertexDeclaration;
 
@@ -26,17 +26,7 @@ namespace Nursia.Graphics3D
 					return _vertexDeclaration;
 				}
 
-				IVertexType type = Activator.CreateInstance(typeof(T)) as IVertexType;
-				if (type == null)
-				{
-					throw new ArgumentException("vertexData does not inherit IVertexType");
-				}
-
-				_vertexDeclaration = type.VertexDeclaration;
-				if (_vertexDeclaration == null)
-				{
-					throw new ArgumentException("vertexType's VertexDeclaration cannot be null");
-				}
+				_vertexDeclaration = new T().VertexDeclaration;
 
 				return _vertexDeclaration;
 			}
@@ -44,7 +34,7 @@ namespace Nursia.Graphics3D
 
 		public abstract int FloatsPerElement { get; }
 
-		public object ReadData(List<object> data)
+		public VertexBuffer CreateVertexBuffer(List<object> data)
 		{
 			if (data.Count % FloatsPerElement != 0)
 			{
@@ -63,7 +53,7 @@ namespace Nursia.Graphics3D
 				++elementIndex;
 			}
 
-			return result;
+			return new VertexBuffer(Nrs.GraphicsDevice, VertexDeclaration, size, BufferUsage.None);
 		}
 
 		protected float ReadFloat(List<object> data, ref int index)

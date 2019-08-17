@@ -65,9 +65,6 @@ namespace Nursia.Graphics3D
 				var worldViewProj = mesh.Transform * viewProjection;
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(mesh.Transform));
 
-				effect.Parameters["_eyePosition"].SetValue(camera.Position);
-				effect.Parameters["_world"].SetValue(mesh.Transform);
-				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 				effect.Parameters["_diffuseColor"].SetValue(material.DiffuseColor.ToVector4());
 
@@ -78,6 +75,10 @@ namespace Nursia.Graphics3D
 
 				if (material.HasLight)
 				{
+					effect.Parameters["_eyePosition"].SetValue(camera.Position);
+					effect.Parameters["_world"].SetValue(mesh.Transform);
+					effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
+
 					if (lights != null)
 					{
 						device.BlendState = BlendState.AlphaBlend;
@@ -92,7 +93,6 @@ namespace Nursia.Graphics3D
 
 							effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
 							effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
-
 
 							foreach (var pass in effect.CurrentTechnique.Passes)
 							{

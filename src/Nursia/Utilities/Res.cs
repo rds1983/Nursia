@@ -14,7 +14,7 @@ namespace Nursia.Utilities
 		/// <param name="assembly"></param>
 		/// <param name="assetName"></param>
 		/// <returns></returns>
-		public static Stream OpenStream(this Assembly assembly, string assetName)
+		public static Stream OpenResourceStream(this Assembly assembly, string assetName)
 		{
 			var path = assembly.GetName().Name + "." + assetName;
 
@@ -30,10 +30,10 @@ namespace Nursia.Utilities
 		/// <param name="assembly"></param>
 		/// <param name="assetName"></param>
 		/// <returns></returns>
-		public static byte[] ReadAsBytes(this Assembly assembly, string assetName)
+		public static byte[] ReadResourceAsBytes(this Assembly assembly, string assetName)
 		{
 			var ms = new MemoryStream();
-			using (var input = assembly.OpenStream(assetName))
+			using (var input = assembly.OpenResourceStream(assetName))
 			{
 				input.CopyTo(ms);
 
@@ -47,10 +47,10 @@ namespace Nursia.Utilities
 		/// <param name="assembly"></param>
 		/// <param name="assetName"></param>
 		/// <returns></returns>
-		public static string ReadAsString(this Assembly assembly, string assetName)
+		public static string ReadResourceAsString(this Assembly assembly, string assetName)
 		{
 			string result;
-			using (var input = assembly.OpenStream(assetName))
+			using (var input = assembly.OpenResourceStream(assetName))
 			{
 				using (var textReader = new StreamReader(input))
 				{

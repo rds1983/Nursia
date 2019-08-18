@@ -53,7 +53,7 @@ namespace ModelViewer
 				mesh.Material = new BaseMaterial
 				{
 					HasLight = true,
-					DiffuseColor = Color.Red,
+					DiffuseColor = Color.White,
 //					Texture = texture
 				};
 			}
@@ -61,18 +61,19 @@ namespace ModelViewer
 			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
 				Color = Color.White,
-				Direction = new Vector3(0, 0, 1.0f)
+				Direction = new Vector3(1.0f, 1.0f, -1.0f)
 			});
 
-			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
+/*			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
 				Color = Color.White,
-				Direction = new Vector3(0, 0, -1.0f)
-			});
+				Direction = new Vector3(-1.0f, -1.0f, -1.0f)
+			});*/
 
 			var camera = new PerspectiveCamera
 			{
-				Position = new Vector3(0, 0, -50.0f)
+				Position = new Vector3(0, 0, 50.0f),
+				PitchAngle = 180
 			};
 
 			_controller = new CameraInputController(camera);

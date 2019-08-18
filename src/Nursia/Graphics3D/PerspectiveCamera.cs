@@ -5,7 +5,7 @@ namespace Nursia.Graphics3D
 	public sealed class PerspectiveCamera : Camera
 	{
 		private bool _dirty = true;
-		private float _fovAngle = 67.0f;
+		private float _fovAngle = 60.0f;
 		private float _near = 1.0f;
 		private float _far = 1000.0f;
 		private Matrix _projection;

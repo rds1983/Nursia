@@ -82,7 +82,7 @@ namespace Nursia.Graphics3D
 		private static Mesh CreateMesh<T>(T[] vertices, short[] indices,
 			PrimitiveType primitiveType = PrimitiveType.TriangleList) where T : struct, IVertexType
 		{
-			return Mesh.Create<T>(vertices, indices, primitiveType);
+			return Mesh.Create(vertices, indices, primitiveType);
 		}
 
 		#region Cube

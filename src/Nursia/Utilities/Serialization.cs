@@ -8,8 +8,7 @@ namespace Nursia.Utilities
 	{
 		internal static float ToFloat(this object data)
 		{
-			string s = data.ToString();
-			return float.Parse(s, CultureInfo.InvariantCulture);
+			return Convert.ToSingle(data, CultureInfo.InvariantCulture);
 		}
 
 		internal static string GetId(this Dictionary<string, object> data)

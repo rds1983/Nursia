@@ -13,7 +13,7 @@ namespace Nursia.Graphics3D
 		VertexBuffer CreateVertexBuffer(List<object> data);
 	}
 
-	public abstract class VertexLoader<T>: IVertexLoader where T: IVertexType, new()
+	public abstract class VertexLoader<T>: IVertexLoader where T: struct, IVertexType
 	{
 		private VertexDeclaration _vertexDeclaration;
 
@@ -34,26 +34,29 @@ namespace Nursia.Graphics3D
 
 		public abstract int FloatsPerElement { get; }
 
-		public VertexBuffer CreateVertexBuffer(List<object> data)
+		public VertexBuffer CreateVertexBuffer(List<object> input)
 		{
-			if (data.Count % FloatsPerElement != 0)
+			if (input.Count % FloatsPerElement != 0)
 			{
 				throw new Exception(
-					string.Format("Inconsistent vertex data size: {0} % {1} != 0", data.Count, FloatsPerElement));
+					string.Format("Inconsistent vertex data size: {0} % {1} != 0", input.Count, FloatsPerElement));
 			}
 
-			var size = data.Count / FloatsPerElement;
+			var size = input.Count / FloatsPerElement;
 
-			var result = new T[size];
+			var data = new T[size];
 			var floatIndex = 0;
 			var elementIndex = 0;
-			while(floatIndex < data.Count)
+			while(floatIndex < input.Count)
 			{
-				result[elementIndex] = ReadElement(data, ref floatIndex);
+				data[elementIndex] = ReadElement(input, ref floatIndex);
 				++elementIndex;
 			}
 
-			return new VertexBuffer(Nrs.GraphicsDevice, VertexDeclaration, size, BufferUsage.None);
+			var result = new VertexBuffer(Nrs.GraphicsDevice, VertexDeclaration, size, BufferUsage.None);
+			result.SetData(data);
+
+			return result;
 		}
 
 		protected float ReadFloat(List<object> data, ref int index)

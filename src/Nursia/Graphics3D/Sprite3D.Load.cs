@@ -59,6 +59,7 @@ namespace Nursia.Graphics3D
 
 					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits,
 						indices.Length, BufferUsage.None);
+					indexBuffer.SetData(indices);
 
 					var mesh = new Mesh
 					{

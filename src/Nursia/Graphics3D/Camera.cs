@@ -96,7 +96,6 @@ namespace Nursia.Graphics3D
 
 		protected Camera()
 		{
-			Position = new Vector3(0, 0, 20.0f);
 		}
 
 		private void Invalidate()
@@ -113,7 +112,7 @@ namespace Nursia.Graphics3D
 
 			var rotation = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(YawAngle), MathHelper.ToRadians(PitchAngle), 0);
 
-			_direction = Vector3.Transform(new Vector3(0, 0, -1), rotation);
+			_direction = Vector3.Transform(new Vector3(0, 0, 1), rotation);
 			_up = Vector3.Transform(Vector3.Up, rotation);
 			_right = Vector3.Cross(_direction, _up);
 			_right.Normalize();

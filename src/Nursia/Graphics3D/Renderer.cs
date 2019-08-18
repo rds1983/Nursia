@@ -75,7 +75,6 @@ namespace Nursia.Graphics3D
 
 				if (material.HasLight)
 				{
-					effect.Parameters["_eyePosition"].SetValue(camera.Position);
 					effect.Parameters["_world"].SetValue(mesh.Transform);
 					effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 

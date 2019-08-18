@@ -19,11 +19,9 @@ BEGIN_CONSTANTS
 
 float3 _lightDir;
 float3 _lightColor;
-float _specularPower = 16;
 
 #endif
 
-float3 _eyePosition;
 float4 _diffuseColor;
 
 MATRIX_CONSTANTS
@@ -66,10 +64,18 @@ VSOutput VertexShaderFunction(VSInput input)
 
 #ifdef LIGHTNING
 	output.WorldPosition = mul(input.Position, _world).xyz;
-	output.WorldNormal = normalize(mul(input.Normal, _worldInverseTranspose));
+	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
 #endif
 
     return output;
+}
+
+float3 ComputeLighting(float3 normalVector, float3 lightDirection, float3 lightColor, float attenuation)
+{
+    float diffuse = max(dot(normalVector, lightDirection), 0.0);
+    float3 diffuseColor = lightColor  * diffuse * attenuation;
+
+    return diffuseColor;
 }
 
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
@@ -82,25 +88,10 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 
 #ifdef LIGHTNING
 	float3 result = float3(0, 0, 0);
+	float3 normal = normalize(input.WorldNormal);
+    result += ComputeLighting(normal, -_lightDir, _lightColor, 1.0);
 
-	float3 normal = input.WorldNormal;
-	// Diffuse part
-	float diffuseFactor = saturate(dot(normal, -_lightDir));
-	
-	if (diffuseFactor > 0.0f)
-	{
-		float3 eyeVector = normalize(_eyePosition - input.WorldPosition);
-
-		// Using Blinn-Phong shading model
-		float3 halfWay = normalize(eyeVector - _lightDir);
-		float halfDotView = max(0.0, dot(halfWay, normal));
-		float specFactor = pow(halfDotView, _specularPower);
-		
-		result += diffuseFactor * _lightColor * _diffuseColor.rgb;
-		result += specFactor * _lightColor * _diffuseColor.rgb;
-	}
-	
-	return color * float4(result, 1);
+	return color * float4(result, 1) * _diffuseColor;
 #else
 	return color * _diffuseColor;
 #endif

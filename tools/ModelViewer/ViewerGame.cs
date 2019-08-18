@@ -53,8 +53,8 @@ namespace ModelViewer
 				mesh.Material = new BaseMaterial
 				{
 					HasLight = true,
-					DiffuseColor = Color.White,
-					Texture = texture
+					DiffuseColor = Color.Red,
+//					Texture = texture
 				};
 			}
 
@@ -66,7 +66,7 @@ namespace ModelViewer
 
 			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
-				Color = Color.Red,
+				Color = Color.White,
 				Direction = new Vector3(0, 0, -1.0f)
 			});
 

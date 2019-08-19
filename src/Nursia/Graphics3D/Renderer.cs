@@ -57,7 +57,7 @@ namespace Nursia.Graphics3D
 					continue;
 				}
 
-				var effect = Assets.GetDefaultEffect(mesh.Material.HasLight, mesh.Material.Texture != null);
+				var effect = Assets.GetDefaultEffect(!mesh.Material.IgnoreLight, mesh.Material.Texture != null);
 
 				device.SetVertexBuffer(mesh.VertexBuffer);
 				device.Indices = mesh.IndexBuffer;
@@ -73,7 +73,7 @@ namespace Nursia.Graphics3D
 					effect.Parameters["_texture"].SetValue(material.Texture);
 				}
 
-				if (material.HasLight)
+				if (!material.IgnoreLight)
 				{
 					effect.Parameters["_world"].SetValue(mesh.Transform);
 					effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);

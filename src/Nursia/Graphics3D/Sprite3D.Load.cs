@@ -1,8 +1,10 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MiniJSON;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Nursia.Graphics3D
 {
@@ -15,7 +17,18 @@ namespace Nursia.Graphics3D
 			_loaders[typeof(VertexPositionNormalTexture)] = typeof(VertexPositionNormalTextureLoader);
 		}
 
-		public static Sprite3D LoadFromJson(string json, Func<string, Texture2D> textureGetter)
+		private static Stream EnsureOpen(Func<string, Stream> streamOpener, string name)
+		{
+			var result = streamOpener(name);
+			if (result == null)
+			{
+				throw new Exception(string.Format("stream is null for name '{0}'", name));
+			}
+
+			return result;
+		}
+
+		public static Sprite3D LoadFromJson(string json, Func<string, Stream> streamOpener)
 		{
 			var graphicsAssembly = typeof(VertexPosition).Assembly;
 			var vertexName = typeof(VertexPosition).Namespace;
@@ -52,7 +65,7 @@ namespace Nursia.Graphics3D
 					var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
 					var indicesData = (List<object>)partData["indices"];
 					var indices = new short[indicesData.Count];
-					for(var i = 0; i < indicesData.Count; ++i)
+					for (var i = 0; i < indicesData.Count; ++i)
 					{
 						indices[i] = Convert.ToInt16(indicesData[i]);
 					}
@@ -71,6 +84,36 @@ namespace Nursia.Graphics3D
 
 					result.Meshes.Add(mesh);
 				}
+			}
+
+			var materials = (List<object>)root["materials"];
+			foreach (Dictionary<string, object> materialData in materials)
+			{
+				var material = new Material
+				{
+					Id = materialData.GetId(),
+					DiffuseColor = Color.White
+				};
+
+				object obj;
+				if (materialData.TryGetValue("diffuse", out obj) && obj != null)
+				{
+					material.DiffuseColor = new Color(obj.ToVector4());
+				}
+
+				if (materialData.TryGetValue("texture", out obj) && obj != null)
+				{
+					var name = obj.ToString();
+					if (!string.IsNullOrEmpty(name))
+					{
+						using (var stream = EnsureOpen(streamOpener, name))
+						{
+							material.Texture = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+						}
+					}
+				}
+
+				result.Materials.Add(material);
 			}
 
 			return result;

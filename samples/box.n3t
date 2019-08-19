@@ -44,25 +44,11 @@
 			]
 		}
 	], 
-	"materials": [
-		{
-			"id": "01 - Default", 
-			"ambient": [ 0.588235,  0.588235,  0.588235], 
-			"diffuse": [ 0.588235,  0.588235,  0.588235], 
-			"emissive": [ 0.000000,  0.000000,  0.000000], 
-			"opacity":  1.000000, 
-			"specular": [ 0.900000,  0.900000,  0.900000], 
-			"shininess":  2.000000, 
-			"textures": [
-				{
-					"id": "Map #1", 
-					"filename": "", 
-					"type": "DIFFUSE", 
-					"wrapModeU": "REPEAT", 
-					"wrapModeV": "REPEAT"
-				}
-			]
-		}
+	"materials": [{
+            "id": "01 - Default", 
+            "diffuse": [0.588235,  0.588235,  0.588235], 
+            "texture": "vase.png"
+        }
 	], 
 	"nodes": [
 		{

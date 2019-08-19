@@ -36,27 +36,18 @@ namespace ModelViewer
 			Nrs.Game = this;
 
 			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\box.n3t");
-			_model = Sprite3D.LoadFromJson(data, null);
+			_model = Sprite3D.LoadFromJson(data, 
+				n => File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples", n)));
+
+			// Set materials manually for now
+			foreach(var mesh in _model.Meshes)
+			{
+				mesh.Material = _model.Materials[0];
+			}
 
 /*			_model = new Sprite3D();
 			var newMesh = PrimitivesFactory.CreateCube(1);
 			_model.Meshes.Add(newMesh);*/
-
-			Texture2D texture;
-			using (var stream = File.OpenRead(@"D:\Projects\Nursia\samples\vase.png"))
-			{
-				texture = Texture2D.FromStream(GraphicsDevice, stream);
-			}
-
-			foreach (var mesh in _model.Meshes)
-			{
-				mesh.Material = new BaseMaterial
-				{
-					HasLight = true,
-					DiffuseColor = Color.White,
-//					Texture = texture
-				};
-			}
 
 			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{

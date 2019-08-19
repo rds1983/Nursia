@@ -10,7 +10,7 @@ namespace Nursia.Graphics3D
 		public PrimitiveType PrimitiveType { get; set; }
 		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
-		public BaseMaterial Material { get; set; }
+		public Material Material { get; set; }
 
 		public int PrimitiveCount
 		{

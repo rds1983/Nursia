@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nursia;
 using Nursia.Graphics3D;
+using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System.IO;
 
@@ -12,7 +13,7 @@ namespace ModelViewer
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Sprite3D _model;
-		private readonly Renderer _renderer = new Renderer();
+		private readonly RenderContext _renderState = new RenderContext();
 		private CameraInputController _controller;
 		private SpriteBatch _spriteBatch;
 
@@ -39,17 +40,11 @@ namespace ModelViewer
 			_model = Sprite3D.LoadFromJson(data, 
 				n => File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples", n)));
 
-			// Set materials manually for now
-			foreach(var mesh in _model.Meshes)
-			{
-				mesh.Material = _model.Materials[0];
-			}
-
 /*			_model = new Sprite3D();
 			var newMesh = PrimitivesFactory.CreateCube(1);
 			_model.Meshes.Add(newMesh);*/
 
-			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
+			_renderState.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
 				Color = Color.White,
 				Direction = new Vector3(1.0f, 1.0f, -1.0f)
@@ -68,7 +63,7 @@ namespace ModelViewer
 			};
 
 			_controller = new CameraInputController(camera);
-			_renderer.Camera = camera;
+			_renderState.Camera = camera;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -106,9 +101,10 @@ namespace ModelViewer
 			_model.Meshes[0].Transform = Matrix.CreateScale(20) * Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
 			GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-			_renderer.Render(_model);
 
-			var camera = _renderer.Camera;
+			_model.Draw(_renderState);
+
+			var camera = _renderState.Camera;
 
 			_spriteBatch.Begin();
 

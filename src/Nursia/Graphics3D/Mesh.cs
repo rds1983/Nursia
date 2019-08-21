@@ -1,16 +1,12 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 
 namespace Nursia.Graphics3D
 {
-	public class Mesh : ItemWithId
+	public class Mesh
 	{
-		public Matrix Transform;
-
 		public PrimitiveType PrimitiveType { get; set; }
 		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
-		public Material Material { get; set; }
 
 		public int PrimitiveCount
 		{
@@ -18,11 +14,6 @@ namespace Nursia.Graphics3D
 			{
 				return CalculatePrimitiveCount(PrimitiveType, IndexBuffer.IndexCount);
 			}
-		}
-
-		public Mesh()
-		{
-			Transform = Matrix.Identity;
 		}
 
 		public static Mesh Create<T>(T[] vertices, short[] indices, PrimitiveType primitiveType) where T : struct, IVertexType

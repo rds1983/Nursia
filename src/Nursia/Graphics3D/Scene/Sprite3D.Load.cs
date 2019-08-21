@@ -5,8 +5,9 @@ using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
-namespace Nursia.Graphics3D
+namespace Nursia.Graphics3D.Scene
 {
 	partial class Sprite3D
 	{
@@ -36,8 +37,9 @@ namespace Nursia.Graphics3D
 			var root = (Dictionary<string, object>)Json.Deserialize(json);
 
 			var result = new Sprite3D();
-			var meshes = (List<object>)root["meshes"];
-			foreach (Dictionary<string, object> meshData in meshes)
+			var meshesData = (List<object>)root["meshes"];
+			var meshes = new Dictionary<string, Mesh>();
+			foreach (Dictionary<string, object> meshData in meshesData)
 			{
 				// Determine vertex type
 				var declarationTypeName = (string)meshData["declaration"];
@@ -76,13 +78,12 @@ namespace Nursia.Graphics3D
 
 					var mesh = new Mesh
 					{
-						Id = id,
 						PrimitiveType = type,
 						IndexBuffer = indexBuffer,
 						VertexBuffer = vertexBuffer
 					};
 
-					result.Meshes.Add(mesh);
+					meshes[id] = mesh;
 				}
 			}
 
@@ -114,6 +115,31 @@ namespace Nursia.Graphics3D
 				}
 
 				result.Materials.Add(material);
+			}
+
+			var nodesData = (List<object>)root["nodes"];
+			foreach (Dictionary<string, object> nodeData in nodesData)
+			{
+				var meshNode = new MeshNode
+				{
+					Id = nodeData.GetId()
+				};
+
+				var partsData = (List<object>)nodeData["parts"];
+				foreach (Dictionary<string, object> partData in partsData)
+				{
+					var material = (from m in result.Materials where m.Id == (string)partData["materialid"] select m).First();
+
+					var meshPart = new MeshNodePart
+					{
+						Mesh = meshes[partData["meshpartid"].ToString()],
+						Material = material
+					};
+
+					meshNode.Parts.Add(meshPart);
+				}
+
+				result.Meshes.Add(meshNode);
 			}
 
 			return result;

@@ -1,4 +1,5 @@
-﻿using Nursia.Graphics3D.Lights;
+﻿using Microsoft.Xna.Framework;
+using Nursia.Graphics3D.Lights;
 using System.Collections.Generic;
 
 namespace Nursia.Graphics3D
@@ -6,12 +7,11 @@ namespace Nursia.Graphics3D
 	public class RenderContext
 	{
 		private readonly List<DirectionalLight> _lights = new List<DirectionalLight>();
-		private readonly List<Mesh> _meshes = new List<Mesh>();
 
 		public Camera Camera
 		{
 			get;
-			internal set;
+			set;
 		}
 
 		public List<DirectionalLight> Lights
@@ -22,12 +22,11 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public List<Mesh> Meshes
+		public Matrix Transform { get; set; }
+
+		public RenderContext()
 		{
-			get
-			{
-				return _meshes;
-			}
+			Transform = Matrix.Identity;
 		}
 	}
 }

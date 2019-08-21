@@ -4,7 +4,7 @@ using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D
+namespace Nursia.Graphics3D.Scene
 {
 	public interface IVertexLoader
 	{

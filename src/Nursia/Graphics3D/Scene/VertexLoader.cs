@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -93,6 +94,48 @@ namespace Nursia.Graphics3D.Scene
 				{
 					X = ReadFloat(data, ref floatIndex),
 					Y = ReadFloat(data, ref floatIndex)
+				}
+			);
+		}
+	}
+
+	internal class VertexPositionNormalTextureBlendLoader : VertexLoader<VertexPositionNormalTextureBlend>
+	{
+		public override int FloatsPerElement => 16;
+
+		protected override VertexPositionNormalTextureBlend ReadElement(List<object> data, ref int floatIndex)
+		{
+			return new VertexPositionNormalTextureBlend(
+				new Vector3
+				{
+					X = ReadFloat(data, ref floatIndex),
+					Y = ReadFloat(data, ref floatIndex),
+					Z = ReadFloat(data, ref floatIndex)
+				},
+				new Vector3
+				{
+					X = ReadFloat(data, ref floatIndex),
+					Y = ReadFloat(data, ref floatIndex),
+					Z = ReadFloat(data, ref floatIndex)
+				},
+				new Vector2
+				{
+					X = ReadFloat(data, ref floatIndex),
+					Y = ReadFloat(data, ref floatIndex)
+				},
+				new Vector4
+				{
+					X = ReadFloat(data, ref floatIndex),
+					Y = ReadFloat(data, ref floatIndex),
+					Z = ReadFloat(data, ref floatIndex),
+					W = ReadFloat(data, ref floatIndex)
+				},
+				new Vector4
+				{
+					X = ReadFloat(data, ref floatIndex),
+					Y = ReadFloat(data, ref floatIndex),
+					Z = ReadFloat(data, ref floatIndex),
+					W = ReadFloat(data, ref floatIndex)
 				}
 			);
 		}

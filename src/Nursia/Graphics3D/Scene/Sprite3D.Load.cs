@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MiniJSON;
+using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Nursia.Graphics3D.Scene
 		static Sprite3D()
 		{
 			_loaders[typeof(VertexPositionNormalTexture)] = typeof(VertexPositionNormalTextureLoader);
+			_loaders[typeof(VertexPositionNormalTextureBlend)] = typeof(VertexPositionNormalTextureBlendLoader);
 		}
 
 		private static Stream EnsureOpen(Func<string, Stream> streamOpener, string name)
@@ -29,11 +31,8 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
-		public static Sprite3D LoadFromJson(string json, Func<string, Stream> streamOpener)
+		public static Sprite3D LoadFromJson(string json, Func<string, Texture2D> textureGetter)
 		{
-			var graphicsAssembly = typeof(VertexPosition).Assembly;
-			var vertexName = typeof(VertexPosition).Namespace;
-
 			var root = (Dictionary<string, object>)Json.Deserialize(json);
 
 			var result = new Sprite3D();
@@ -43,11 +42,19 @@ namespace Nursia.Graphics3D.Scene
 			{
 				// Determine vertex type
 				var declarationTypeName = (string)meshData["declaration"];
-				var declarationType = graphicsAssembly.GetType(vertexName + "." + declarationTypeName);
+
+				// Firstly try MonoGame/FNA assembly
+				var declarationType = typeof(VertexPosition).Assembly.GetType(declarationTypeName);
 
 				if (declarationType == null)
 				{
-					throw new Exception(string.Format("Could not recognize vertex type '{0}'", declarationTypeName));
+					// Now Nursia
+					declarationType = typeof(VertexPositionNormalTextureBlend).Assembly.GetType(declarationTypeName);
+					if (declarationType == null)
+					{
+						// Not found
+						throw new Exception(string.Format("Could not recognize vertex type '{0}'", declarationTypeName));
+					}
 				}
 
 				Type loaderType;
@@ -99,7 +106,7 @@ namespace Nursia.Graphics3D.Scene
 				object obj;
 				if (materialData.TryGetValue("diffuse", out obj) && obj != null)
 				{
-					material.DiffuseColor = new Color(obj.ToVector4());
+					material.DiffuseColor = new Color(obj.ToVector4(1.0f));
 				}
 
 				if (materialData.TryGetValue("texture", out obj) && obj != null)
@@ -107,10 +114,7 @@ namespace Nursia.Graphics3D.Scene
 					var name = obj.ToString();
 					if (!string.IsNullOrEmpty(name))
 					{
-						using (var stream = EnsureOpen(streamOpener, name))
-						{
-							material.Texture = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
-						}
+						material.Texture = textureGetter(name);
 					}
 				}
 
@@ -124,6 +128,11 @@ namespace Nursia.Graphics3D.Scene
 				{
 					Id = nodeData.GetId()
 				};
+
+				if (!nodeData.ContainsKey("parts"))
+				{
+					continue;
+				}
 
 				var partsData = (List<object>)nodeData["parts"];
 				foreach (Dictionary<string, object> partData in partsData)

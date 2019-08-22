@@ -3,27 +3,7 @@
 	"id": "", 
 	"meshes": [
 		{
-			"attributes": [{
-					"size":   3, 
-					"type": "GL_FLOAT", 
-					"attribute": "VERTEX_ATTRIB_POSITION"
-				}, {
-					"size":   3, 
-					"type": "GL_FLOAT", 
-					"attribute": "VERTEX_ATTRIB_NORMAL"
-				}, {
-					"size":   2, 
-					"type": "GL_FLOAT", 
-					"attribute": "VERTEX_ATTRIB_TEX_COORD"
-				}, {
-					"size":   4, 
-					"type": "GL_FLOAT", 
-					"attribute": "VERTEX_ATTRIB_BLEND_WEIGHT"
-				}, {
-					"size":   4, 
-					"type": "GL_FLOAT", 
-					"attribute": "VERTEX_ATTRIB_BLEND_INDEX"
-				}], 
+			"declaration": "Nursia.Graphics3D.Utils.Vertices.VertexPositionNormalTextureBlend", 
 			"vertices": [
 				-4.087269, -0.284269,  2.467412, -0.182764, -0.799652,  0.571974,  0.309707,  0.734820,  0.500000,  0.500000,  0.000000,  0.000000,  0.000000,  1.000000,  0.000000,  0.000000, 
 				-3.801909, -0.138538, -0.349688, -0.335480, -0.819229, -0.465099,  0.333359,  0.578025,  1.000000,  0.000000,  0.000000,  0.000000,  0.000000,  0.000000,  0.000000,  0.000000, 
@@ -842,7 +822,7 @@
 			"parts": [
 				{
 					"id": "shape1_part1", 
-					"type": "TRIANGLES", 
+					"type": "TriangleList", 
 					"indices": [
 						  0,   1,   2,   2,   3,   0,   2,   4,   5,   5,   3,   2, 
 						  6,   7,   8,   8,   9,   6,   8,  10,  11,   1,  12,  13, 
@@ -1082,21 +1062,7 @@
 	"materials": [
 		{
 			"id": "base", 
-			"ambient": [ 0.588235,  0.588235,  0.588235], 
-			"diffuse": [ 0.588235,  0.588235,  0.588235], 
-			"emissive": [ 0.000000,  0.000000,  0.000000], 
-			"opacity":  1.000000, 
-			"specular": [ 0.900000,  0.900000,  0.900000], 
-			"shininess":  2.000000, 
-			"textures": [
-				{
-					"id": "Map #1", 
-					"filename": "monguger.tga", 
-					"type": "DIFFUSE", 
-					"wrapModeU": "REPEAT", 
-					"wrapModeV": "REPEAT"
-				}
-			]
+			"texture": "monguger.tga"
 		}
 	], 
 	"nodes": [

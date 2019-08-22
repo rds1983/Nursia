@@ -20,7 +20,7 @@ namespace Nursia.Utilities
 				floats[2].ToFloat());
 		}
 
-		public static Vector4 ToVector4(this object data)
+		public static Vector4 ToVector4(this object data, float defW = 0.0f)
 		{
 			var floats = (List<object>)data;
 			var result = new Vector4();
@@ -31,6 +31,9 @@ namespace Nursia.Utilities
 			if (floats.Count > 3)
 			{
 				result.W = floats[3].ToFloat();
+			} else
+			{
+				result.W = defW;
 			}
 
 			return result;

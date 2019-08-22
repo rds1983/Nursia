@@ -36,9 +36,15 @@ namespace ModelViewer
 
 			Nrs.Game = this;
 
-			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\box.n3t");
+			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\orc.n3t");
 			_model = Sprite3D.LoadFromJson(data, 
-				n => File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples", n)));
+				n =>
+				{
+					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples", n)))
+					{
+						return Texture2D.FromStream(GraphicsDevice, stream);
+					}
+				});
 
 /*			_model = new Sprite3D();
 			var newMesh = PrimitivesFactory.CreateCube(1);
@@ -47,13 +53,13 @@ namespace ModelViewer
 			_renderState.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
 				Color = Color.White,
-				Direction = new Vector3(1.0f, 1.0f, -1.0f)
+				Direction = new Vector3(0.0f, 0.0f, -1.0f)
 			});
 
-/*			_renderer.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
+/*			_renderState.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
 			{
 				Color = Color.White,
-				Direction = new Vector3(-1.0f, -1.0f, -1.0f)
+				Direction = new Vector3(0.0f, 0.0f, -1.0f)
 			});*/
 
 			var camera = new PerspectiveCamera
@@ -98,8 +104,11 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.Meshes[0].Transform = Matrix.CreateScale(20) * Matrix.CreateRotationY(MathHelper.ToRadians(angle));
+			_model.Meshes[0].Transform = Matrix.CreateRotationX(MathHelper.ToRadians(270)) *
+				Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
+			//			GraphicsDevice.BlendState = BlendState.Opaque;
+			GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 			GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
 			_model.Draw(_renderState);

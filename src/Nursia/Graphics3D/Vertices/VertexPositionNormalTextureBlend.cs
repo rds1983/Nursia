@@ -1,6 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System.Runtime.InteropServices;
 
-namespace Microsoft.Xna.Framework.Graphics
+namespace Nursia.Graphics3D.Utils.Vertices
 {
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPositionNormalTextureBlend : IVertexType

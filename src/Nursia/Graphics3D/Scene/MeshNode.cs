@@ -4,9 +4,9 @@ namespace Nursia.Graphics3D.Scene
 {
 	public class MeshNode : Node
 	{
-		private readonly List<MeshNodePart> _parts = new List<MeshNodePart>();
+		private readonly List<MeshPart> _parts = new List<MeshPart>();
 
-		public List<MeshNodePart> Parts
+		public List<MeshPart> Parts
 		{
 			get
 			{

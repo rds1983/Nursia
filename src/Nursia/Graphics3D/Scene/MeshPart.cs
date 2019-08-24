@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Nursia.Graphics3D.Scene
 {
-	public class MeshNodePart
+	public class MeshPart
 	{
 		internal string MaterialName { get; set; }
 

@@ -33,7 +33,7 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
-		private static Node LoadNode(JObject data, Dictionary<string, List<MeshNodePart>> meshes)
+		private static Node LoadNode(JObject data, Dictionary<string, List<MeshPart>> meshes)
 		{
 			Node result = null;
 
@@ -74,7 +74,7 @@ namespace Nursia.Graphics3D.Scene
 
 			var result = new Sprite3D();
 			var meshesData = (JArray)root["meshes"];
-			var meshes = new Dictionary<string, List<MeshNodePart>>();
+			var meshes = new Dictionary<string, List<MeshPart>>();
 			foreach (JObject meshData in meshesData)
 			{
 				var id = meshData.GetId();
@@ -129,14 +129,14 @@ namespace Nursia.Graphics3D.Scene
 						VertexBuffer = vertexBuffer
 					};
 
-					List<MeshNodePart> m;
+					List<MeshPart> m;
 					if (!meshes.TryGetValue(id, out m))
 					{
-						m = new List<MeshNodePart>();
+						m = new List<MeshPart>();
 						meshes[id] = m;
 					}
 
-					var part = new MeshNodePart
+					var part = new MeshPart
 					{
 						Mesh = mesh,
 						MaterialName = partData["material"].ToString()
@@ -179,8 +179,11 @@ namespace Nursia.Graphics3D.Scene
 				{
 					m.Material = (from mt in result.Materials where mt.Id == m.MaterialName select mt).First();
 				}
-			}
 
+				var mesh = new MeshNode();
+				mesh.Parts.AddRange(ml.Value);
+				result.Meshes.Add(mesh);
+			}
 
 			var rootNode = LoadNode((JObject)root["rootNode"], meshes);
 

@@ -6,6 +6,7 @@ using Nursia.Graphics3D;
 using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System.IO;
+using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
 
 namespace ModelViewer
 {
@@ -13,9 +14,10 @@ namespace ModelViewer
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Sprite3D _model;
-		private readonly RenderContext _renderState = new RenderContext();
 		private CameraInputController _controller;
 		private SpriteBatch _spriteBatch;
+		private ForwardRenderer _renderer;
+		private Camera _camera;
 
 		public ViewerGame()
 		{
@@ -36,6 +38,8 @@ namespace ModelViewer
 
 			Nrs.Game = this;
 
+			_renderer = new ForwardRenderer();
+
 			var data = File.ReadAllText(@"D:\Projects\Nursia\temp\swordsman\Model.n3t");
 			_model = Sprite3D.LoadFromJson(data, 
 				n =>
@@ -50,7 +54,7 @@ namespace ModelViewer
 			var newMesh = PrimitivesFactory.CreateCube(1);
 			_model.Meshes.Add(newMesh);*/
 
-			_renderState.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
+			_renderer.RenderContext.Lights.Add(new DirectionalLight
 			{
 				Color = Color.White,
 				Direction = new Vector3(0.0f, 0.0f, -1.0f)
@@ -69,7 +73,6 @@ namespace ModelViewer
 			};
 
 			_controller = new CameraInputController(camera);
-			_renderState.Camera = camera;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -91,7 +94,9 @@ namespace ModelViewer
 			var mouseState = Mouse.GetState();
 			_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
 			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
-			_controller.SetMousePosition(mouseState.Position);
+
+
+			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 
 			_controller.Update();
 		}
@@ -104,16 +109,13 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.Children[0].Transform = Matrix.CreateRotationX(MathHelper.ToRadians(270)) *
+			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(90)) *
 				Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
-			//			GraphicsDevice.BlendState = BlendState.Opaque;
-			GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-			GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-
-			_model.Draw(_renderState);
-
-			var camera = _renderState.Camera;
+			var camera = _controller.Camera;
+			_renderer.Begin();
+			_renderer.DrawModel(_model, camera);
+			_renderer.End();
 
 			_spriteBatch.Begin();
 

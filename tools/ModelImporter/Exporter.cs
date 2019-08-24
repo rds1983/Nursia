@@ -242,7 +242,8 @@ namespace Nursia.ModelImporter
 					using (var materialScope = CreateCurlyBracersScope(true, true))
 					{
 						WriteSimpleProperty(IdName, material.Name);
-						WriteSimpleProperty("texture", material.Texture.FilePath);
+
+						WriteSimpleProperty("texture", material.Texture != null ? material.Texture.FilePath : string.Empty);
 					}
 				}
 			}

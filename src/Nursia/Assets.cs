@@ -73,6 +73,8 @@ namespace Nursia
 #if MONOGAME
 			resourceKey += Nrs.IsOpenGL ? ".ogl" : ".dx11";
 			resourceKey += ".mgfxo";
+#else
+			resourceKey += ".fxb";
 #endif
 
 			var bytes = Assembly.ReadResourceAsBytes(resourceKey);

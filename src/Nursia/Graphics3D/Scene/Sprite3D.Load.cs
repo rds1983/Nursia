@@ -43,8 +43,11 @@ namespace Nursia.Graphics3D.Scene
 			{
 				var meshNode = new MeshNode();
 
-				var parts = meshes[data[IdName].ToString()];
-				meshNode.Parts.AddRange(parts);
+				List<MeshPart> parts;
+				if (meshes.TryGetValue(data[IdName].ToString(), out parts) && parts != null)
+				{
+					meshNode.Parts.AddRange(parts);
+				}
 
 				result = meshNode;
 			} else
@@ -85,7 +88,7 @@ namespace Nursia.Graphics3D.Scene
 					var declarationTypeName = partData["declaration"].ToString();
 
 					// Firstly try MonoGame/FNA assembly
-					var declarationType = typeof(VertexPosition).Assembly.GetType(declarationTypeName);
+					var declarationType = typeof(VertexPositionColor).Assembly.GetType(declarationTypeName);
 
 					if (declarationType == null)
 					{

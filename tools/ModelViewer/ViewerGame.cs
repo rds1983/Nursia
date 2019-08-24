@@ -57,14 +57,14 @@ namespace ModelViewer
 			_renderer.RenderContext.Lights.Add(new DirectionalLight
 			{
 				Color = Color.White,
-				Direction = new Vector3(0.0f, 0.0f, -1.0f)
+				Direction = new Vector3(1.0f, 0.0f, -1.0f)
 			});
 
-/*			_renderState.Lights.Add(new Nursia.Graphics3D.Lights.DirectionalLight
+			_renderer.RenderContext.Lights.Add(new DirectionalLight
 			{
-				Color = Color.White,
-				Direction = new Vector3(0.0f, 0.0f, -1.0f)
-			});*/
+				Color = Color.Red,
+				Direction = new Vector3(-1.0f, 0.0f, -1.0f)
+			});
 
 			var camera = new PerspectiveCamera
 			{

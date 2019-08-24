@@ -13,6 +13,7 @@ using Assimp.Unmanaged;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Utilities;
+using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.ModelImporter.Content;
 using Quaternion = Microsoft.Xna.Framework.Quaternion;
 
@@ -440,8 +441,15 @@ namespace Nursia.ModelImporter
 					if (!aiMesh.HasVertices)
 						continue;
 
-					var geom = CreateGeometry(mesh, aiMesh);
-					mesh.Parts.Add(geom);
+					try
+					{
+						var geom = CreateGeometry(mesh, aiMesh);
+						mesh.Parts.Add(geom);
+					}
+					catch (Exception ex)
+					{
+						Nrs.LogWarn(ex.ToString());
+					}
 				}
 
 				node = mesh;
@@ -540,35 +548,44 @@ namespace Nursia.ModelImporter
 
 			// Vertices
 			Type type = null;
-
 			int floatsCount = 0;
-			if (aiMesh.VertexColorChannelCount == 1 &&
-				aiMesh.TextureCoordinateChannelCount == 0 &&
-				!aiMesh.HasNormals)
+
+			if (!aiMesh.HasBones)
 			{
-				type = typeof(VertexPositionColor);
-				floatsCount = 6;
-			}
-			else if (aiMesh.VertexColorChannelCount == 1 &&
-					aiMesh.TextureCoordinateChannelCount == 1 &&
+				if (aiMesh.VertexColorChannelCount == 1 &&
+					aiMesh.TextureCoordinateChannelCount == 0 &&
 					!aiMesh.HasNormals)
+				{
+					type = typeof(VertexPositionColor);
+					floatsCount = 6;
+				}
+				else if (aiMesh.VertexColorChannelCount == 1 &&
+						aiMesh.TextureCoordinateChannelCount == 1 &&
+						!aiMesh.HasNormals)
+				{
+					type = typeof(VertexPositionColorTexture);
+					floatsCount = 8;
+				}
+				else if (aiMesh.VertexColorChannelCount == 0 &&
+						aiMesh.TextureCoordinateChannelCount == 1 &&
+						aiMesh.HasNormals)
+				{
+					type = typeof(VertexPositionNormalTexture);
+					floatsCount = 8;
+				}
+				else if (aiMesh.VertexColorChannelCount == 0 &&
+						aiMesh.TextureCoordinateChannelCount == 1 &&
+						!aiMesh.HasNormals)
+				{
+					type = typeof(VertexPositionTexture);
+					floatsCount = 6;
+				}
+			} else if (aiMesh.VertexColorChannelCount == 0 &&
+						aiMesh.TextureCoordinateChannelCount == 1 &&
+						aiMesh.HasNormals)
 			{
-				type = typeof(VertexPositionColorTexture);
-				floatsCount = 8;
-			}
-			else if (aiMesh.VertexColorChannelCount == 0 &&
-					aiMesh.TextureCoordinateChannelCount == 1 &&
-					aiMesh.HasNormals)
-			{
-				type = typeof(VertexPositionNormalTexture);
-				floatsCount = 8;
-			}
-			else if (aiMesh.VertexColorChannelCount == 0 &&
-					aiMesh.TextureCoordinateChannelCount == 1 &&
-					!aiMesh.HasNormals)
-			{
-				type = typeof(VertexPositionTexture);
-				floatsCount = 6;
+				type = typeof(VertexPositionNormalTextureBlend);
+				floatsCount = 16;
 			}
 
 			if (type == null)
@@ -617,6 +634,26 @@ namespace Nursia.ModelImporter
 				}
 			}
 
+			if (aiMesh.HasBones)
+			{
+				foreach(var bone in aiMesh.Bones)
+				{
+					if (bone.HasVertexWeights)
+					{
+						foreach (var weight in bone.VertexWeights)
+						{
+							if (weight.VertexID < 0 && weight.VertexID >= data.GetLength(0))
+							{
+								continue;
+							}
+
+							var idx = 9;
+							data[weight.VertexID, idx++] = weight.Weight;
+						}
+					}
+				}
+			}
+
 			geom.VertexType = type;
 			geom.Vertices = data;
 
@@ -630,44 +667,6 @@ namespace Nursia.ModelImporter
 				}
 
 				geom.Indices.Add((short)idx);
-			}
-
-			if (aiMesh.HasBones)
-			{
-				var xnaWeights = new List<List<BoneWeight>>();
-				bool missingBoneWeights = false;
-				for (var i = 0; i < aiMesh.VertexCount; i++)
-				{
-					var list = new List<BoneWeight>();
-					for (var boneIndex = 0; boneIndex < aiMesh.BoneCount; boneIndex++)
-					{
-						var bone = aiMesh.Bones[boneIndex];
-						foreach (var weight in bone.VertexWeights)
-						{
-							if (weight.VertexID != i)
-								continue;
-
-							list.Add(new BoneWeight(bone.Name, weight.Weight));
-						}
-					}
-
-					if (list.Count == 0)
-					{
-						// No bone weights found for vertex. Use bone 0 as fallback.
-						missingBoneWeights = true;
-						list.Add(new BoneWeight(aiMesh.Bones[0].Name, 1));
-					}
-
-					xnaWeights.Add(list);
-				}
-
-				if (missingBoneWeights)
-				{
-					Nrs.LogWarn("No bone weights found for one or more vertices of skinned mesh '{0}'.",
-						aiMesh.Name);
-				}
-
-				geom.BoneWeights = xnaWeights;
 			}
 
 			return geom;

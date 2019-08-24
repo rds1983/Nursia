@@ -20,7 +20,5 @@ namespace Nursia.ModelImporter.Content
 		public float[,] Vertices { get; set; }
 
 		public Type VertexType { get; set; }
-
-		public List<List<BoneWeight>> BoneWeights { get; set; }
 	}
 }

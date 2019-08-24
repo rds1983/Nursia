@@ -8,6 +8,7 @@ namespace Nursia.Graphics3D
 	{
 		private DepthStencilState _depthStencilState;
 		private RasterizerState _rasterizerState;
+		private BlendState _blendState;
 		private bool _beginCalled;
 		private readonly RenderContext _renderContext = new RenderContext();
 
@@ -24,8 +25,10 @@ namespace Nursia.Graphics3D
 			var device = Nrs.GraphicsDevice;
 			_depthStencilState = device.DepthStencilState;
 			_rasterizerState = device.RasterizerState;
+			_blendState = device.BlendState;
+
 			device.DepthStencilState = DepthStencilState.Default;
-			device.RasterizerState = RasterizerState.CullCounterClockwise;
+			device.RasterizerState = RasterizerState.CullNone;
 
 			_beginCalled = true;
 		}
@@ -57,7 +60,8 @@ namespace Nursia.Graphics3D
 			_depthStencilState = null;
 			device.RasterizerState = _rasterizerState;
 			_rasterizerState = null;
-
+			device.BlendState = _blendState;
+			_blendState = null;
 
 			_beginCalled = false;
 		}

@@ -51,7 +51,7 @@ namespace Nursia.Graphics3D.Scene
 
 				if (lights != null)
 				{
-					device.BlendState = BlendState.AlphaBlend;
+					device.BlendState = BlendState.Opaque;
 					for (var i = 0; i < lights.Count; ++i)
 					{
 						if (i == 1)
@@ -67,7 +67,8 @@ namespace Nursia.Graphics3D.Scene
 						foreach (var pass in effect.CurrentTechnique.Passes)
 						{
 							pass.Apply();
-							device.DrawIndexedPrimitives(Mesh.PrimitiveType, 0, 0, Mesh.PrimitiveCount);
+							device.DrawIndexedPrimitives(Mesh.PrimitiveType, 0, 0, 
+								Mesh.VertexBuffer.VertexCount, 0, Mesh.PrimitiveCount);
 						}
 					}
 				}
@@ -78,7 +79,8 @@ namespace Nursia.Graphics3D.Scene
 				{
 					pass.Apply();
 
-					device.DrawIndexedPrimitives(Mesh.PrimitiveType, 0, 0, Mesh.PrimitiveCount);
+					device.DrawIndexedPrimitives(Mesh.PrimitiveType, 0, 0,
+						Mesh.VertexBuffer.VertexCount, 0, Mesh.PrimitiveCount);
 				}
 			}
 		}

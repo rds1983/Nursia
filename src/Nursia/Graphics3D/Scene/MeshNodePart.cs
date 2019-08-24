@@ -5,6 +5,8 @@ namespace Nursia.Graphics3D.Scene
 {
 	public class MeshNodePart
 	{
+		internal string MaterialName { get; set; }
+
 		public Mesh Mesh { get; set; }
 		public Material Material { get; set; }
 

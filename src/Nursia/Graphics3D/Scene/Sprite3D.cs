@@ -22,13 +22,5 @@ namespace Nursia.Graphics3D.Scene
 				return _materials;
 			}
 		}
-
-		public override void Draw(RenderContext context)
-		{
-			foreach(var mesh in _meshes)
-			{
-				mesh.Draw(context);
-			}
-		}
 	}
 }

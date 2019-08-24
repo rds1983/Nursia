@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net45</TargetFramework>
+    <AssemblyName>Nursia.ModelImporter</AssemblyName>
+    <RootNamespace>Nursia.ModelImporter</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\deps\assimp\Assimp64.dll" Link="Assimp64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\deps\assimp\libassimp.dylib" Link="libassimp.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\deps\assimp\libassimp.so" Link="libassimp.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\deps\assimp\libstdc++.so.6" Link="libstdc++.so.6">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.7.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AssimpNet">
+      <HintPath>..\..\deps\assimp\AssimpNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

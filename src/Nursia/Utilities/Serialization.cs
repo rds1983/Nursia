@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,22 +8,32 @@ namespace Nursia.Utilities
 {
 	internal static class Serialization
 	{
-		public static float ToFloat(this object data)
+		public static float ToFloat(this JToken data)
 		{
 			return Convert.ToSingle(data, CultureInfo.InvariantCulture);
 		}
 
-		public static Vector3 ToVector3(this object data)
+		public static Matrix ToMatrix(this JToken data)
 		{
-			var floats = (List<object>)data;
+			var floats = (JArray)data;
+
+			return new Matrix(floats[0].ToFloat(), floats[1].ToFloat(), floats[2].ToFloat(), floats[3].ToFloat(),
+				floats[4].ToFloat(), floats[5].ToFloat(), floats[6].ToFloat(), floats[7].ToFloat(),
+				floats[8].ToFloat(), floats[9].ToFloat(), floats[10].ToFloat(), floats[11].ToFloat(),
+				floats[12].ToFloat(), floats[13].ToFloat(), floats[14].ToFloat(), floats[15].ToFloat());
+		}
+
+		public static Vector3 ToVector3(this JToken data)
+		{
+			var floats = (JArray)data;
 			return new Vector3(floats[0].ToFloat(),
 				floats[1].ToFloat(),
 				floats[2].ToFloat());
 		}
 
-		public static Vector4 ToVector4(this object data, float defW = 0.0f)
+		public static Vector4 ToVector4(this JToken data, float defW = 0.0f)
 		{
-			var floats = (List<object>)data;
+			var floats = (JArray)data;
 			var result = new Vector4();
 			result.X = floats[0].ToFloat();
 			result.Y = floats[1].ToFloat();
@@ -39,11 +50,11 @@ namespace Nursia.Utilities
 			return result;
 		}
 
-		public static string GetId(this Dictionary<string, object> data)
+		public static string GetId(this JObject data)
 		{
 			var result = string.Empty;
 
-			object obj;
+			JToken obj;
 			if (data.TryGetValue("id", out obj) && obj != null)
 			{
 				result = obj.ToString();
@@ -52,9 +63,9 @@ namespace Nursia.Utilities
 			return result;
 		}
 
-		public static object EnsureObject(this Dictionary<string, object> data, string key)
+		public static JToken EnsureObject(this JObject data, string key)
 		{
-			object obj;
+			JToken obj;
 			if (!data.TryGetValue(key, out obj))
 			{
 				throw new Exception(string.Format("Mandatory field '{0}' missing.", key));
@@ -63,7 +74,7 @@ namespace Nursia.Utilities
 			return obj;
 		}
 
-		public static string EnsureString(this Dictionary<string, object> data, string key)
+		public static string EnsureString(this JObject data, string key)
 		{
 			var obj = EnsureObject(data, key);
 

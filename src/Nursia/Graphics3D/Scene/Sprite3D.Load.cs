@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MiniJSON;
+using Newtonsoft.Json.Linq;
 using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.Utilities;
 using System;
@@ -12,6 +12,8 @@ namespace Nursia.Graphics3D.Scene
 {
 	partial class Sprite3D
 	{
+		private const string IdName = "id";
+
 		private readonly static Dictionary<Type, Type> _loaders = new Dictionary<Type, Type>();
 
 		static Sprite3D()
@@ -31,48 +33,85 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
+		private static Node LoadNode(JObject data, Dictionary<string, List<MeshNodePart>> meshes)
+		{
+			Node result = null;
+
+			var type = data["type"].ToString();
+
+			if (type == "mesh")
+			{
+				var meshNode = new MeshNode();
+
+				var parts = meshes[data[IdName].ToString()];
+				meshNode.Parts.AddRange(parts);
+
+				result = meshNode;
+			} else
+			{
+				result = new Node();
+			}
+
+			result.Id = data.GetId();
+			result.Transform = data["transform"].ToMatrix();
+
+			if (data.ContainsKey("children"))
+			{
+				var children = (JArray)data["children"];
+				foreach (JObject child in children)
+				{
+					var childNode = LoadNode(child, meshes);
+					result.Children.Add(childNode);
+				}
+			}
+
+			return result;
+		}
+
 		public static Sprite3D LoadFromJson(string json, Func<string, Texture2D> textureGetter)
 		{
-			var root = (Dictionary<string, object>)Json.Deserialize(json);
+			var root = JObject.Parse(json);
 
 			var result = new Sprite3D();
-			var meshesData = (List<object>)root["meshes"];
-			var meshes = new Dictionary<string, Mesh>();
-			foreach (Dictionary<string, object> meshData in meshesData)
+			var meshesData = (JArray)root["meshes"];
+			var meshes = new Dictionary<string, List<MeshNodePart>>();
+			foreach (JObject meshData in meshesData)
 			{
-				// Determine vertex type
-				var declarationTypeName = (string)meshData["declaration"];
-
-				// Firstly try MonoGame/FNA assembly
-				var declarationType = typeof(VertexPosition).Assembly.GetType(declarationTypeName);
-
-				if (declarationType == null)
+				var id = meshData.GetId();
+				var parts = (JArray)meshData["parts"];
+				foreach (JObject partData in parts)
 				{
-					// Now Nursia
-					declarationType = typeof(VertexPositionNormalTextureBlend).Assembly.GetType(declarationTypeName);
+					// Determine vertex type
+					var declarationTypeName = partData["declaration"].ToString();
+
+					// Firstly try MonoGame/FNA assembly
+					var declarationType = typeof(VertexPosition).Assembly.GetType(declarationTypeName);
+
 					if (declarationType == null)
 					{
-						// Not found
-						throw new Exception(string.Format("Could not recognize vertex type '{0}'", declarationTypeName));
+						// Now Nursia
+						declarationType = typeof(VertexPositionNormalTextureBlend).Assembly.GetType(declarationTypeName);
+						if (declarationType == null)
+						{
+							// Not found
+							throw new Exception(string.Format("Could not recognize vertex type '{0}'", declarationTypeName));
+						}
 					}
-				}
 
-				Type loaderType;
-				if (!_loaders.TryGetValue(declarationType, out loaderType))
-				{
-					throw new Exception(string.Format("Loader for vertex type '{0}' isn't registered", declarationTypeName));
-				}
+					Type loaderType;
+					if (!_loaders.TryGetValue(declarationType, out loaderType))
+					{
+						throw new Exception(string.Format("Loader for vertex type '{0}' isn't registered", declarationTypeName));
+					}
 
-				var loader = (IVertexLoader)Activator.CreateInstance(loaderType);
-				var vertices = (List<object>)meshData["vertices"];
-				var vertexBuffer = loader.CreateVertexBuffer(vertices);
+					var loader = (IVertexLoader)Activator.CreateInstance(loaderType);
+					var vertices = (JArray)partData["vertices"];
 
-				var parts = (List<object>)meshData["parts"];
-				foreach (Dictionary<string, object> partData in parts)
-				{
-					var id = partData.GetId();
-					var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
-					var indicesData = (List<object>)partData["indices"];
+					var vertexBuffer = loader.CreateVertexBuffer(vertices);
+
+					// var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
+					var type = PrimitiveType.TriangleList;
+					var indicesData = (JArray)partData["indices"];
 					var indices = new short[indicesData.Count];
 					for (var i = 0; i < indicesData.Count; ++i)
 					{
@@ -90,12 +129,24 @@ namespace Nursia.Graphics3D.Scene
 						VertexBuffer = vertexBuffer
 					};
 
-					meshes[id] = mesh;
+					List<MeshNodePart> m;
+					if (!meshes.TryGetValue(id, out m))
+					{
+						m = new List<MeshNodePart>();
+						meshes[id] = m;
+					}
+
+					var part = new MeshNodePart
+					{
+						Mesh = mesh,
+						MaterialName = partData["material"].ToString()
+					};
+					m.Add(part);
 				}
 			}
 
-			var materials = (List<object>)root["materials"];
-			foreach (Dictionary<string, object> materialData in materials)
+			var materials = (JArray)root["materials"];
+			foreach (JObject materialData in materials)
 			{
 				var material = new Material
 				{
@@ -103,7 +154,7 @@ namespace Nursia.Graphics3D.Scene
 					DiffuseColor = Color.White
 				};
 
-				object obj;
+				JToken obj;
 				if (materialData.TryGetValue("diffuse", out obj) && obj != null)
 				{
 					material.DiffuseColor = new Color(obj.ToVector4(1.0f));
@@ -121,35 +172,19 @@ namespace Nursia.Graphics3D.Scene
 				result.Materials.Add(material);
 			}
 
-			var nodesData = (List<object>)root["nodes"];
-			foreach (Dictionary<string, object> nodeData in nodesData)
+			// Set meshes materials
+			foreach(var ml in meshes)
 			{
-				var meshNode = new MeshNode
+				foreach(var m in ml.Value)
 				{
-					Id = nodeData.GetId()
-				};
-
-				if (!nodeData.ContainsKey("parts"))
-				{
-					continue;
+					m.Material = (from mt in result.Materials where mt.Id == m.MaterialName select mt).First();
 				}
-
-				var partsData = (List<object>)nodeData["parts"];
-				foreach (Dictionary<string, object> partData in partsData)
-				{
-					var material = (from m in result.Materials where m.Id == (string)partData["materialid"] select m).First();
-
-					var meshPart = new MeshNodePart
-					{
-						Mesh = meshes[partData["meshpartid"].ToString()],
-						Material = material
-					};
-
-					meshNode.Parts.Add(meshPart);
-				}
-
-				result.Meshes.Add(meshNode);
 			}
+
+
+			var rootNode = LoadNode((JObject)root["rootNode"], meshes);
+
+			result.Children.Add(rootNode);
 
 			return result;
 		}

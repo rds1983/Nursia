@@ -36,11 +36,11 @@ namespace ModelViewer
 
 			Nrs.Game = this;
 
-			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\orc.n3t");
+			var data = File.ReadAllText(@"D:\Projects\Nursia\temp\swordsman\Model.n3t");
 			_model = Sprite3D.LoadFromJson(data, 
 				n =>
 				{
-					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples", n)))
+					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\temp\swordsman", n)))
 					{
 						return Texture2D.FromStream(GraphicsDevice, stream);
 					}
@@ -104,7 +104,7 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.Meshes[0].Transform = Matrix.CreateRotationX(MathHelper.ToRadians(270)) *
+			_model.Children[0].Transform = Matrix.CreateRotationX(MathHelper.ToRadians(270)) *
 				Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
 			//			GraphicsDevice.BlendState = BlendState.Opaque;

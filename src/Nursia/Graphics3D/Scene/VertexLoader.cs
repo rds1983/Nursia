@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.Utilities;
 using System;
@@ -11,7 +12,7 @@ namespace Nursia.Graphics3D.Scene
 	{
 		VertexDeclaration VertexDeclaration { get; }
 
-		VertexBuffer CreateVertexBuffer(List<object> data);
+		VertexBuffer CreateVertexBuffer(JArray data);
 	}
 
 	public abstract class VertexLoader<T>: IVertexLoader where T: struct, IVertexType
@@ -35,7 +36,7 @@ namespace Nursia.Graphics3D.Scene
 
 		public abstract int FloatsPerElement { get; }
 
-		public VertexBuffer CreateVertexBuffer(List<object> input)
+		public VertexBuffer CreateVertexBuffer(JArray input)
 		{
 			if (input.Count % FloatsPerElement != 0)
 			{
@@ -60,7 +61,7 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
-		protected float ReadFloat(List<object> data, ref int index)
+		protected float ReadFloat(JArray data, ref int index)
 		{
 			var oldIndex = index;
 			++index;
@@ -68,14 +69,14 @@ namespace Nursia.Graphics3D.Scene
 			return data[oldIndex].ToFloat();
 		}
 
-		protected abstract T ReadElement(List<object> data, ref int index);
+		protected abstract T ReadElement(JArray data, ref int index);
 	}
 
 	internal class VertexPositionNormalTextureLoader : VertexLoader<VertexPositionNormalTexture>
 	{
 		public override int FloatsPerElement => 8;
 
-		protected override VertexPositionNormalTexture ReadElement(List<object> data, ref int floatIndex)
+		protected override VertexPositionNormalTexture ReadElement(JArray data, ref int floatIndex)
 		{
 			return new VertexPositionNormalTexture(
 				new Vector3
@@ -103,7 +104,7 @@ namespace Nursia.Graphics3D.Scene
 	{
 		public override int FloatsPerElement => 16;
 
-		protected override VertexPositionNormalTextureBlend ReadElement(List<object> data, ref int floatIndex)
+		protected override VertexPositionNormalTextureBlend ReadElement(JArray data, ref int floatIndex)
 		{
 			return new VertexPositionNormalTextureBlend(
 				new Vector3

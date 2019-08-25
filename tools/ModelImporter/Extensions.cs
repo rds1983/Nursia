@@ -4,9 +4,19 @@ namespace Nursia.ModelImporter
 {
 	static class Extensions
 	{
-		public static string Serialize(this float f)
+		public static string Serialize(this object f)
 		{
-			return f.ToString(CultureInfo.InvariantCulture);
+			if (f == null)
+			{
+				return "0";
+			}
+
+			if (f is float)
+			{
+				return ((float)f).ToString(CultureInfo.InvariantCulture);
+			}
+
+			return f.ToString();
 		}
 	}
 }

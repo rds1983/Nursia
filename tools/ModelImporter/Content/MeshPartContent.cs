@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace Nursia.ModelImporter.Content
@@ -17,8 +18,13 @@ namespace Nursia.ModelImporter.Content
 
 		public MaterialContent Material { get; set; }
 
-		public float[,] Vertices { get; set; }
+		public object[,] Vertices { get; set; }
 
-		public Type VertexType { get; set; }
+		public VertexDeclaration VertexDeclaration { get; set; }
+
+		public Dictionary<string, List<BoneWeight>> BoneWeights { get; set; }
+
+		public int ElementsPerRowWithoutBones { get; set; }
+		public int ElementsPerRow { get; set; }
 	}
 }

@@ -13,7 +13,6 @@ using Assimp.Unmanaged;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Utilities;
-using Nursia.Graphics3D.Utils.Vertices;
 using Nursia.ModelImporter.Content;
 using Quaternion = Microsoft.Xna.Framework.Quaternion;
 
@@ -219,8 +218,7 @@ namespace Nursia.ModelImporter
 		private Dictionary<string, FbxPivot> _pivots;              // The transformation pivots.
 
 		// XNA content
-		private NodeContent _rootNode;
-		private List<MaterialContent> _materials;
+		private ModelContent _result;
 
 		// This is used to enable backwards compatibility with
 		// XNA providing a model as expected from the original
@@ -249,7 +247,7 @@ namespace Nursia.ModelImporter
 		/// </summary>
 		public bool XnaComptatible { get; set; }
 
-		public SceneContent Import(string filename)
+		public ModelContent Import(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException("filename");
@@ -267,6 +265,7 @@ namespace Nursia.ModelImporter
 				catch { }
 			}
 
+			_result = new ModelContent();
 			using (var importer = new AssimpContext())
 			{
 				// FBXPreservePivotsConfig(false) can be set to remove transformation
@@ -323,23 +322,64 @@ namespace Nursia.ModelImporter
 				ImportNodes();      // Create _pivots and _rootNode (incl. children).
 				ImportSkeleton();   // Create skeleton (incl. animations) and add to _rootNode.
 
-				// If we have a simple hierarchy with no bones and just the one
-				// mesh, we can flatten it out so the mesh is the root node.
-				if (_rootNode.Children.Count == 1 && _rootNode.Children[0] is MeshContent)
+				// Assign nodes ids
+				var boneIds = new Dictionary<string, int>();
+				var boneId = 1;
+				ProcessNodeRecursively(_result.RootBone, n =>
 				{
-					var absXform = _rootNode.Children[0].AbsoluteTransform;
-					_rootNode = _rootNode.Children[0];
-					_rootNode.Transform = absXform;
+					var asBone = n as BoneContent;
+					if (asBone != null)
+					{
+						boneIds[asBone.Name] = boneId;
+						asBone.BoneId = boneId;
+						++boneId;
+					}
+				});
+
+				foreach(var m in _result.Meshes)
+				{
+					foreach(var part in m.Parts)
+					{
+						if (part.BoneWeights == null)
+						{
+							continue;
+						}
+
+						var maxIdx = part.ElementsPerRowWithoutBones + 4;
+						var vertexIdxs = new Dictionary<int, int>();
+						foreach (var pair in part.BoneWeights)
+						{
+							boneId = boneIds[pair.Key];
+
+							foreach(var bw in pair.Value)
+							{
+								int idx;
+
+								if (!vertexIdxs.TryGetValue(bw.VertexId, out idx))
+								{
+									idx = part.ElementsPerRowWithoutBones;
+									vertexIdxs[bw.VertexId] = idx;
+								}
+
+								if (idx < maxIdx)
+								{
+									part.Vertices[bw.VertexId, idx] = boneId;
+									part.Vertices[bw.VertexId, idx + 4] = bw.Weight;
+
+									++vertexIdxs[bw.VertexId];
+								} else
+								{
+									Nrs.LogWarn("Vertex {0} has more than 4 bones.", bw.VertexId);
+								}
+							}
+						}
+					}
 				}
 
 				_scene.Clear();
 			}
 
-			return new SceneContent
-			{
-				Root = _rootNode,
-				Materials = _materials
-			};
+			return _result;
 		}
 
 		/// <summary>
@@ -347,7 +387,6 @@ namespace Nursia.ModelImporter
 		/// </summary>
 		private void ImportXnaMaterials()
 		{
-			_materials = new List<MaterialContent>();
 			foreach (var aiMaterial in _scene.Materials)
 			{
 				// TODO: What about AlphaTestMaterialContent, DualTextureMaterialContent, 
@@ -385,7 +424,7 @@ namespace Nursia.ModelImporter
 				if (aiMaterial.HasShininessStrength)
 					material.SpecularPower = aiMaterial.Shininess;
 
-				_materials.Add(material);
+				_result.Materials.Add(material);
 			}
 		}
 
@@ -402,13 +441,31 @@ namespace Nursia.ModelImporter
 			return texture;
 		}
 
+		private void ProcessNodeRecursively(BoneContent node, Action<BoneContent> action)
+		{
+			if (node == null)
+			{
+				return;
+			}
+
+			action(node);
+
+			if (node.Children != null)
+			{
+				foreach(var child in node.Children)
+				{
+					ProcessNodeRecursively(child, action);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Converts all Assimp nodes to XNA nodes. (Nodes representing bones are excluded!)
 		/// </summary>
 		private void ImportNodes()
 		{
 			_pivots = new Dictionary<string, FbxPivot>();
-			_rootNode = ImportNodes(_scene.RootNode, null, null);
+			ImportNodes(_scene.RootNode, null);
 		}
 
 		/// <summary>
@@ -416,17 +473,15 @@ namespace Nursia.ModelImporter
 		/// </summary>
 		/// <param name="aiNode">The node.</param>
 		/// <param name="aiParent">The parent node. Can be <see langword="null"/>.</param>
-		/// <param name="parent">The <paramref name="aiParent"/> node converted to XNA.</param>
-		/// <returns>The XNA <see cref="NodeContent"/>.</returns>
+		/// <returns>The XNA <see cref="BoneContent"/>.</returns>
 		/// <remarks>
 		/// It may be necessary to skip certain "preserve pivot" nodes in the hierarchy. The
 		/// converted node needs to be relative to <paramref name="aiParent"/>, not <c>node.Parent</c>.
 		/// </remarks>
-		private NodeContent ImportNodes(Node aiNode, Node aiParent, NodeContent parent)
+		private void ImportNodes(Node aiNode, Node aiParent)
 		{
 			Debug.Assert(aiNode != null);
 
-			NodeContent node = null;
 			if (aiNode.HasMeshes)
 			{
 				var mesh = new MeshContent
@@ -443,8 +498,8 @@ namespace Nursia.ModelImporter
 
 					try
 					{
-						var geom = CreateGeometry(mesh, aiMesh);
-						mesh.Parts.Add(geom);
+						var meshPart = CreateMeshPart(mesh, aiMesh);
+						mesh.Parts.Add(meshPart);
 					}
 					catch (Exception ex)
 					{
@@ -452,7 +507,7 @@ namespace Nursia.ModelImporter
 					}
 				}
 
-				node = mesh;
+				_result.Meshes.Add(mesh);
 			}
 			else if (aiNode.Name.Contains("_$AssimpFbx$"))
 			{
@@ -502,9 +557,9 @@ namespace Nursia.ModelImporter
 				else
 					throw new Exception(string.Format("Unknown $AssimpFbx$ node: \"{0}\"", aiNode.Name));
 			}
-			else if (!_bones.Contains(aiNode)) // Ignore bones.
+/*			else if (!_bones.Contains(aiNode)) // Ignore bones.
 			{
-				node = new NodeContent
+				node = new BoneContent
 				{
 					Name = aiNode.Name,
 					Transform = ToXna(GetRelativeTransform(aiNode, aiParent))
@@ -529,71 +584,65 @@ namespace Nursia.ModelImporter
 							node.Animations.Add(animationContent.Name, animationContent);
 					}
 				}
-			}
-
-			Debug.Assert(parent != null);
+			}*/
 
 			foreach (var child in aiNode.Children)
-				ImportNodes(child, aiParent, parent);
-
-			return node;
+				ImportNodes(child, aiParent);
 		}
 
-		private MeshPartContent CreateGeometry(MeshContent mesh, Mesh aiMesh)
+		private MeshPartContent CreateMeshPart(MeshContent mesh, Mesh aiMesh)
 		{
 			var geom = new MeshPartContent
 			{
-				Material = _materials[aiMesh.MaterialIndex]
+				Material = _result.Materials[aiMesh.MaterialIndex]
 			};
 
 			// Vertices
-			Type type = null;
-			int floatsCount = 0;
+			var elements = new List<VertexElement>();
+			var offset = 0;
+			var elementsPerRow = 0;
+			elements.Add(new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0));
+			offset += 12;
+			elementsPerRow += 3;
 
-			if (!aiMesh.HasBones)
+			// Colors
+			for (var i = 0; i < aiMesh.VertexColorChannelCount; ++i)
 			{
-				if (aiMesh.VertexColorChannelCount == 1 &&
-					aiMesh.TextureCoordinateChannelCount == 0 &&
-					!aiMesh.HasNormals)
-				{
-					type = typeof(VertexPositionColor);
-					floatsCount = 6;
-				}
-				else if (aiMesh.VertexColorChannelCount == 1 &&
-						aiMesh.TextureCoordinateChannelCount == 1 &&
-						!aiMesh.HasNormals)
-				{
-					type = typeof(VertexPositionColorTexture);
-					floatsCount = 8;
-				}
-				else if (aiMesh.VertexColorChannelCount == 0 &&
-						aiMesh.TextureCoordinateChannelCount == 1 &&
-						aiMesh.HasNormals)
-				{
-					type = typeof(VertexPositionNormalTexture);
-					floatsCount = 8;
-				}
-				else if (aiMesh.VertexColorChannelCount == 0 &&
-						aiMesh.TextureCoordinateChannelCount == 1 &&
-						!aiMesh.HasNormals)
-				{
-					type = typeof(VertexPositionTexture);
-					floatsCount = 6;
-				}
-			} else if (aiMesh.VertexColorChannelCount == 0 &&
-						aiMesh.TextureCoordinateChannelCount == 1 &&
-						aiMesh.HasNormals)
-			{
-				type = typeof(VertexPositionNormalTextureBlend);
-				floatsCount = 16;
+				elements.Add(new VertexElement(offset, VertexElementFormat.Color, VertexElementUsage.Color, 0));
+				offset += 3;
+				elementsPerRow += 3;
 			}
 
-			if (type == null)
+			if (aiMesh.HasNormals)
 			{
-				throw new Exception("Vertex type isn't supported");
+				elements.Add(new VertexElement(offset, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0));
+				offset += 12;
+				elementsPerRow += 3;
 			}
 
-			var data = new float[aiMesh.Vertices.Count, floatsCount];
+			// Textures
+			for (var i = 0; i < aiMesh.TextureCoordinateChannelCount; ++i)
+			{
+				elements.Add(new VertexElement(offset, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0));
+				offset += 8;
+				elementsPerRow += 2;
+			}
+
+			geom.ElementsPerRowWithoutBones = elementsPerRow;
+
+			if (aiMesh.HasBones)
+			{
+				elements.Add(new VertexElement(offset, VertexElementFormat.Short4, VertexElementUsage.BlendIndices, 0));
+				offset += 8;
+				elementsPerRow += 4;
+
+				elements.Add(new VertexElement(offset, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0));
+				offset += 16;
+				elementsPerRow += 4;
+			}
+			geom.ElementsPerRow = elementsPerRow;
+
+			var data = new object[aiMesh.Vertices.Count, elementsPerRow];
 			for (var i = 0; i < aiMesh.Vertices.Count; ++i)
 			{
 				var idx = 0;
@@ -603,28 +652,11 @@ namespace Nursia.ModelImporter
 				data[i, idx++] = v.Y;
 				data[i, idx++] = v.Z;
 
-				v = Vector3.Zero;
-				if (aiMesh.Normals.Count > i)
+				// Colors
+				for(var j = 0; j < aiMesh.VertexColorChannelCount; ++j)
 				{
-					v = ToXna(aiMesh.Normals[i]);
-				}
-				data[i, idx++] = v.X;
-				data[i, idx++] = v.Y;
-				data[i, idx++] = v.Z;
-
-				if (aiMesh.TextureCoordinateChannelCount > 0)
-				{
-					if (aiMesh.TextureCoordinateChannels[0].Count > i)
-					{
-						v = ToXna(aiMesh.TextureCoordinateChannels[0][i]);
-					}
-					data[i, idx++] = v.X;
-					data[i, idx++] = v.Y;
-				}
-
-				if (aiMesh.VertexColorChannelCount > 0)
-				{
-					if (aiMesh.VertexColorChannels[0].Count > i)
+					v = Vector3.Zero;
+					if (aiMesh.VertexColorChannels[j].Count > i)
 					{
 						v = ToXna(aiMesh.VertexColorChannels[0][i]);
 					}
@@ -632,29 +664,48 @@ namespace Nursia.ModelImporter
 					data[i, idx++] = v.Y;
 					data[i, idx++] = v.Z;
 				}
-			}
 
-			if (aiMesh.HasBones)
-			{
-				foreach(var bone in aiMesh.Bones)
+				// Normal
+				if (aiMesh.HasNormals)
 				{
-					if (bone.HasVertexWeights)
+					v = Vector3.Zero;
+					if (aiMesh.Normals.Count > i)
 					{
-						foreach (var weight in bone.VertexWeights)
-						{
-							if (weight.VertexID < 0 && weight.VertexID >= data.GetLength(0))
-							{
-								continue;
-							}
-
-							var idx = 9;
-							data[weight.VertexID, idx++] = weight.Weight;
-						}
+						v = ToXna(aiMesh.Normals[i]);
 					}
+					data[i, idx++] = v.X;
+					data[i, idx++] = v.Y;
+					data[i, idx++] = v.Z;
+				}
+
+				// Textures
+				for (var j = 0; j < aiMesh.TextureCoordinateChannelCount; ++j)
+				{
+					v = Vector3.Zero;
+					if (aiMesh.TextureCoordinateChannels[j].Count > i)
+					{
+						v = ToXna(aiMesh.TextureCoordinateChannels[0][i]);
+					}
+					data[i, idx++] = v.X;
+					data[i, idx++] = v.Y;
+				}
+
+				if (aiMesh.HasBones)
+				{
+					// Filler values
+					data[i, idx++] = 0;
+					data[i, idx++] = 0;
+					data[i, idx++] = 0;
+					data[i, idx++] = 0;
+
+					data[i, idx++] = 0.0f;
+					data[i, idx++] = 0.0f;
+					data[i, idx++] = 0.0f;
+					data[i, idx++] = 0.0f;
 				}
 			}
 
-			geom.VertexType = type;
+			geom.VertexDeclaration = new VertexDeclaration(elements.ToArray());
 			geom.Vertices = data;
 
 			var indices = aiMesh.GetIndices();
@@ -667,6 +718,34 @@ namespace Nursia.ModelImporter
 				}
 
 				geom.Indices.Add((short)idx);
+			}
+
+			if (aiMesh.HasBones)
+			{
+				var xnaWeights = new Dictionary<string, List<BoneWeight>>();
+				for (var i = 0; i < aiMesh.VertexCount; i++)
+				{
+					for (var boneIndex = 0; boneIndex < aiMesh.BoneCount; boneIndex++)
+					{
+						var bone = aiMesh.Bones[boneIndex];
+						foreach (var weight in bone.VertexWeights)
+						{
+							if (weight.VertexID != i)
+								continue;
+
+							List<BoneWeight> weights;
+							if (!xnaWeights.TryGetValue(bone.Name, out weights))
+							{
+								weights = new List<BoneWeight>();
+								xnaWeights[bone.Name] = weights;
+							}
+
+							weights.Add(new BoneWeight(weight.VertexID, weight.Weight));
+						}
+					}
+				}
+
+				geom.BoneWeights = xnaWeights;
 			}
 
 			return geom;
@@ -758,8 +837,7 @@ namespace Nursia.ModelImporter
 				return;
 
 			// Convert nodes to bones and attach to root node.
-			var rootBoneContent = (BoneContent)ImportBones(_rootBone, _rootBone.Parent, null);
-			_rootNode.Children.Add(rootBoneContent);
+			_result.RootBone = ImportBones(_rootBone, _rootBone.Parent, null);
 
 			if (!_scene.HasAnimations)
 				return;
@@ -768,7 +846,7 @@ namespace Nursia.ModelImporter
 			foreach (var animation in _scene.Animations)
 			{
 				var animationContent = ImportAnimation(animation);
-				rootBoneContent.Animations.Add(animationContent.Name, animationContent);
+				_result.RootBone.Animations.Add(animationContent.Name, animationContent);
 			}
 		}
 
@@ -778,13 +856,13 @@ namespace Nursia.ModelImporter
 		/// <param name="aiNode">The node.</param>
 		/// <param name="aiParent">The parent node.</param>
 		/// <param name="parent">The <paramref name="aiParent"/> node converted to XNA.</param>
-		/// <returns>The XNA <see cref="NodeContent"/>.</returns>
-		private NodeContent ImportBones(Node aiNode, Node aiParent, NodeContent parent)
+		/// <returns>The XNA <see cref="BoneContent"/>.</returns>
+		private BoneContent ImportBones(Node aiNode, Node aiParent, BoneContent parent)
 		{
 			Debug.Assert(aiNode != null);
 			Debug.Assert(aiParent != null);
 
-			NodeContent node = null;
+			BoneContent node = null;
 			if (!aiNode.Name.Contains("_$AssimpFbx$")) // Ignore pivot nodes
 			{
 				const string mangling = "_$AssimpFbxNull$"; // Null leaf nodes are helpers
@@ -792,7 +870,7 @@ namespace Nursia.ModelImporter
 				if (aiNode.Name.Contains(mangling))
 				{
 					// Null leaf node
-					node = new NodeContent
+					node = new BoneContent
 					{
 						Name = aiNode.Name.Replace(mangling, string.Empty),
 						Transform = ToXna(GetRelativeTransform(aiNode, aiParent))

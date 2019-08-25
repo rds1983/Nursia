@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\Nursia\Graphics3D\Vertices\VertexPositionNormalTextureBlend.cs" Link="VertexPositionNormalTextureBlend.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\..\deps\assimp\Assimp64.dll" Link="Assimp64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

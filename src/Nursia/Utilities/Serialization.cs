@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
+using Nursia.Graphics3D.Scene;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,7 +57,7 @@ namespace Nursia.Utilities
 			var result = string.Empty;
 
 			JToken obj;
-			if (data.TryGetValue("id", out obj) && obj != null)
+			if (data.TryGetValue(Sprite3D.IdName, out obj) && obj != null)
 			{
 				result = obj.ToString();
 			}
@@ -79,6 +81,11 @@ namespace Nursia.Utilities
 			var obj = EnsureObject(data, key);
 
 			return obj != null ? obj.ToString() : string.Empty;
+		}
+
+		public static T ParseEnum<T>(this JToken data)
+		{
+			return (T)Enum.Parse(typeof(T), data.ToString());
 		}
 	}
 }

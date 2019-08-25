@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace Nursia.ModelImporter.Content
 {
-	class MeshContent: NodeContent
+	class MeshContent: BaseContent
 	{
 		private readonly List<MeshPartContent> _parts = new List<MeshPartContent>();
 
@@ -12,6 +13,11 @@ namespace Nursia.ModelImporter.Content
 			{
 				return _parts;
 			}
+		}
+
+		public Matrix Transform
+		{
+			get; set;
 		}
 	}
 }

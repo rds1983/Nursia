@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.ModelImporter.Content;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,10 @@ namespace Nursia.ModelImporter
 {
 	class Exporter
 	{
-		private const string IdName = "id";
+		private const string IdName = "name";
 
 		private int _level = 0;
-		private SceneContent _scene;
+		private ModelContent _scene;
 
 		private class BracersScope : IDisposable
 		{
@@ -129,7 +130,7 @@ namespace Nursia.ModelImporter
 			WriteFloatArray(hasComma, v.X, v.Y, v.Z);
 		}
 
-		private void TraverseTree(NodeContent root, Action<NodeContent> action)
+		private void TraverseTree(BoneContent root, Action<BoneContent> action)
 		{
 			if (root == null)
 			{
@@ -144,89 +145,101 @@ namespace Nursia.ModelImporter
 			}
 		}
 
+		private void WriteDeclaration(VertexDeclaration vertexDeclaration)
+		{
+			WritePropertyStart("declaration");
+
+			using (var declarationScope = CreateSquareBracersScope(false, true))
+			{
+				var elements = vertexDeclaration.GetVertexElements();
+				for(var i = 0; i < elements.Length; ++i)
+				{
+					var element = elements[i];
+					WriteIndent();
+					using (var elementScope = CreateCurlyBracersScope(false, i < elements.Length - 1))
+					{
+						WriteSimpleProperty("offset", element.Offset.ToString());
+						WriteSimpleProperty("format", element.VertexElementFormat.ToString());
+						WriteSimpleProperty("usage", element.VertexElementUsage.ToString());
+					}
+				}
+			}
+		}
+
 		private void WriteMeshes()
 		{
-			var meshes = new List<MeshContent>();
-			TraverseTree(_scene.Root, n =>
+			var totalParts = 0;
+			foreach (var mesh in _scene.Meshes)
 			{
-				var mesh = n as MeshContent;
-				if (mesh == null)
+				foreach (var part in mesh.Parts)
 				{
-					return;
+					++totalParts;
 				}
-
-				meshes.Add(mesh);
-			});
+			}
 
 			WritePropertyStart("meshes");
 			using (var meshesScope = CreateSquareBracersScope(false, true))
 			{
-				for (var i = 0; i < meshes.Count; ++i)
+				var idx = 0;
+				foreach(var mesh in _scene.Meshes)
 				{
-					var mesh = meshes[i];
-					var hasComma = i < meshes.Count - 1;
-					using (var meshScope = CreateCurlyBracersScope(true, hasComma))
+					foreach (var part in mesh.Parts)
 					{
-						WriteSimpleProperty(IdName, mesh.Name);
-						WritePropertyStart("parts");
-						using (var partsScope = CreateSquareBracersScope(false))
+						using (var partScope = CreateCurlyBracersScope(true, idx < totalParts))
 						{
-							foreach (var part in mesh.Parts)
+							WriteSimpleProperty("meshNodeName", mesh.Name);
+							WriteDeclaration(part.VertexDeclaration);
+							WriteSimpleProperty("elementsPerRow", part.ElementsPerRow.ToString());
+							WritePropertyStart("indices");
+							using (var indicesScope = CreateSquareBracersScope(false, true))
 							{
-								hasComma = i < mesh.Parts.Count - 1;
-								using (var partScope = CreateCurlyBracersScope(true, hasComma))
+								WriteIndent();
+								for (var j = 0; j < part.Indices.Count; ++j)
 								{
-									WriteSimpleProperty("declaration", part.VertexType.ToString());
-									WritePropertyStart("indices");
-									using (var indicesScope = CreateSquareBracersScope(false, true))
+									Write(part.Indices[j].ToString());
+									if (j < part.Indices.Count - 1)
 									{
-										WriteIndent();
-										for (var j = 0; j < part.Indices.Count; ++j)
+										Write(", ");
+
+										if (j > 0 && j % 20 == 0)
 										{
-											Write(part.Indices[j].ToString());
-											if (j < part.Indices.Count - 1)
-											{
-												Write(", ");
-
-												if (j > 0 && j % 20 == 0)
-												{
-													WriteLine(string.Empty);
-													WriteIndent();
-												}
-											}
-										}
-										WriteLine(string.Empty);
-									}
-									WritePropertyStart("vertices");
-									using (var verticesScope = CreateSquareBracersScope(false, true))
-									{
-										WriteIndent();
-
-										var cnt = 0;
-										var size = part.Vertices.GetLength(0) * part.Vertices.GetLength(1);
-										for (var j = 0; j < part.Vertices.GetLength(0); ++j)
-										{
-											for (var k = 0; k < part.Vertices.GetLength(1); ++k)
-											{
-												Write(part.Vertices[j, k].Serialize());
-												if (cnt < size - 1)
-												{
-													Write(", ");
-												}
-
-												++cnt;
-											}
 											WriteLine(string.Empty);
-											if (j < part.Vertices.GetLength(0) - 1)
-											{
-												WriteIndent();
-											}
+											WriteIndent();
 										}
 									}
-									WriteSimpleProperty("material", part.Material.Name);
+								}
+								WriteLine(string.Empty);
+							}
+							WritePropertyStart("vertices");
+							using (var verticesScope = CreateSquareBracersScope(false, true))
+							{
+								WriteIndent();
+
+								var cnt = 0;
+								var size = part.Vertices.GetLength(0) * part.Vertices.GetLength(1);
+								for (var j = 0; j < part.Vertices.GetLength(0); ++j)
+								{
+									for (var k = 0; k < part.Vertices.GetLength(1); ++k)
+									{
+										Write(part.Vertices[j, k].Serialize());
+										if (cnt < size - 1)
+										{
+											Write(", ");
+										}
+
+										++cnt;
+									}
+									WriteLine(string.Empty);
+									if (j < part.Vertices.GetLength(0) - 1)
+									{
+										WriteIndent();
+									}
 								}
 							}
+							WriteSimpleProperty("material", part.Material.Name, false);
 						}
+
+						++idx;
 					}
 				}
 			}
@@ -249,22 +262,14 @@ namespace Nursia.ModelImporter
 			}
 		}
 
-		private void WriteNodes(NodeContent root)
+		private void WriteNodes(BoneContent root)
 		{
 			WriteSimpleProperty(IdName, root.Name);
 			WritePropertyStart("transform");
 			WriteMatrix(root.Transform);
 
-			var type = "node";
-			if (root is BoneContent)
-			{
-				type = "bone";
-			} else if (root is MeshContent)
-			{
-				type = "mesh";
-			}
+			WriteSimpleProperty("boneId", root.BoneId.ToString());
 
-			WriteSimpleProperty("type", type, root.Children.Count > 0);
 			if (root.Children.Count > 0)
 			{
 				WritePropertyStart("children");
@@ -272,6 +277,11 @@ namespace Nursia.ModelImporter
 				{
 					foreach (var child in root.Children)
 					{
+						if (child is MeshContent)
+						{
+							continue;
+						}
+
 						WriteIndent();
 						using (var nodeScope = CreateCurlyBracersScope(false, true))
 						{
@@ -282,7 +292,7 @@ namespace Nursia.ModelImporter
 			}
 		}
 
-		public string Export(SceneContent scene)
+		public string Export(ModelContent scene)
 		{
 			_builder.Clear();
 			_scene = scene;
@@ -293,10 +303,10 @@ namespace Nursia.ModelImporter
 				WriteMeshes();
 				WriteMaterials();
 
-				WritePropertyStart("rootNode");
+				WritePropertyStart("rootBone");
 				using (var nodesScope = CreateCurlyBracersScope(false, false))
 				{
-					WriteNodes(scene.Root);
+					WriteNodes(scene.RootBone);
 				}
 			}
 

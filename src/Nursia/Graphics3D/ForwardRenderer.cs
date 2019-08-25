@@ -40,6 +40,8 @@ namespace Nursia.Graphics3D
 				throw new Exception("Begin wasnt called");
 			}
 
+			_renderContext.BoneTransforms = model.CalculateBoneTransforms();
+
 			_renderContext.Transform = model.Transform;
 			_renderContext.Camera = camera;
 			foreach (var mesh in model.Meshes)

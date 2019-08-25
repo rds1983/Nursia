@@ -24,6 +24,8 @@ namespace Nursia.Graphics3D
 
 		public Matrix Transform { get; set; }
 
+		public Matrix[] BoneTransforms { get; set; }
+
 		public RenderContext()
 		{
 			Transform = Matrix.Identity;

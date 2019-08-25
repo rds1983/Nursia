@@ -8,7 +8,7 @@ namespace Nursia
 	public static class Assets
 	{
 		private static SpriteFont _debugFont;
-		private static Effect[] _defaultEffect = new Effect[4];
+		private static Effect[] _defaultEffect = new Effect[9];
 
 		private static Assembly Assembly
 		{
@@ -41,7 +41,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect GetDefaultEffect(bool lightning, bool texture)
+		internal static Effect GetDefaultEffect(bool lightning, int bones)
 		{
 			var key = 0;
 			if (lightning)
@@ -49,9 +49,9 @@ namespace Nursia
 				key |= 1;
 			}
 
-			if (texture)
+			if (bones > 0)
 			{
-				key |= 2;
+				key |= bones << 1;
 			}
 
 			if (_defaultEffect[key] != null)
@@ -65,9 +65,9 @@ namespace Nursia
 				resourceKey += "_LIGHTNING";
 			}
 
-			if (texture)
+			if (bones > 0)
 			{
-				resourceKey += "_TEXTURE";
+				resourceKey += "_BONES_" + bones.ToString();
 			}
 
 #if MONOGAME

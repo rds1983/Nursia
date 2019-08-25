@@ -7,11 +7,9 @@
 
 #include "Macros.fxh"
 
-#ifdef TEXTURE
+#define MAX_BONES   72
 
 DECLARE_TEXTURE(_texture, 0);
-
-#endif
 
 BEGIN_CONSTANTS
 
@@ -26,9 +24,10 @@ float4 _diffuseColor;
 
 MATRIX_CONSTANTS
 
-float4x4 _world;
 float4x4 _worldViewProj;
 float3x3 _worldInverseTranspose;
+
+float4x3 _bones[MAX_BONES];
 
 END_CONSTANTS
 
@@ -37,17 +36,19 @@ struct VSInput
     float4 Position : SV_POSITION;
     float3 Normal   : NORMAL;
     float2 TexCoord : TEXCOORD0;
+
+#ifdef BONES
+    int4   Indices: BLENDINDICES0;
+    float4 Weights: BLENDWEIGHT0;
+#endif
 };
 
 struct VSOutput
 {
-    float4 Position : SV_POSITION;
-#ifdef TEXTURE	
-    float2 TexCoord : TEXCOORD0;
-#endif
+    float4 Position: SV_POSITION;
+    float2 TexCoord: TEXCOORD0;
 
 #ifdef LIGHTNING
-	float3 WorldPosition: TEXCOORD1;
 	float3 WorldNormal: TEXCOORD2;
 #endif
 };
@@ -55,15 +56,25 @@ struct VSOutput
 VSOutput VertexShaderFunction(VSInput input)
 {
     VSOutput output = (VSOutput)0;
+    
+#ifdef BONES
+    float4x3 skinning = 0;
+    [unroll]
+    for (int i = 0; i < BONES; i++)
+    {
+        skinning += _bones[input.Indices[i]] * input.Weights[i];
+    }
+    
+    input.Position.xyz = mul(input.Position, skinning);
+#ifdef LIGHTNING
+    input.Normal = mul(input.Normal, (float3x3)skinning);    
+#endif
+#endif    
 
     output.Position = mul(input.Position, _worldViewProj);
-	
-#ifdef TEXTURE
 	output.TexCoord = input.TexCoord;
-#endif
-
+    
 #ifdef LIGHTNING
-	output.WorldPosition = mul(input.Position, _world).xyz;
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
 #endif
 
@@ -80,11 +91,7 @@ float3 ComputeLighting(float3 normalVector, float3 lightDirection, float3 lightC
 
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
-#ifdef TEXTURE
     float4 color = SAMPLE_TEXTURE(_texture, input.TexCoord);
-#else
-	float4 color = float4(1, 1, 1, 1);
-#endif
 
 #ifdef LIGHTNING
 	float3 result = float3(0, 0, 0);

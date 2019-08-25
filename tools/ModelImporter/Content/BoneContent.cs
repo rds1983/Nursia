@@ -25,19 +25,6 @@ namespace Nursia.ModelImporter.Content
 
 		public BoneContent Parent { get; set; }
 
-		public Matrix AbsoluteTransform
-		{
-			get
-			{
-				if (Parent != null)
-				{
-					return Transform * Parent.AbsoluteTransform;
-				}
-
-				return Transform;
-			}
-		}
-
 		public Dictionary<string, AnimationContent> Animations
 		{
 			get

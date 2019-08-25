@@ -48,7 +48,7 @@ namespace Nursia.Graphics3D.Scene
 
 			action(root);
 
-			foreach(var child in root.Children)
+			foreach (var child in root.Children)
 			{
 				TraverseBones(child, action);
 			}
@@ -62,15 +62,14 @@ namespace Nursia.Graphics3D.Scene
 		internal Matrix[] CalculateBoneTransforms()
 		{
 			if (_boneTransforms == null ||
-				_boneTransforms.Length != Bones.Count + 1)
+				_boneTransforms.Length != Bones.Count)
 			{
-				_boneTransforms = new Matrix[Bones.Count + 1];
+				_boneTransforms = new Matrix[Bones.Count];
 			}
 
-			_boneTransforms[0] = Matrix.Identity;
-			for(var i = 0; i < Bones.Count; ++i)
+			for (var i = 0; i < Bones.Count; ++i)
 			{
-				_boneTransforms[i + 1] = Bones[i].AbsoluteTransform;
+				_boneTransforms[i] = Bones[i].AbsoluteTransform;
 			}
 
 			return _boneTransforms;

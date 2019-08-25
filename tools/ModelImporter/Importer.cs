@@ -324,7 +324,7 @@ namespace Nursia.ModelImporter
 
 				// Assign nodes ids
 				var boneIds = new Dictionary<string, int>();
-				var boneId = 1;
+				var boneId = 0;
 				ProcessNodeRecursively(_result.RootBone, n =>
 				{
 					var asBone = n as BoneContent;
@@ -345,7 +345,6 @@ namespace Nursia.ModelImporter
 							continue;
 						}
 
-						var maxIdx = part.ElementsPerRowWithoutBones + 4;
 						var vertexIdxs = new Dictionary<int, int>();
 						foreach (var pair in part.BoneWeights)
 						{
@@ -357,14 +356,14 @@ namespace Nursia.ModelImporter
 
 								if (!vertexIdxs.TryGetValue(bw.VertexId, out idx))
 								{
-									idx = part.ElementsPerRowWithoutBones;
+									idx = 0;
 									vertexIdxs[bw.VertexId] = idx;
 								}
 
-								if (idx < maxIdx)
+								if (idx < 4)
 								{
-									part.Vertices[bw.VertexId, idx] = boneId;
-									part.Vertices[bw.VertexId, idx + 4] = bw.Weight;
+									part.Vertices[bw.VertexId, part.ElementsPerRowWithoutBones + idx] = boneId;
+									part.Vertices[bw.VertexId, part.ElementsPerRowWithoutBones + idx + 4] = bw.Weight;
 
 									++vertexIdxs[bw.VertexId];
 								} else
@@ -373,6 +372,17 @@ namespace Nursia.ModelImporter
 								}
 							}
 						}
+
+						var bonesCount = 0;
+						foreach(var pair in vertexIdxs)
+						{
+							if (pair.Value > bonesCount)
+							{
+								bonesCount = pair.Value;
+							}
+						}
+
+						part.BonesCount = bonesCount;
 					}
 				}
 

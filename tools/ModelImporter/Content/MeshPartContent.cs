@@ -26,5 +26,7 @@ namespace Nursia.ModelImporter.Content
 
 		public int ElementsPerRowWithoutBones { get; set; }
 		public int ElementsPerRow { get; set; }
+
+		public int BonesCount { get; set; }
 	}
 }

@@ -42,7 +42,10 @@ namespace Nursia.Graphics3D.Scene
 			// Apply the effect and render items
 			var effect = Assets.GetDefaultEffect(!Material.IgnoreLight, (int)BonesPerMesh);
 
-			effect.Parameters["_bones"].SetValue(context.BoneTransforms);
+			if (BonesPerMesh != BonesPerMesh.None)
+			{
+				effect.Parameters["_bones"].SetValue(context.BoneTransforms);
+			}
 
 			device.SetVertexBuffer(VertexBuffer);
 			device.Indices = IndexBuffer;

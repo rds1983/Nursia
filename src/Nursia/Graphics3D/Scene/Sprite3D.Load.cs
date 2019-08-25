@@ -31,10 +31,11 @@ namespace Nursia.Graphics3D.Scene
 				return null;
 			}
 
-			var result = new Bone();
-
-			result.Id = data.GetId();
-			result.Transform = data["transform"].ToMatrix();
+			var result = new Bone
+			{
+				Id = data.GetId(),
+				Transform = data["transform"].ToMatrix()
+			};
 
 			if (data.ContainsKey("children"))
 			{
@@ -88,10 +89,8 @@ namespace Nursia.Graphics3D.Scene
 		private static VertexBuffer LoadVertexBuffer(
 			VertexDeclaration declaration, 
 			int elementsPerRow,
-			JArray data,
-			out BonesPerMesh bonesPerMesh)
+			JArray data)
 		{
-			bonesPerMesh = BonesPerMesh.None;
 			var rowsCount = data.Count / elementsPerRow;
 			var byteData = new byte[rowsCount * declaration.VertexStride];
 
@@ -123,26 +122,6 @@ namespace Nursia.Graphics3D.Scene
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							break;
 						case VertexElementFormat.Short4:
-							if (element.VertexElementUsage == VertexElementUsage.BlendIndices)
-							{
-								if (bonesPerMesh < BonesPerMesh.Four &&
-									((int)data[srcIdx + 2]) > 0 ||
-									((int)data[srcIdx + 3]) > 0)
-								{
-									bonesPerMesh = BonesPerMesh.Four;
-								}
-								else if (bonesPerMesh < BonesPerMesh.Two &&
-									((int)data[srcIdx + 1]) > 0)
-								{
-									bonesPerMesh = BonesPerMesh.Two;
-								}
-								else if (bonesPerMesh < BonesPerMesh.One &&
-									((int)data[srcIdx]) > 0)
-								{
-									bonesPerMesh = BonesPerMesh.One;
-								}
-							}
-
 							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
 							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
 							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
@@ -153,6 +132,8 @@ namespace Nursia.Graphics3D.Scene
 					}
 				}
 			}
+
+
 
 			var result = new VertexBuffer(Nrs.GraphicsDevice, declaration, data.Count, BufferUsage.None);
 			result.SetData(byteData);
@@ -176,8 +157,23 @@ namespace Nursia.Graphics3D.Scene
 				var elementsPerRow = int.Parse(meshData["elementsPerRow"].ToString());
 				var vertices = (JArray)meshData["vertices"];
 
-				BonesPerMesh bonesPerMesh;
-				var vertexBuffer = LoadVertexBuffer(declaration, elementsPerRow, vertices, out bonesPerMesh);
+				var bonesCount = (int)meshData["bonesCount"];
+
+				var bonesPerMesh = BonesPerMesh.None;
+				if (bonesCount >= 3)
+				{
+					bonesPerMesh = BonesPerMesh.Four;
+				}
+				else if (bonesCount == 2)
+				{
+					bonesPerMesh = BonesPerMesh.Two;
+				}
+				else if (bonesCount == 1)
+				{
+					bonesPerMesh = BonesPerMesh.One;
+				}
+
+				var vertexBuffer = LoadVertexBuffer(declaration, elementsPerRow, vertices);
 
 				// var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
 				var indicesData = (JArray)meshData["indices"];
@@ -270,6 +266,7 @@ namespace Nursia.Graphics3D.Scene
 					}
 				}
 
+				b.Index = result.Bones.Count;
 				result.Bones.Add(b);
 			});
 

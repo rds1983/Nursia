@@ -190,6 +190,7 @@ namespace Nursia.ModelImporter
 							WriteSimpleProperty("meshNodeName", mesh.Name);
 							WriteDeclaration(part.VertexDeclaration);
 							WriteSimpleProperty("elementsPerRow", part.ElementsPerRow.ToString());
+							WriteSimpleProperty("bonesCount", part.BonesCount.ToString());
 							WritePropertyStart("indices");
 							using (var indicesScope = CreateSquareBracersScope(false, true))
 							{
@@ -262,7 +263,7 @@ namespace Nursia.ModelImporter
 			}
 		}
 
-		private void WriteNodes(BoneContent root)
+		private void WriteBone(BoneContent root)
 		{
 			WriteSimpleProperty(IdName, root.Name);
 			WritePropertyStart("transform");
@@ -285,7 +286,7 @@ namespace Nursia.ModelImporter
 						WriteIndent();
 						using (var nodeScope = CreateCurlyBracersScope(false, true))
 						{
-							WriteNodes(child);
+							WriteBone(child);
 						}
 					}
 				}
@@ -306,7 +307,7 @@ namespace Nursia.ModelImporter
 				WritePropertyStart("rootBone");
 				using (var nodesScope = CreateCurlyBracersScope(false, false))
 				{
-					WriteNodes(scene.RootBone);
+					WriteBone(scene.RootBone);
 				}
 			}
 

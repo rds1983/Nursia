@@ -7,7 +7,7 @@ namespace Nursia.Graphics3D.Scene
 	{
 		private readonly List<Bone> _children = new List<Bone>();
 
-		public Matrix Transform { get; set; }
+		public Matrix Transform;
 
 		public Matrix AbsoluteTransform
 		{
@@ -31,6 +31,8 @@ namespace Nursia.Graphics3D.Scene
 				return _children;
 			}
 		}
+
+		public int Index { get; set; }
 
 		public Bone()
 		{

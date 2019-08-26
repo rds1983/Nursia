@@ -15,16 +15,6 @@ namespace Nursia.Utilities
 			return Convert.ToSingle(data, CultureInfo.InvariantCulture);
 		}
 
-		public static Matrix ToMatrix(this JToken data)
-		{
-			var floats = (JArray)data;
-
-			return new Matrix(floats[0].ToFloat(), floats[1].ToFloat(), floats[2].ToFloat(), floats[3].ToFloat(),
-				floats[4].ToFloat(), floats[5].ToFloat(), floats[6].ToFloat(), floats[7].ToFloat(),
-				floats[8].ToFloat(), floats[9].ToFloat(), floats[10].ToFloat(), floats[11].ToFloat(),
-				floats[12].ToFloat(), floats[13].ToFloat(), floats[14].ToFloat(), floats[15].ToFloat());
-		}
-
 		public static Vector3 ToVector3(this JToken data)
 		{
 			var floats = (JArray)data;

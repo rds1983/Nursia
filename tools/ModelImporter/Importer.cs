@@ -220,25 +220,19 @@ namespace Nursia.ModelImporter
 		// XNA content
 		private ModelContent _result;
 
-		// This is used to enable backwards compatibility with
-		// XNA providing a model as expected from the original
-		// FbxImporter and XImporter.
-		private readonly bool _xnaCompatible;
-
 		private readonly string _importerName;
 
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
 		public Importer()
-			: this("Importer", false)
+			: this("Importer")
 		{
 		}
 
-		internal Importer(string importerName, bool xnaCompatible)
+		internal Importer(string importerName)
 		{
 			_importerName = importerName;
-			_xnaCompatible = xnaCompatible;
 		}
 
 		/// <summary>
@@ -314,88 +308,25 @@ namespace Nursia.ModelImporter
 					//PostProcessSteps.ValidateDataStructure |
 					);
 
-				FindSkeleton();     // Find _rootBone, _bones, _deformationBones.
-
 				// Create _materials.
-				ImportXnaMaterials();
+				ImportMaterials();
 
-				ImportNodes();      // Create _pivots and _rootNode (incl. children).
-				ImportSkeleton();   // Create skeleton (incl. animations) and add to _rootNode.
-
-				// Assign nodes ids
-				var boneIds = new Dictionary<string, int>();
-				var boneId = 0;
-				ProcessNodeRecursively(_result.RootBone, n =>
+				// Import meshes
+				foreach(var mesh in _scene.Meshes)
 				{
-					var asBone = n as BoneContent;
-					if (asBone != null)
-					{
-						boneIds[asBone.Name] = boneId;
-						asBone.BoneId = boneId;
-						++boneId;
-					}
-				});
-
-				foreach(var m in _result.Meshes)
-				{
-					foreach(var part in m.Parts)
-					{
-						if (part.BoneWeights == null)
-						{
-							continue;
-						}
-
-						var vertexIdxs = new Dictionary<int, int>();
-						foreach (var pair in part.BoneWeights)
-						{
-							boneId = boneIds[pair.Key];
-
-							foreach(var bw in pair.Value)
-							{
-								int idx;
-
-								if (!vertexIdxs.TryGetValue(bw.VertexId, out idx))
-								{
-									idx = 0;
-									vertexIdxs[bw.VertexId] = idx;
-								}
-
-								if (idx < 4)
-								{
-									part.Vertices[bw.VertexId, part.ElementsPerRowWithoutBones + idx] = boneId;
-									part.Vertices[bw.VertexId, part.ElementsPerRowWithoutBones + idx + 4] = bw.Weight;
-
-									++vertexIdxs[bw.VertexId];
-								} else
-								{
-									Nrs.LogWarn("Vertex {0} has more than 4 bones.", bw.VertexId);
-								}
-							}
-						}
-
-						var bonesCount = 0;
-						foreach(var pair in vertexIdxs)
-						{
-							if (pair.Value > bonesCount)
-							{
-								bonesCount = pair.Value;
-							}
-						}
-
-						part.BonesCount = bonesCount;
-					}
+					var meshContent = ImportMesh(mesh);
+					_result.Meshes.Add(meshContent);
 				}
 
-				_scene.Clear();
+				//	ImportSkeleton();   // Create skeleton (incl. animations) and add to _rootNode.
 			}
-
 			return _result;
 		}
 
 		/// <summary>
 		/// Converts all Assimp <see cref="Material"/>s to standard XNA compatible <see cref="MaterialContent"/>s.
 		/// </summary>
-		private void ImportXnaMaterials()
+		private void ImportMaterials()
 		{
 			foreach (var aiMaterial in _scene.Materials)
 			{
@@ -451,158 +382,9 @@ namespace Nursia.ModelImporter
 			return texture;
 		}
 
-		private void ProcessNodeRecursively(BoneContent node, Action<BoneContent> action)
+		private MeshContent ImportMesh(Mesh aiMesh)
 		{
-			if (node == null)
-			{
-				return;
-			}
-
-			action(node);
-
-			if (node.Children != null)
-			{
-				foreach(var child in node.Children)
-				{
-					ProcessNodeRecursively(child, action);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Converts all Assimp nodes to XNA nodes. (Nodes representing bones are excluded!)
-		/// </summary>
-		private void ImportNodes()
-		{
-			_pivots = new Dictionary<string, FbxPivot>();
-			ImportNodes(_scene.RootNode, null);
-		}
-
-		/// <summary>
-		/// Converts the specified node and all descendant nodes.
-		/// </summary>
-		/// <param name="aiNode">The node.</param>
-		/// <param name="aiParent">The parent node. Can be <see langword="null"/>.</param>
-		/// <returns>The XNA <see cref="BoneContent"/>.</returns>
-		/// <remarks>
-		/// It may be necessary to skip certain "preserve pivot" nodes in the hierarchy. The
-		/// converted node needs to be relative to <paramref name="aiParent"/>, not <c>node.Parent</c>.
-		/// </remarks>
-		private void ImportNodes(Node aiNode, Node aiParent)
-		{
-			Debug.Assert(aiNode != null);
-
-			if (aiNode.HasMeshes)
-			{
-				var mesh = new MeshContent
-				{
-					Name = aiNode.Name,
-					Transform = ToXna(GetRelativeTransform(aiNode, aiParent))
-				};
-
-				foreach (var meshIndex in aiNode.MeshIndices)
-				{
-					var aiMesh = _scene.Meshes[meshIndex];
-					if (!aiMesh.HasVertices)
-						continue;
-
-					try
-					{
-						var meshPart = CreateMeshPart(mesh, aiMesh);
-						mesh.Parts.Add(meshPart);
-					}
-					catch (Exception ex)
-					{
-						Nrs.LogWarn(ex.ToString());
-					}
-				}
-
-				_result.Meshes.Add(mesh);
-			}
-			else if (aiNode.Name.Contains("_$AssimpFbx$"))
-			{
-				// This is a transformation pivot.
-				//   <OriginalName>_$AssimpFbx$_<TransformName>
-				// where <TransformName> is one of
-				//   Translation, RotationOffset, RotationPivot, PreRotation, Rotation,
-				//   PostRotation, RotationPivotInverse, ScalingOffset, ScalingPivot,
-				//   Scaling, ScalingPivotInverse
-				string originalName = GetNodeName(aiNode.Name);
-				FbxPivot pivot;
-				if (!_pivots.TryGetValue(originalName, out pivot))
-				{
-					pivot = new FbxPivot();
-					_pivots.Add(originalName, pivot);
-				}
-
-				Matrix transform = ToXna(aiNode.Transform);
-				if (aiNode.Name.EndsWith("_Translation"))
-					pivot.Translation = transform;
-				else if (aiNode.Name.EndsWith("_RotationOffset"))
-					pivot.RotationOffset = transform;
-				else if (aiNode.Name.EndsWith("_RotationPivot"))
-					pivot.RotationPivot = transform;
-				else if (aiNode.Name.EndsWith("_PreRotation"))
-					pivot.PreRotation = transform;
-				else if (aiNode.Name.EndsWith("_Rotation"))
-					pivot.Rotation = transform;
-				else if (aiNode.Name.EndsWith("_PostRotation"))
-					pivot.PostRotation = transform;
-				else if (aiNode.Name.EndsWith("_RotationPivotInverse"))
-					pivot.RotationPivotInverse = transform;
-				else if (aiNode.Name.EndsWith("_ScalingOffset"))
-					pivot.ScalingOffset = transform;
-				else if (aiNode.Name.EndsWith("_ScalingPivot"))
-					pivot.ScalingPivot = transform;
-				else if (aiNode.Name.EndsWith("_Scaling"))
-					pivot.Scaling = transform;
-				else if (aiNode.Name.EndsWith("_ScalingPivotInverse"))
-					pivot.ScalingPivotInverse = transform;
-				else if (aiNode.Name.EndsWith("_GeometricTranslation"))
-					pivot.GeometricTranslation = transform;
-				else if (aiNode.Name.EndsWith("_GeometricRotation"))
-					pivot.GeometricRotation = transform;
-				else if (aiNode.Name.EndsWith("_GeometricScaling"))
-					pivot.GeometricScaling = transform;
-				else
-					throw new Exception(string.Format("Unknown $AssimpFbx$ node: \"{0}\"", aiNode.Name));
-			}
-/*			else if (!_bones.Contains(aiNode)) // Ignore bones.
-			{
-				node = new BoneContent
-				{
-					Name = aiNode.Name,
-					Transform = ToXna(GetRelativeTransform(aiNode, aiParent))
-				};
-			}
-
-			if (node != null)
-			{
-				if (parent != null)
-					parent.Children.Add(node);
-
-				// For the children, this is the new parent.
-				aiParent = aiNode;
-				parent = node;
-
-				if (_scene.HasAnimations)
-				{
-					foreach (var animation in _scene.Animations)
-					{
-						var animationContent = ImportAnimation(animation, node.Name);
-						if (animationContent.Channels.Count > 0)
-							node.Animations.Add(animationContent.Name, animationContent);
-					}
-				}
-			}*/
-
-			foreach (var child in aiNode.Children)
-				ImportNodes(child, aiParent);
-		}
-
-		private MeshPartContent CreateMeshPart(MeshContent mesh, Mesh aiMesh)
-		{
-			var geom = new MeshPartContent
+			var result = new MeshContent
 			{
 				Material = _result.Materials[aiMesh.MaterialIndex]
 			};
@@ -638,19 +420,19 @@ namespace Nursia.ModelImporter
 				elementsPerRow += 2;
 			}
 
-			geom.ElementsPerRowWithoutBones = elementsPerRow;
+			result.ElementsPerRowWithoutBones = elementsPerRow;
 
 			if (aiMesh.HasBones)
 			{
-				elements.Add(new VertexElement(offset, VertexElementFormat.Short4, VertexElementUsage.BlendIndices, 0));
-				offset += 8;
+				elements.Add(new VertexElement(offset, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0));
+				offset += 4;
 				elementsPerRow += 4;
 
 				elements.Add(new VertexElement(offset, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0));
 				offset += 16;
 				elementsPerRow += 4;
 			}
-			geom.ElementsPerRow = elementsPerRow;
+			result.ElementsPerRow = elementsPerRow;
 
 			var data = new object[aiMesh.Vertices.Count, elementsPerRow];
 			for (var i = 0; i < aiMesh.Vertices.Count; ++i)
@@ -663,7 +445,7 @@ namespace Nursia.ModelImporter
 				data[i, idx++] = v.Z;
 
 				// Colors
-				for(var j = 0; j < aiMesh.VertexColorChannelCount; ++j)
+				for (var j = 0; j < aiMesh.VertexColorChannelCount; ++j)
 				{
 					v = Vector3.Zero;
 					if (aiMesh.VertexColorChannels[j].Count > i)
@@ -715,8 +497,8 @@ namespace Nursia.ModelImporter
 				}
 			}
 
-			geom.VertexDeclaration = new VertexDeclaration(elements.ToArray());
-			geom.Vertices = data;
+			result.VertexDeclaration = new VertexDeclaration(elements.ToArray());
+			result.Vertices = data;
 
 			var indices = aiMesh.GetIndices();
 			for (var i = 0; i < indices.Length; ++i)
@@ -727,248 +509,65 @@ namespace Nursia.ModelImporter
 					throw new Exception(string.Format("Only short indices supported. {0}", idx));
 				}
 
-				geom.Indices.Add((short)idx);
+				result.Indices.Add((short)idx);
 			}
 
 			if (aiMesh.HasBones)
 			{
-				var xnaWeights = new Dictionary<string, List<BoneWeight>>();
-				for (var i = 0; i < aiMesh.VertexCount; i++)
+				var boneIds = new Dictionary<string, int>();
+				foreach (var bone in aiMesh.Bones)
 				{
-					for (var boneIndex = 0; boneIndex < aiMesh.BoneCount; boneIndex++)
+					var boneContent = new BoneContent
 					{
-						var bone = aiMesh.Bones[boneIndex];
-						foreach (var weight in bone.VertexWeights)
+						BoneId = result.Bones.Count,
+						Name = bone.Name,
+						Transform = ToXna(bone.OffsetMatrix)
+					};
+
+					result.Bones.Add(boneContent);
+					boneIds[bone.Name] = boneContent.BoneId;
+				}
+
+				var vertexIdxs = new Dictionary<int, int>();
+				foreach (var bone in aiMesh.Bones)
+				{
+					var boneId = boneIds[bone.Name];
+					foreach (var bw in bone.VertexWeights)
+					{
+						int idx;
+
+						if (!vertexIdxs.TryGetValue(bw.VertexID, out idx))
 						{
-							if (weight.VertexID != i)
-								continue;
-
-							List<BoneWeight> weights;
-							if (!xnaWeights.TryGetValue(bone.Name, out weights))
-							{
-								weights = new List<BoneWeight>();
-								xnaWeights[bone.Name] = weights;
-							}
-
-							weights.Add(new BoneWeight(weight.VertexID, weight.Weight));
+							idx = 0;
+							vertexIdxs[bw.VertexID] = idx;
 						}
-					}
-				}
 
-				geom.BoneWeights = xnaWeights;
-			}
-
-			return geom;
-		}
-
-		/// <summary>
-		/// Identifies the nodes that represent bones and stores the bone offset matrices.
-		/// </summary>
-		private void FindSkeleton()
-		{
-			// See http://assimp.sourceforge.net/lib_html/data.html, section "Bones"
-			// and notes above.
-
-			// First, identify all deformation bones.
-			_deformationBones = FindDeformationBones(_scene);
-			if (_deformationBones.Count == 0)
-				return;
-
-			// Walk the tree upwards to find the root bones.
-			var rootBones = new HashSet<Node>();
-			foreach (var boneName in _deformationBones.Keys)
-				rootBones.Add(FindRootBone(_scene, boneName));
-
-			if (rootBones.Count > 1)
-				throw new Exception("Multiple skeletons found. Please ensure that the model does not contain more that one skeleton.");
-
-			_rootBone = rootBones.First();
-
-			// Add all nodes below root bone to skeleton.
-			GetSubtree(_rootBone, _bones);
-		}
-
-		/// <summary>
-		/// Finds the deformation bones (= bones attached to meshes).
-		/// </summary>
-		/// <param name="scene">The scene.</param>
-		/// <returns>A dictionary of all deformation bones and their offset matrices.</returns>
-		private static Dictionary<string, Matrix> FindDeformationBones(Scene scene)
-		{
-			Debug.Assert(scene != null);
-
-			var offsetMatrices = new Dictionary<string, Matrix>();
-			if (scene.HasMeshes)
-				foreach (var mesh in scene.Meshes)
-					if (mesh.HasBones)
-						foreach (var bone in mesh.Bones)
-							if (!offsetMatrices.ContainsKey(bone.Name))
-								offsetMatrices[bone.Name] = ToXna(bone.OffsetMatrix);
-
-			return offsetMatrices;
-		}
-
-		/// <summary>
-		/// Finds the root bone of a specific bone in the skeleton.
-		/// </summary>
-		/// <param name="scene">The scene.</param>
-		/// <param name="boneName">The name of a bone in the skeleton.</param>
-		/// <returns>The root bone.</returns>
-		private static Node FindRootBone(Scene scene, string boneName)
-		{
-			Debug.Assert(scene != null);
-			Debug.Assert(!string.IsNullOrEmpty(boneName));
-
-			// Start with the specified bone.
-			Node node = scene.RootNode.FindNode(boneName);
-			Debug.Assert(node != null, "Node referenced by mesh not found in model.");
-
-			// Walk all the way up to the scene root or the mesh node.
-			Node rootBone = node;
-			while (node != scene.RootNode && !node.HasMeshes)
-			{
-				// Only when FBXPreservePivotsConfig(true):
-				// The FBX path likes to put these extra preserve pivot nodes in here.
-				if (!node.Name.Contains("$AssimpFbx$"))
-					rootBone = node;
-
-				node = node.Parent;
-			}
-
-			return rootBone;
-		}
-
-		/// <summary>
-		/// Imports the skeleton including all skeletal animations.
-		/// </summary>
-		private void ImportSkeleton()
-		{
-			if (_rootBone == null)
-				return;
-
-			// Convert nodes to bones and attach to root node.
-			_result.RootBone = ImportBones(_rootBone, _rootBone.Parent, null);
-
-			if (!_scene.HasAnimations)
-				return;
-
-			// Convert animations and add to root bone.
-			foreach (var animation in _scene.Animations)
-			{
-				var animationContent = ImportAnimation(animation);
-				_result.RootBone.Animations.Add(animationContent.Name, animationContent);
-			}
-		}
-
-		/// <summary>
-		/// Converts the specified node and all descendant nodes to XNA bones.
-		/// </summary>
-		/// <param name="aiNode">The node.</param>
-		/// <param name="aiParent">The parent node.</param>
-		/// <param name="parent">The <paramref name="aiParent"/> node converted to XNA.</param>
-		/// <returns>The XNA <see cref="BoneContent"/>.</returns>
-		private BoneContent ImportBones(Node aiNode, Node aiParent, BoneContent parent)
-		{
-			Debug.Assert(aiNode != null);
-			Debug.Assert(aiParent != null);
-
-			BoneContent node = null;
-			if (!aiNode.Name.Contains("_$AssimpFbx$")) // Ignore pivot nodes
-			{
-				const string mangling = "_$AssimpFbxNull$"; // Null leaf nodes are helpers
-
-				if (aiNode.Name.Contains(mangling))
-				{
-					// Null leaf node
-					node = new BoneContent
-					{
-						Name = aiNode.Name.Replace(mangling, string.Empty),
-						Transform = ToXna(GetRelativeTransform(aiNode, aiParent))
-					};
-				}
-				else if (_bones.Contains(aiNode))
-				{
-					// Bone
-					node = new BoneContent
-					{
-						Name = aiNode.Name,
-					};
-
-					// node.Transform is irrelevant for bones. This transform is just the
-					// pose of the node at the time of the export. This could, for example,
-					// be one of the animation frames. It is not necessarily the bind pose
-					// (rest pose)!
-					// In XNA BoneContent.Transform needs to be set to the relative bind pose
-					// matrix. The relative bind pose matrix can be derived from the OffsetMatrix
-					// which is stored in aiMesh.Bones.
-					//
-					// offsetMatrix ... Offset matrix. Transforms the mesh from local space to bone space in bind pose.
-					// bindPoseRel  ... Relative bind pose matrix. Defines the transform of a bone relative to its parent bone.
-					// bindPoseAbs  ... Absolute bind pose matrix. Defines the transform of a bone relative to world space.
-					//
-					// The offset matrix is the inverse of the absolute bind pose matrix.
-					//   offsetMatrix = inverse(bindPoseAbs)
-					//
-					// bindPoseAbs = bindPoseRel * parentBindPoseAbs
-					// => bindPoseRel = bindPoseAbs * inverse(parentBindPoseAbs)
-					//                = inverse(offsetMatrix) * parentOffsetMatrix
-
-					Matrix offsetMatrix;
-					Matrix parentOffsetMatrix;
-					bool isOffsetMatrixValid = _deformationBones.TryGetValue(aiNode.Name, out offsetMatrix);
-					bool isParentOffsetMatrixValid = _deformationBones.TryGetValue(aiParent.Name, out parentOffsetMatrix);
-					if (isOffsetMatrixValid && isParentOffsetMatrixValid)
-					{
-						node.Transform = Matrix.Invert(offsetMatrix) * parentOffsetMatrix;
-					}
-					else if (isOffsetMatrixValid && aiNode == _rootBone)
-					{
-						// The current bone is the first in the chain.
-						// The parent offset matrix is missing. :(
-						FbxPivot pivot;
-						if (_pivots.TryGetValue(node.Name, out pivot))
+						if (idx < 4)
 						{
-							// --> Use transformation pivot.
-							node.Transform = pivot.GetTransform(null, null, null);
+							result.Vertices[bw.VertexID, result.ElementsPerRowWithoutBones + idx] = boneId;
+							result.Vertices[bw.VertexID, result.ElementsPerRowWithoutBones + idx + 4] = bw.Weight;
+
+							++vertexIdxs[bw.VertexID];
 						}
 						else
 						{
-							// --> Let's assume that parent's transform is Identity.
-							node.Transform = Matrix.Invert(offsetMatrix);
+							Nrs.LogWarn("Vertex {0} has more than 4 bones.", bw.VertexID);
 						}
 					}
-					else if (isOffsetMatrixValid && aiParent == _rootBone)
+				}
+
+				var bonesCount = 0;
+				foreach (var pair in vertexIdxs)
+				{
+					if (pair.Value > bonesCount)
 					{
-						// The current bone is the second bone in the chain.
-						// The parent offset matrix is missing. :(
-						// --> Derive matrix from parent bone, which is the root bone.
-						parentOffsetMatrix = Matrix.Invert(parent.Transform);
-						node.Transform = Matrix.Invert(offsetMatrix) * parentOffsetMatrix;
-					}
-					else
-					{
-						// Offset matrices are not provided by Assimp. :(
-						// Let's hope that the skeleton was exported in bind pose.
-						// (Otherwise we are just importing garbage.)
-						node.Transform = ToXna(GetRelativeTransform(aiNode, aiParent));
+						bonesCount = pair.Value;
 					}
 				}
+
+				result.BonesCount = bonesCount;
 			}
-
-			if (node != null)
-			{
-				if (parent != null)
-					parent.Children.Add(node);
-
-				// For the children, this is the new parent.
-				aiParent = aiNode;
-				parent = node;
-			}
-
-			foreach (var child in aiNode.Children)
-				ImportBones(child, aiParent, parent);
-
-			return node;
+			return result;
 		}
 
 		/// <summary>

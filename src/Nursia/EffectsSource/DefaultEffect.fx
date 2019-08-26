@@ -38,7 +38,7 @@ struct VSInput
     float2 TexCoord : TEXCOORD0;
 
 #ifdef BONES
-    int4   Indices: BLENDINDICES0;
+    uint4 Indices: BLENDINDICES0;
     float4 Weights: BLENDWEIGHT0;
 #endif
 };

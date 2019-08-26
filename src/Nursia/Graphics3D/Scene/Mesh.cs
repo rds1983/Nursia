@@ -15,18 +15,11 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public Bone RootBone { get; set; }
-
 		public Matrix Transform
 		{
 			get
 			{
-				return RootBone.Transform;
-			}
-
-			set
-			{
-				RootBone.Transform = value;
+				return Matrix.Identity;
 			}
 		}
 

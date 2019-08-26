@@ -31,10 +31,21 @@ namespace Nursia.Graphics3D.Scene
 				return null;
 			}
 
+			var scale = data["scale"].ToVector3();
+			var translate = data["translate"].ToVector3();
+			var rotation = data["rotation"].ToVector4();
+
+			var quaternion = new Quaternion(rotation.X, 
+				rotation.Y, rotation.Z, rotation.W);
+
+			var transform = Matrix.CreateScale(scale) *
+				Matrix.CreateTranslation(translate) *
+				Matrix.CreateFromQuaternion(quaternion);
+
 			var result = new Bone
 			{
 				Id = data.GetId(),
-				Transform = data["transform"].ToMatrix()
+				Transform = transform
 			};
 
 			if (data.ContainsKey("children"))
@@ -74,16 +85,15 @@ namespace Nursia.Graphics3D.Scene
 			destIdx += byteData.Length;
 		}
 
-		private static void LoadShort(byte[] dest, ref int destIdx, int data)
+		private static void LoadByte(byte[] dest, ref int destIdx, int data)
 		{
-			if (data > short.MaxValue)
+			if (data > byte.MaxValue)
 			{
-				throw new Exception(string.Format("Only short indices suported. {0}", data));
+				throw new Exception(string.Format("Only byte bone indices suported. {0}", data));
 			}
 
-			var byteData = BitConverter.GetBytes((short)data);
-			Array.Copy(byteData, 0, dest, destIdx, byteData.Length);
-			destIdx += byteData.Length;
+			dest[destIdx] = (byte)data;
+			++destIdx;
 		}
 
 		private static VertexBuffer LoadVertexBuffer(
@@ -121,11 +131,11 @@ namespace Nursia.Graphics3D.Scene
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							break;
-						case VertexElementFormat.Short4:
-							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
-							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
-							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
-							LoadShort(byteData, ref destIdx, (int)data[srcIdx++]);
+						case VertexElementFormat.Byte4:
+							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
+							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
+							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
+							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
 							break;
 						default:
 							throw new Exception(string.Format("{0} not supported", element.VertexElementFormat));
@@ -201,6 +211,17 @@ namespace Nursia.Graphics3D.Scene
 					MaterialName = meshData["material"].ToString(),
 					BonesPerMesh = bonesPerMesh
 				};
+
+				if (meshData.ContainsKey("bones"))
+				{
+					var bones = (JArray)meshData["bones"];
+					foreach (JObject boneData in bones)
+					{
+						var bone = LoadBone(boneData);
+						part.Bones.Add(bone);
+					}
+				}
+
 				m.Add(part);
 			}
 
@@ -249,32 +270,6 @@ namespace Nursia.Graphics3D.Scene
 				foreach (var part in m.Parts)
 				{
 					part.Material = (from mt in result.Materials where mt.Id == part.MaterialName select mt).First();
-				}
-			}
-
-			result.RootBone = LoadBone((JObject)root["rootBone"]);
-
-			// Set meshes bones
-			result.TraverseBones(b =>
-			{
-				foreach(var m in result.Meshes)
-				{
-					if (m.Id == b.Id)
-					{
-						m.RootBone = b;
-						break;
-					}
-				}
-
-				b.Index = result.Bones.Count;
-				result.Bones.Add(b);
-			});
-
-			foreach (var m in result.Meshes)
-			{
-				if (m.RootBone == null)
-				{
-					m.RootBone = new Bone();
 				}
 			}
 

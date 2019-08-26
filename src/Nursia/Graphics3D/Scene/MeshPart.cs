@@ -1,10 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace Nursia.Graphics3D.Scene
 {
 	public class MeshPart
 	{
+		private readonly List<Bone> _bones = new List<Bone>();
+		private Matrix[] _boneTransforms = null;
+
 		internal string MaterialName { get; set; }
 
 		public Material Material { get; set; }
@@ -13,12 +17,36 @@ namespace Nursia.Graphics3D.Scene
 
 		public BonesPerMesh BonesPerMesh { get; set; }
 
+		public List<Bone> Bones
+		{
+			get
+			{
+				return _bones;
+			}
+		}
+
 		public int PrimitiveCount
 		{
 			get
 			{
 				return IndexBuffer.IndexCount / 3;
 			}
+		}
+
+		private Matrix[] CalculateBoneTransforms()
+		{
+			if (_boneTransforms == null ||
+				_boneTransforms.Length != Bones.Count)
+			{
+				_boneTransforms = new Matrix[Bones.Count];
+			}
+
+			for (var i = 0; i < Bones.Count; ++i)
+			{
+				_boneTransforms[i] = Bones[i].AbsoluteTransform;
+			}
+
+			return _boneTransforms;
 		}
 
 		public void Draw(RenderContext context)
@@ -44,7 +72,8 @@ namespace Nursia.Graphics3D.Scene
 
 			if (BonesPerMesh != BonesPerMesh.None)
 			{
-				effect.Parameters["_bones"].SetValue(context.BoneTransforms);
+				var boneTransforms = CalculateBoneTransforms();
+				effect.Parameters["_bones"].SetValue(boneTransforms);
 			}
 
 			device.SetVertexBuffer(VertexBuffer);

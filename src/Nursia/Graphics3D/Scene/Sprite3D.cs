@@ -8,8 +8,6 @@ namespace Nursia.Graphics3D.Scene
 	{
 		private readonly List<Mesh> _meshes = new List<Mesh>();
 		private readonly List<Material> _materials = new List<Material>();
-		private readonly List<Bone> _bones = new List<Bone>();
-		private Matrix[] _boneTransforms = null;
 
 		public Matrix Transform;
 
@@ -29,16 +27,6 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public List<Bone> Bones
-		{
-			get
-			{
-				return _bones;
-			}
-		}
-
-		public Bone RootBone { get; set; }
-
 		private static void TraverseBones(Bone root, Action<Bone> action)
 		{
 			if (root == null)
@@ -52,27 +40,6 @@ namespace Nursia.Graphics3D.Scene
 			{
 				TraverseBones(child, action);
 			}
-		}
-
-		private void TraverseBones(Action<Bone> action)
-		{
-			TraverseBones(RootBone, action);
-		}
-
-		internal Matrix[] CalculateBoneTransforms()
-		{
-			if (_boneTransforms == null ||
-				_boneTransforms.Length != Bones.Count)
-			{
-				_boneTransforms = new Matrix[Bones.Count];
-			}
-
-			for (var i = 0; i < Bones.Count; ++i)
-			{
-				_boneTransforms[i] = Bones[i].AbsoluteTransform;
-			}
-
-			return _boneTransforms;
 		}
 	}
 }

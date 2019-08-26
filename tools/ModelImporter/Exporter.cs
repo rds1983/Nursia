@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nursia.ModelImporter.Content;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Nursia.ModelImporter
@@ -14,304 +15,323 @@ namespace Nursia.ModelImporter
 		private int _level = 0;
 		private ModelContent _scene;
 
+		private static Dictionary<string, object> CreateObject()
+		{
+			return new Dictionary<string, object>();
+		}
+
+		private static List<object> CreateList()
+		{
+			return new List<object>();
+		}
+
+		private List<object> BuildDeclaration(VertexDeclaration vertexDeclaration)
+		{
+			var result = CreateList();
+			var elements = vertexDeclaration.GetVertexElements();
+			for (var i = 0; i < elements.Length; ++i)
+			{
+				var element = elements[i];
+				var elementData = CreateObject();
+				elementData["offset"] = element.Offset;
+				elementData["format"] = element.VertexElementFormat;
+				elementData["usage"] = element.VertexElementUsage;
+
+				result.Add(elementData);
+			}
+
+			return result;
+		}
+
+		private Dictionary<string, object> BuildBone(BoneContent root)
+		{
+			var result = CreateObject();
+
+			result[IdName] = root.Name;
+			result["boneId"] = root.BoneId;
+
+			Vector3 translation, scale;
+			Quaternion rotation;
+			root.Transform.Decompose(out scale, out rotation, out translation);
+			result["translate"] = translation;
+			result["scale"] = scale;
+			result["rotation"] = rotation.ToVector4();
+
+			return result;
+		}
+
+		private List<object> BuildMeshes()
+		{
+			var result = CreateList();
+
+			foreach (var mesh in _scene.Meshes)
+			{
+				var meshData = CreateObject();
+				meshData["meshNodeName"] = mesh.Name;
+				meshData["declaration"] = BuildDeclaration(mesh.VertexDeclaration);
+				meshData["elementsPerRow"] = mesh.ElementsPerRow;
+				meshData["bonesCount"] = mesh.BonesCount;
+
+				var indicesData = CreateList();
+				for (var j = 0; j < mesh.Indices.Count; ++j)
+				{
+					indicesData.Add(mesh.Indices[j]);
+				}
+
+				meshData["indices"] = indicesData;
+
+				var verticesData = CreateList();
+				for (var j = 0; j < mesh.Vertices.GetLength(0); ++j)
+				{
+					for (var k = 0; k < mesh.Vertices.GetLength(1); ++k)
+					{
+						verticesData.Add(mesh.Vertices[j, k]);
+					}
+				}
+				meshData["vertices"] = verticesData;
+				meshData["material"] = mesh.Material.Name;
+
+				var bonesData = CreateList();
+				foreach(var bone in mesh.Bones)
+				{
+					bonesData.Add(BuildBone(bone));
+				}
+
+				meshData["bones"] = bonesData;
+
+				result.Add(meshData);
+			}
+
+			return result;
+		}
+
+		private List<object> BuildMaterials()
+		{
+			var result = CreateList();
+			foreach (var material in _scene.Materials)
+			{
+				var materialData = CreateObject();
+				materialData[IdName] = material.Name;
+				materialData["texture"] = material.Texture != null ? material.Texture.FilePath : string.Empty;
+
+				result.Add(materialData);
+			}
+
+			return result;
+		}
+
 		private class BracersScope : IDisposable
 		{
 			private readonly string _openBracerSymbol;
 			private readonly string _closeBracerSymbol;
 			private readonly Exporter _exporter;
+			private readonly StringBuilder _builder;
+			private readonly bool _indent;
 
-			public BracersScope(Exporter exporter, string openBracerSymbol, string closeBracerSymbol, bool indent = true)
+			public BracersScope(Exporter exporter, 
+				StringBuilder builder, 
+				string openBracerSymbol, 
+				string closeBracerSymbol,
+				bool indent)
 			{
-				_exporter = exporter;
+				_builder = builder;
 				_openBracerSymbol = openBracerSymbol;
 				_closeBracerSymbol = closeBracerSymbol;
+				_exporter = exporter;
+				_indent = indent;
 
 				if (indent)
 				{
-					_exporter.WriteIndent();
+					_builder.AppendLine(_openBracerSymbol.ToString());
+				} else
+				{
+					_builder.Append(_openBracerSymbol.ToString() + " ");
 				}
-				_exporter.WriteLine(_openBracerSymbol.ToString());
+
 				++_exporter._level;
 			}
 
 			public void Dispose()
 			{
 				--_exporter._level;
-				_exporter.WriteLineWithIndent(_closeBracerSymbol.ToString());
-			}
-		}
 
-		private readonly StringBuilder _builder = new StringBuilder();
-
-		public Exporter()
-		{
-		}
-
-		private void Write(string s)
-		{
-			_builder.Append(s);
-		}
-
-		private void WriteIndent()
-		{
-			for (var i = 0; i < _level; ++i)
-			{
-				Write("\t");
-			}
-		}
-
-		private void WriteLine(string s)
-		{
-			Write(s);
-			Write("\n");
-		}
-
-		private void WriteLineWithIndent(string s)
-		{
-			WriteIndent();
-			WriteLine(s);
-		}
-
-		private void WriteWithIndent(string s)
-		{
-			WriteIndent();
-			Write(s);
-		}
-
-		private BracersScope CreateCurlyBracersScope(bool indent = true, bool hasComma = false)
-		{
-			return new BracersScope(this, "{", hasComma ? "}," : "}", indent);
-		}
-
-		private BracersScope CreateSquareBracersScope(bool indent = true, bool hasComma = false)
-		{
-			return new BracersScope(this, "[", hasComma ? "]," : "]", indent);
-		}
-
-		private void WriteSimpleProperty(string name, string value, bool hasComma = true)
-		{
-			WritePropertyStart(name);
-			WriteLine("\"" + value + "\"" + (hasComma ? "," : string.Empty));
-		}
-
-		private void WritePropertyStart(string name)
-		{
-			WriteIndent();
-			Write("\"" + name + "\": ");
-		}
-
-		private void WriteFloatArray(bool hasComma, params float[] data)
-		{
-			using (var materialScope = CreateSquareBracersScope(false, hasComma))
-			{
-				WriteIndent();
-				for (var k = 0; k < data.Length; ++k)
+				if (_indent)
 				{
-					Write(data[k].Serialize());
-					if (k < data.Length - 1)
-					{
-						Write(", ");
-					}
-				}
-				WriteLine(string.Empty);
-			}
-		}
-
-		private void WriteMatrix(Matrix m, bool hasComma = true)
-		{
-			WriteFloatArray(hasComma, m[0], m[1], m[2], m[3],
-				m[4], m[5], m[6], m[7],
-				m[8], m[9], m[10], m[11],
-				m[12], m[13], m[14], m[15]);
-		}
-
-		private void WriteVector3(Vector3 v, bool hasComma = true)
-		{
-			WriteFloatArray(hasComma, v.X, v.Y, v.Z);
-		}
-
-		private void TraverseTree(BoneContent root, Action<BoneContent> action)
-		{
-			if (root == null)
-			{
-				return;
-			}
-
-			action(root);
-
-			foreach (var child in root.Children)
-			{
-				TraverseTree(child, action);
-			}
-		}
-
-		private void WriteDeclaration(VertexDeclaration vertexDeclaration)
-		{
-			WritePropertyStart("declaration");
-
-			using (var declarationScope = CreateSquareBracersScope(false, true))
-			{
-				var elements = vertexDeclaration.GetVertexElements();
-				for(var i = 0; i < elements.Length; ++i)
+					_builder.AppendLine();
+					_builder.Append(_exporter.BuildIndent());
+					_builder.Append(_closeBracerSymbol.ToString());
+				} else
 				{
-					var element = elements[i];
-					WriteIndent();
-					using (var elementScope = CreateCurlyBracersScope(false, i < elements.Length - 1))
-					{
-						WriteSimpleProperty("offset", element.Offset.ToString());
-						WriteSimpleProperty("format", element.VertexElementFormat.ToString());
-						WriteSimpleProperty("usage", element.VertexElementUsage.ToString());
-					}
+					_builder.Append(" " + _closeBracerSymbol.ToString());
 				}
 			}
 		}
 
-		private void WriteMeshes()
+		private string BuildIndent()
 		{
-			var totalParts = 0;
-			foreach (var mesh in _scene.Meshes)
+			if (_level == 0)
 			{
-				foreach (var part in mesh.Parts)
-				{
-					++totalParts;
-				}
+				return string.Empty;
 			}
 
-			WritePropertyStart("meshes");
-			using (var meshesScope = CreateSquareBracersScope(false, true))
+			return new string('\t', _level);
+		}
+
+		private BracersScope CreateCurlyBracersScope(StringBuilder sb)
+		{
+			return new BracersScope(this, sb, "{", "}", true);
+		}
+
+		private BracersScope CreateSquareBracersScope(StringBuilder sb, bool indent)
+		{
+			return new BracersScope(this, sb, "[", "]", indent);
+		}
+
+		private string WriteObject(object data, int? elementsPerRow = null, bool indent = true)
+		{
+			var asObject = data as Dictionary<string, object>;
+			if (asObject != null)
 			{
-				var idx = 0;
-				foreach(var mesh in _scene.Meshes)
+				var sb = new StringBuilder();
+
+				using (var scope = CreateCurlyBracersScope(sb))
 				{
-					foreach (var part in mesh.Parts)
+					var values = new List<string>();
+					foreach(var pair in asObject)
 					{
-						using (var partScope = CreateCurlyBracersScope(true, idx < totalParts))
+						var epr = default(int?);
+
+						if (pair.Key == "indices")
 						{
-							WriteSimpleProperty("meshNodeName", mesh.Name);
-							WriteDeclaration(part.VertexDeclaration);
-							WriteSimpleProperty("elementsPerRow", part.ElementsPerRow.ToString());
-							WriteSimpleProperty("bonesCount", part.BonesCount.ToString());
-							WritePropertyStart("indices");
-							using (var indicesScope = CreateSquareBracersScope(false, true))
+							epr = 20;
+						} else if (pair.Key == "vertices")
+						{
+							epr = (int)asObject["elementsPerRow"];
+						}
+
+						var value = string.Format("\"{0}\" : {1}", 
+							pair.Key, 
+							WriteObject(pair.Value, epr));
+						values.Add(BuildIndent() + value);
+					}
+
+					sb.Append(string.Join(",\n", values));
+				}
+
+				return sb.ToString();
+			}
+
+			var asList = data as List<object>;
+			if (asList != null)
+			{
+				var isPrimitive = asList.Count > 0 && asList[0].GetType().IsPrimitive;
+				var sb = new StringBuilder();
+
+				using (var scope = CreateSquareBracersScope(sb, indent))
+				{
+					var values = new List<string>();
+					foreach (var pair in asList)
+					{
+						if (isPrimitive)
+						{
+							values.Add(WriteObject(pair));
+						}
+						else
+						{
+							values.Add(BuildIndent() + WriteObject(pair));
+						}
+					}
+
+					if (isPrimitive)
+					{
+						if (indent)
+						{
+							sb.Append(BuildIndent());
+						}
+						for(var i = 0; i < values.Count; ++i)
+						{
+							if (elementsPerRow != null &&
+								i > 0 &&
+								i % elementsPerRow.Value == 0)
 							{
-								WriteIndent();
-								for (var j = 0; j < part.Indices.Count; ++j)
-								{
-									Write(part.Indices[j].ToString());
-									if (j < part.Indices.Count - 1)
-									{
-										Write(", ");
-
-										if (j > 0 && j % 20 == 0)
-										{
-											WriteLine(string.Empty);
-											WriteIndent();
-										}
-									}
-								}
-								WriteLine(string.Empty);
+								sb.AppendLine();
+								sb.Append(BuildIndent());
 							}
-							WritePropertyStart("vertices");
-							using (var verticesScope = CreateSquareBracersScope(false, true))
+
+							sb.Append(values[i]);
+							if (i < values.Count - 1)
 							{
-								WriteIndent();
-
-								var cnt = 0;
-								var size = part.Vertices.GetLength(0) * part.Vertices.GetLength(1);
-								for (var j = 0; j < part.Vertices.GetLength(0); ++j)
-								{
-									for (var k = 0; k < part.Vertices.GetLength(1); ++k)
-									{
-										Write(part.Vertices[j, k].Serialize());
-										if (cnt < size - 1)
-										{
-											Write(", ");
-										}
-
-										++cnt;
-									}
-									WriteLine(string.Empty);
-									if (j < part.Vertices.GetLength(0) - 1)
-									{
-										WriteIndent();
-									}
-								}
+								sb.Append(", ");
 							}
-							WriteSimpleProperty("material", part.Material.Name, false);
 						}
-
-						++idx;
-					}
-				}
-			}
-		}
-
-		private void WriteMaterials()
-		{
-			WritePropertyStart("materials");
-			using (var materialsScope = CreateSquareBracersScope(false, true))
-			{
-				foreach (var material in _scene.Materials)
-				{
-					using (var materialScope = CreateCurlyBracersScope(true, true))
+					} else
 					{
-						WriteSimpleProperty(IdName, material.Name);
-
-						WriteSimpleProperty("texture", material.Texture != null ? material.Texture.FilePath : string.Empty);
+						sb.Append(string.Join(",\n", values));
 					}
 				}
+
+				return sb.ToString();
 			}
-		}
 
-		private void WriteBone(BoneContent root)
-		{
-			WriteSimpleProperty(IdName, root.Name);
-			WritePropertyStart("transform");
-			WriteMatrix(root.Transform);
-
-			WriteSimpleProperty("boneId", root.BoneId.ToString());
-
-			if (root.Children.Count > 0)
+			if (data == null)
 			{
-				WritePropertyStart("children");
-				using (var nodesScope = CreateSquareBracersScope(false, false))
-				{
-					foreach (var child in root.Children)
-					{
-						if (child is MeshContent)
-						{
-							continue;
-						}
-
-						WriteIndent();
-						using (var nodeScope = CreateCurlyBracersScope(false, true))
-						{
-							WriteBone(child);
-						}
-					}
-				}
+				return "\"" + string.Empty + "\"";
 			}
+
+			var asString = data as string;
+			if (asString != null)
+			{
+				return "\"" + asString + "\"";
+			}
+
+			if (data.GetType().IsEnum)
+			{
+				return "\"" + data.ToString() + "\"";
+			}
+
+			if (data is Vector3)
+			{
+				var v = (Vector3)data;
+				return WriteObject(new List<object>(new object[]{
+					v.X,
+					v.Y,
+					v.Z
+				}), null, false);
+			}
+
+			if (data is Vector4)
+			{
+				var v = (Vector4)data;
+				return WriteObject(new List<object>(new object[]{
+					v.X,
+					v.Y,
+					v.Z,
+					v.W
+				}), null, false);
+			}
+
+			if (data is float)
+			{
+				return ((float)data).ToString(CultureInfo.InvariantCulture);
+			}
+
+			return data.ToString();
 		}
 
 		public string Export(ModelContent scene)
 		{
-			_builder.Clear();
 			_scene = scene;
 
-			using (var topScope = CreateCurlyBracersScope())
+			// First step: build output
+			var output = new Dictionary<string, object>
 			{
-				WriteSimpleProperty("version", Nrs.N3tVersion);
-				WriteMeshes();
-				WriteMaterials();
+				["version"] = Nrs.N3tVersion,
+				["meshes"] = BuildMeshes(),
+				["materials"] = BuildMaterials()
+			};
 
-				WritePropertyStart("rootBone");
-				using (var nodesScope = CreateCurlyBracersScope(false, false))
-				{
-					WriteBone(scene.RootBone);
-				}
-			}
-
-			return _builder.ToString();
+			// Second step: serialize to string
+			return WriteObject(output);
 		}
 	}
 }

@@ -24,6 +24,8 @@ namespace Nursia.ModelImporter.Content
 			}
 		}
 
+		public BoneNodeContent RootBoneNode { get; set; }
+
 		public Matrix Transform { get; set; }
 	}
 }

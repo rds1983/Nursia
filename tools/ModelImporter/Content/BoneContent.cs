@@ -14,8 +14,6 @@ namespace Nursia.ModelImporter.Content
 			get; set;
 		}
 
-		public BoneContent Parent { get; set; }
-
 		public Dictionary<string, AnimationContent> Animations
 		{
 			get

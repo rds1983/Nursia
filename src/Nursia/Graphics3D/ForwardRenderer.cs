@@ -42,6 +42,8 @@ namespace Nursia.Graphics3D
 
 			_renderContext.Transform = model.Transform;
 			_renderContext.Camera = camera;
+
+			model.UpdateBoneNodesAbsoluteTransforms();
 			foreach (var mesh in model.Meshes)
 			{
 				mesh.Draw(_renderContext);

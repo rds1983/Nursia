@@ -40,7 +40,7 @@ namespace ModelViewer
 
 			_renderer = new ForwardRenderer();
 
-			var data = File.ReadAllText(@"D:\Projects\Nursia\temp\swordsman\Model.n3t");
+			var data = File.ReadAllText(@"D:\Projects\Nursia\temp\swordsman\Model.g3dj");
 			_model = Sprite3D.LoadFromJson(data, 
 				n =>
 				{

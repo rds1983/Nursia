@@ -318,6 +318,9 @@ namespace Nursia.ModelImporter
 					_result.Meshes.Add(meshContent);
 				}
 
+				// Import bone nodes
+				_result.RootBoneNode = ImportBoneNode(_scene.RootNode);
+
 				//	ImportSkeleton();   // Create skeleton (incl. animations) and add to _rootNode.
 			}
 			return _result;
@@ -567,6 +570,33 @@ namespace Nursia.ModelImporter
 
 				result.BonesCount = bonesCount;
 			}
+			return result;
+		}
+
+		private BoneNodeContent ImportBoneNode(Node node)
+		{
+			if (node.HasMeshes || node.Name.Contains("$AssimpFbx$"))
+			{
+				return null;
+			}
+
+			var result = new BoneNodeContent
+			{
+				Name = node.Name,
+				Transform = ToXna(node.Transform)
+			};
+
+			foreach(var child in node.Children)
+			{
+				var childContent = ImportBoneNode(child);
+				if (childContent == null)
+				{
+					continue;
+				}
+
+				result.Children.Add(childContent);
+			}
+
 			return result;
 		}
 

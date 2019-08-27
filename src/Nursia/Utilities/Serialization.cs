@@ -47,7 +47,7 @@ namespace Nursia.Utilities
 			var result = string.Empty;
 
 			JToken obj;
-			if (data.TryGetValue(Sprite3D.IdName, out obj) && obj != null)
+			if (data.TryGetValue("id", out obj) && obj != null)
 			{
 				result = obj.ToString();
 			}

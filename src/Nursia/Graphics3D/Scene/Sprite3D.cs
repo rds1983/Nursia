@@ -27,7 +27,12 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		private static void TraverseBones(Bone root, Action<Bone> action)
+		public BoneNode RootNode
+		{
+			get; set;
+		}
+
+		private static void TraverseBoneNodes(BoneNode root, Action<BoneNode> action)
 		{
 			if (root == null)
 			{
@@ -38,8 +43,39 @@ namespace Nursia.Graphics3D.Scene
 
 			foreach (var child in root.Children)
 			{
-				TraverseBones(child, action);
+				TraverseBoneNodes(child, action);
 			}
+		}
+
+		internal void TraverseBoneNodes(Action<BoneNode> action)
+		{
+			TraverseBoneNodes(RootNode, action);
+		}
+
+		private void UpdateBoneNodesAbsoluteTransforms(BoneNode root, Matrix transform)
+		{
+			if (root == null)
+			{
+				return;
+			}
+
+			transform = transform * root.Transform;
+			root.AbsoluteTransform = transform;
+
+			foreach (var child in root.Children)
+			{
+				UpdateBoneNodesAbsoluteTransforms(child, transform);
+			}
+		}
+
+		internal void UpdateBoneNodesAbsoluteTransforms()
+		{
+			if (RootNode == null)
+			{
+				return;
+			}
+
+			UpdateBoneNodesAbsoluteTransforms(RootNode, Matrix.Identity);
 		}
 	}
 }

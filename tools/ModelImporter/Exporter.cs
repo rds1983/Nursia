@@ -43,6 +43,18 @@ namespace Nursia.ModelImporter
 			return result;
 		}
 
+		private void FillTransform(Dictionary<string, object> obj, Matrix transform)
+		{
+			Vector3 translation, scale;
+			Quaternion rotation;
+			transform.Decompose(out scale, out rotation, out translation);
+			obj["translate"] = new Vector3(translation.X,
+				translation.Y,
+				translation.Z);
+			obj["scale"] = scale;
+			obj["rotation"] = rotation.ToVector4();
+		}
+
 		private Dictionary<string, object> BuildBone(BoneContent root)
 		{
 			var result = CreateObject();
@@ -50,12 +62,7 @@ namespace Nursia.ModelImporter
 			result[IdName] = root.Name;
 			result["boneId"] = root.BoneId;
 
-			Vector3 translation, scale;
-			Quaternion rotation;
-			root.Transform.Decompose(out scale, out rotation, out translation);
-			result["translate"] = translation;
-			result["scale"] = scale;
-			result["rotation"] = rotation.ToVector4();
+			FillTransform(result, root.Transform);
 
 			return result;
 		}
@@ -115,6 +122,28 @@ namespace Nursia.ModelImporter
 				materialData["texture"] = material.Texture != null ? material.Texture.FilePath : string.Empty;
 
 				result.Add(materialData);
+			}
+
+			return result;
+		}
+
+		private Dictionary<string, object> BuildBoneNode(BoneNodeContent root)
+		{
+			var result = CreateObject();
+
+			result[IdName] = root.Name;
+
+			FillTransform(result, root.Transform);
+
+			if (root.Children.Count > 0)
+			{
+				var children = CreateList();
+				foreach(var child in root.Children)
+				{
+					children.Add(BuildBoneNode(child));
+				}
+
+				result["children"] = children;
 			}
 
 			return result;
@@ -329,6 +358,11 @@ namespace Nursia.ModelImporter
 				["meshes"] = BuildMeshes(),
 				["materials"] = BuildMaterials()
 			};
+
+			if (scene.RootBoneNode != null)
+			{
+				output["rootNode"] = BuildBoneNode(scene.RootBoneNode);
+			}
 
 			// Second step: serialize to string
 			return WriteObject(output);

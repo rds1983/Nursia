@@ -9,8 +9,6 @@ namespace Nursia.Graphics3D.Scene
 		private readonly List<Bone> _bones = new List<Bone>();
 		private Matrix[] _boneTransforms = null;
 
-		internal string MaterialName { get; set; }
-
 		public Material Material { get; set; }
 		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
@@ -43,7 +41,8 @@ namespace Nursia.Graphics3D.Scene
 
 			for (var i = 0; i < Bones.Count; ++i)
 			{
-				_boneTransforms[i] = Bones[i].AbsoluteTransform;
+				_boneTransforms[i] = Bones[i].ParentNode.AbsoluteTransform * Bones[i].Transform;
+//				_boneTransforms[i] = Matrix.Identity;
 			}
 
 			return _boneTransforms;

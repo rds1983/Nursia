@@ -59,7 +59,7 @@ namespace Nursia.Graphics3D.Scene
 				return;
 			}
 
-			transform = transform * root.Transform;
+			transform = root.Transform * transform;
 			root.AbsoluteTransform = transform;
 
 			foreach (var child in root.Children)

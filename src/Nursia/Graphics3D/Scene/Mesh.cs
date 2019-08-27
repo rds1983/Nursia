@@ -15,13 +15,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public Matrix Transform
-		{
-			get
-			{
-				return Matrix.Identity;
-			}
-		}
+		public Matrix Transform { get; set; } = Matrix.Identity;
 
 		public void Draw(RenderContext context)
 		{

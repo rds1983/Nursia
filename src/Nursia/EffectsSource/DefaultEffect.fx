@@ -7,7 +7,7 @@
 
 #include "Macros.fxh"
 
-#define MAX_BONES   36
+#define MAX_BONES   72
 
 DECLARE_TEXTURE(_texture, 0);
 
@@ -27,7 +27,7 @@ MATRIX_CONSTANTS
 float4x4 _worldViewProj;
 float3x3 _worldInverseTranspose;
 
-float4x4 _bones[MAX_BONES];
+float4x3 _bones[MAX_BONES];
 
 END_CONSTANTS
 
@@ -64,29 +64,30 @@ VSOutput VertexShaderFunction(VSInput input)
     VSOutput output = (VSOutput)0;
     
 #ifdef BONES
-    float4x4 skinning = 0;
+    float4x3 skinning = 0;
+    float w = 0;
     skinning += _bones[(int)input.Weights0.x] * input.Weights0.y;
+    w += input.Weights0.y;
     
 #if BONES==2
     skinning += _bones[(int)input.Weights1.x] * input.Weights1.y;
+    w += input.Weights1.y;
 #endif
 #if BONES==4
     skinning += _bones[(int)input.Weights2.x] * input.Weights2.y;
     skinning += _bones[(int)input.Weights3.x] * input.Weights3.y;
+    w += input.Weights2.y;
+    w += input.Weights3.y;
 #endif    
-
+    input.Position.xyz = mul(input.Position, skinning);
+    input.Position.w = w;
 #ifdef LIGHTNING
     input.Normal = mul(input.Normal, (float3x3)skinning);    
 #endif
 #endif    
 
-#ifdef BONES
-    float4x4 transform = mul(_worldViewProj, skinning);
-    output.Position = mul(input.Position, transform);
-#else
     output.Position = mul(input.Position, _worldViewProj);
-#endif
-	output.TexCoord = input.TexCoord;
+    output.TexCoord = input.TexCoord;
     
 #ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);

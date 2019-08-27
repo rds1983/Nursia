@@ -41,8 +41,7 @@ namespace Nursia.Graphics3D.Scene
 
 			for (var i = 0; i < Bones.Count; ++i)
 			{
-				_boneTransforms[i] = Bones[i].ParentNode.AbsoluteTransform * Bones[i].Transform;
-//				_boneTransforms[i] = Matrix.Identity;
+				_boneTransforms[i] = Bones[i].Transform * Bones[i].ParentNode.AbsoluteTransform;
 			}
 
 			return _boneTransforms;

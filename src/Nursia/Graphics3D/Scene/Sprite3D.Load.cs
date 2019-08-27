@@ -72,35 +72,9 @@ namespace Nursia.Graphics3D.Scene
 			var quaternion = new Quaternion(rotation.X,
 				rotation.Y, rotation.Z, rotation.W);
 
-			/*			var result = Matrix.CreateScale(scale) *
-							Matrix.CreateTranslation(translate) *
-							Matrix.CreateFromQuaternion(quaternion);*/
-
-			float xs = quaternion.X * 2f, ys = quaternion.Y * 2f, zs = quaternion.Z * 2f;
-			float wx = quaternion.W * xs, wy = quaternion.W * ys, wz = quaternion.W * zs;
-			float xx = quaternion.X * xs, xy = quaternion.X * ys, xz = quaternion.X * zs;
-			float yy = quaternion.Y * ys, yz = quaternion.Y * zs, zz = quaternion.Z * zs;
-
-			Matrix result;
-			result.M11 = scale.X * (1.0f - (yy + zz));
-			result.M12 = scale.Y * (xy - wz);
-			result.M13 = scale.Z * (xz + wy);
-			result.M14 = translation.X;
-
-			result.M21 = scale.X * (xy + wz);
-			result.M22 = scale.Y * (1.0f - (xx + zz));
-			result.M23 = scale.Z * (yz - wx);
-			result.M24 = translation.Y;
-
-			result.M31 = scale.X * (xz - wy);
-			result.M32 = scale.Y * (yz + wx);
-			result.M33 = scale.Z * (1.0f - (xx + yy));
-			result.M34 = translation.Z;
-
-			result.M41 = 0.0f;
-			result.M42 = 0.0f;
-			result.M43 = 0.0f;
-			result.M44 = 1.0f;
+			var result = Matrix.CreateFromQuaternion(quaternion) *
+				Matrix.CreateScale(scale) *
+				Matrix.CreateTranslation(translation);
 
 			return result;
 		}
@@ -367,6 +341,8 @@ namespace Nursia.Graphics3D.Scene
 					{
 						Id = childData.GetId()
 					};
+
+					mesh.Transform = LoadTransform(childData);
 
 					var partsData = (JArray)childData["parts"];
 					foreach(JObject partData in partsData)

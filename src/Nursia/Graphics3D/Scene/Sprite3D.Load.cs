@@ -48,6 +48,14 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
+		private static Matrix CreateTransform(Vector3 translation,
+			Vector3 scale, Quaternion rotation)
+		{
+			return Matrix.CreateFromQuaternion(rotation) *
+				Matrix.CreateScale(scale) *
+				Matrix.CreateTranslation(translation);
+		}
+
 		private static Matrix LoadTransform(JObject data)
 		{
 			var scale = Vector3.One;
@@ -72,11 +80,7 @@ namespace Nursia.Graphics3D.Scene
 			var quaternion = new Quaternion(rotation.X,
 				rotation.Y, rotation.Z, rotation.W);
 
-			var result = Matrix.CreateFromQuaternion(quaternion) *
-				Matrix.CreateScale(scale) *
-				Matrix.CreateTranslation(translation);
-
-			return result;
+			return CreateTransform(translation, scale, quaternion);
 		}
 
 		private static Bone LoadBone(JObject data)
@@ -88,32 +92,65 @@ namespace Nursia.Graphics3D.Scene
 
 			var result = new Bone
 			{
-				Id = data.EnsureString("node"),
+				NodeId = data.EnsureString("node"),
 				Transform = Matrix.Invert(LoadTransform(data))
 			};
 
 			return result;
 		}
 
-		private static BoneNode LoadBoneNode(JObject data)
+		private static Node LoadNode(JObject data)
 		{
 			if (data == null)
 			{
 				return null;
 			}
 
-			var result = new BoneNode
+			Node result;
+			if (data.ContainsKey("parts"))
 			{
-				Id = data.GetId(),
-				Transform = LoadTransform(data)
-			};
+				// Mesh
+				var mesh = new MeshNode();
+
+				var partsData = (JArray)data["parts"];
+				foreach (JObject partData in partsData)
+				{
+					var newPart = new MeshPart
+					{
+						MeshPartId = partData["meshpartid"].ToString(),
+						MaterialId = partData["materialid"].ToString()
+					};
+
+					if (partData.ContainsKey("bones"))
+					{
+						var bonesData = (JArray)partData["bones"];
+						foreach (JObject boneData in bonesData)
+						{
+							var bone = LoadBone(boneData);
+							newPart.Bones.Add(bone);
+						}
+					}
+
+					mesh.Parts.Add(newPart);
+				}
+
+				result = mesh;
+			}
+			else
+			{
+				// Ordinary node
+				result = new Node();
+			}
+
+			result.Id = data.GetId();
+			result.Transform = LoadTransform(data);
 
 			if (data.ContainsKey("children"))
 			{
 				var children = (JArray)data["children"];
 				foreach (JObject child in children)
 				{
-					var childNode = LoadBoneNode(child);
+					var childNode = LoadNode(child);
 					childNode.Parent = result;
 					result.Children.Add(childNode);
 				}
@@ -372,61 +409,38 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			// Load nodes hierarchy
-			var nodes = (JObject)((JArray)root["nodes"])[0];
-			var nodesData = (JArray)nodes["children"];
-			foreach(JObject childData in nodesData)
-			{
-				if (childData.ContainsKey("children"))
-				{
-					// Bone
-					result.RootNode = LoadBoneNode(nodes);
-				} else
-				{
-					// Mesh
-					var mesh = new Mesh
-					{
-						Id = childData.GetId()
-					};
-
-					mesh.Transform = LoadTransform(childData);
-
-					var partsData = (JArray)childData["parts"];
-					foreach(JObject partData in partsData)
-					{
-						var meshPart = meshes[partData["meshpartid"].ToString()];
-						var newPart = new MeshPart
-						{
-							IndexBuffer = meshPart.IndexBuffer,
-							VertexBuffer = meshPart.VertexBuffer,
-							BonesPerMesh = meshPart.BonesPerMesh
-						};
-
-						var materialId = partData["materialid"].ToString();
-						newPart.Material = (from m in result.Materials where m.Id == materialId select m).First();
-
-						if (partData.ContainsKey("bones"))
-						{
-							var bonesData = (JArray)partData["bones"];
-							foreach (JObject boneData in bonesData)
-							{
-								var bone = LoadBone(boneData);
-								newPart.Bones.Add(bone);
-							}
-						}
-
-						mesh.Parts.Add(newPart);
-					}
-
-					result.Meshes.Add(mesh);
-				}
-			}
+			var rootNode = (JObject)((JArray)root["nodes"])[0];
+			result.RootNode = LoadNode(rootNode);
 
 			if (result.RootNode != null)
 			{
-				var boneNodesDict = new Dictionary<string, BoneNode>();
-				result.TraverseBoneNodes(bn =>
+				// Update meshes and materials
+				result.TraverseNodes(bn =>
 				{
-					boneNodesDict[bn.Id] = bn;
+					var asMesh = bn as MeshNode;
+					if (asMesh == null)
+					{
+						return;
+					}
+
+					foreach (var part in asMesh.Parts)
+					{
+						var meshPart = meshes[part.MeshPartId];
+
+						part.VertexBuffer = meshPart.VertexBuffer;
+						part.IndexBuffer = meshPart.IndexBuffer;
+						part.BonesPerMesh = meshPart.BonesPerMesh;
+
+						part.Material = (from m in result.Materials where m.Id == part.MaterialId select m).First();
+					}
+
+					result.Meshes.Add(asMesh);
+				});
+
+				var NodesDict = new Dictionary<string, Node>();
+				result.TraverseNodes(bn =>
+				{
+					NodesDict[bn.Id] = bn;
 				});
 
 				// Set parent nodes
@@ -436,13 +450,84 @@ namespace Nursia.Graphics3D.Scene
 					{
 						foreach (var bone in part.Bones)
 						{
-							BoneNode bn;
-							if (boneNodesDict.TryGetValue(bone.Id, out bn))
+							Node bn;
+							if (NodesDict.TryGetValue(bone.NodeId, out bn))
 							{
 								bone.ParentNode = bn;
 							}
 						}
 					}
+				}
+			}
+
+			// Load animations
+			if (root.ContainsKey("animations"))
+			{
+				var animationsData = (JArray)root["animations"];
+				foreach (JObject animationData in animationsData)
+				{
+					var animation = new Sprite3DAnimation
+					{
+						Id = animationData.GetId()
+					};
+
+					var bonesData = (JArray)animationData["bones"];
+					foreach(JObject boneData in bonesData)
+					{
+						var boneId = boneData["boneId"].ToString();
+						var Node = result.FindNodeById(boneId);
+						if (Node == null)
+						{
+							throw new Exception(string.Format("Could not find bone '{0}'.", boneId));
+						}
+
+						var boneAnimation = new BoneAnimation
+						{
+							Node = Node
+						};
+
+						Vector3 scale, translation;
+						Quaternion rotation;
+
+						Node.Transform.Decompose(out scale,
+							out rotation, out translation);
+
+						var keyframesData = (JArray)boneData["keyframes"];
+						foreach (JObject keyframeData in keyframesData)
+						{
+							var keyframe = new AnimationKeyframe
+							{
+								Time = TimeSpan.FromMilliseconds(keyframeData["keytime"].ToFloat()),
+							};
+
+							JToken token;
+							if (keyframeData.TryGetValue("scale", out token))
+							{
+								scale = token.ToVector3();
+							}
+
+							if (keyframeData.TryGetValue("translation", out token))
+							{
+								translation = token.ToVector3();
+							}
+
+							if (keyframeData.TryGetValue("rotation", out token))
+							{
+								var v = token.ToVector4();
+								rotation = new Quaternion(v.X, v.Y, v.Z, v.W);
+							}
+
+							keyframe.Transform = CreateTransform(translation,
+								scale,
+								rotation);
+
+							boneAnimation.Frames.Add(keyframe);
+						}
+
+						animation.BoneAnimations.Add(boneAnimation);
+					}
+
+					result.Animations[animation.Id] = animation;
 				}
 			}
 

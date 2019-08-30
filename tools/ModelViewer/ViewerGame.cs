@@ -50,6 +50,8 @@ namespace ModelViewer
 					}
 				});
 
+			_model.CurrentAnimation = "Skeleton01_anim_walk";
+
 /*			_model = new Sprite3D();
 			var newMesh = PrimitivesFactory.CreateCube(1);
 			_model.Meshes.Add(newMesh);*/
@@ -109,8 +111,9 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(180)) *
-				Matrix.CreateRotationY(MathHelper.ToRadians(180));
+			_model.UpdateCurrentAnimation();
+/*			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(180)) *
+				Matrix.CreateRotationY(MathHelper.ToRadians(180));*/
 
 			var camera = _controller.Camera;
 			_renderer.Begin();

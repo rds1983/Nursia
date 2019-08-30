@@ -6,12 +6,15 @@ namespace Nursia.Graphics3D.Scene
 {
 	public partial class Sprite3D
 	{
-		private readonly List<Mesh> _meshes = new List<Mesh>();
+		private readonly List<MeshNode> _meshes = new List<MeshNode>();
 		private readonly List<Material> _materials = new List<Material>();
+		private readonly Dictionary<string, Sprite3DAnimation> _animations = new Dictionary<string, Sprite3DAnimation>();
+		private string _currentAnimation = null;
+		private DateTime? _lastAnimationUpdate;
 
-		public Matrix Transform;
+		public Matrix Transform = Matrix.Identity;
 
-		public List<Mesh> Meshes
+		public List<MeshNode> Meshes
 		{
 			get
 			{
@@ -27,12 +30,68 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public BoneNode RootNode
+		public Dictionary<string, Sprite3DAnimation> Animations
+		{
+			get
+			{
+				return _animations;
+			}
+		}
+
+		public Node RootNode
 		{
 			get; set;
 		}
 
-		private static void TraverseBoneNodes(BoneNode root, Action<BoneNode> action)
+		public string CurrentAnimation
+		{
+			get
+			{
+				return _currentAnimation;
+			}
+
+			set
+			{
+				if (value == _currentAnimation)
+				{
+					return;
+				}
+
+				if (value != null && !Animations.ContainsKey(value))
+				{
+					throw new ArgumentException(string.Format("There's no animation '{0}'", value));
+				}
+
+				_currentAnimation = value;
+				_lastAnimationUpdate = null;
+			}
+		}
+
+		public Node FindNodeById(string id)
+		{
+			return RootNode.FindNodeById(id);
+		}
+
+		public Bone FindBoneById(string id)
+		{
+			foreach(var mesh in _meshes)
+			{
+				foreach(var part in mesh.Parts)
+				{
+					foreach(var bone in part.Bones)
+					{
+						if (bone.NodeId == id)
+						{
+							return bone;
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private static void TraverseNodes(Node root, Action<Node> action)
 		{
 			if (root == null)
 			{
@@ -43,39 +102,96 @@ namespace Nursia.Graphics3D.Scene
 
 			foreach (var child in root.Children)
 			{
-				TraverseBoneNodes(child, action);
+				TraverseNodes(child, action);
 			}
 		}
 
-		internal void TraverseBoneNodes(Action<BoneNode> action)
+		internal void TraverseNodes(Action<Node> action)
 		{
-			TraverseBoneNodes(RootNode, action);
+			TraverseNodes(RootNode, action);
 		}
 
-		private void UpdateBoneNodesAbsoluteTransforms(BoneNode root, Matrix transform)
+		private void UpdateNodesAbsoluteTransforms(Node root, Matrix transform)
 		{
 			if (root == null)
 			{
 				return;
 			}
 
-			transform = root.Transform * transform;
-			root.AbsoluteTransform = transform;
-
+			root.AbsoluteTransform = root.Transform * transform;
 			foreach (var child in root.Children)
 			{
-				UpdateBoneNodesAbsoluteTransforms(child, transform);
+				UpdateNodesAbsoluteTransforms(child, root.AbsoluteTransform);
 			}
 		}
 
-		internal void UpdateBoneNodesAbsoluteTransforms()
+		internal void UpdateNodesAbsoluteTransforms()
 		{
 			if (RootNode == null)
 			{
 				return;
 			}
 
-			UpdateBoneNodesAbsoluteTransforms(RootNode, Matrix.Identity);
+			UpdateNodesAbsoluteTransforms(RootNode, Transform);
+		}
+
+		public void UpdateCurrentAnimation()
+		{
+			if (_currentAnimation == null)
+			{
+				return;
+			}
+
+			Sprite3DAnimation animation;
+			if (!Animations.TryGetValue(_currentAnimation, out animation))
+			{
+				throw new Exception(string.Format("There's no animation '{0}'", _currentAnimation));
+			}
+
+			TimeSpan? passed = null;
+			var now = DateTime.Now;
+			if (_lastAnimationUpdate != null)
+			{
+				passed = now - _lastAnimationUpdate.Value;
+			}
+
+			var allFound = true;
+			foreach(var bone in animation.BoneAnimations)
+			{
+				if (bone.Frames.Count == 0)
+				{
+					continue;
+				}
+
+				if (passed == null)
+				{
+					// Use first frame
+					bone.Node.Transform = bone.Frames[0].Transform;
+					continue;
+				}
+
+				var found = false;
+				foreach(var frame in bone.Frames)
+				{
+					if (passed < frame.Time)
+					{
+						// Use this frame
+						found = true;
+						bone.Node.Transform = frame.Transform;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					allFound = false;
+				}
+			}
+
+			if (_lastAnimationUpdate == null || !allFound)
+			{
+				_lastAnimationUpdate = now;
+			}
 		}
 	}
 }

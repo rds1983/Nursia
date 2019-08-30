@@ -1,9 +1,8 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Nursia.Graphics3D.Scene
 {
-	public class Mesh: ItemWithId
+	public class MeshNode: Node
 	{
 		private readonly List<MeshPart> _parts = new List<MeshPart>();
 
@@ -15,11 +14,9 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public Matrix Transform { get; set; } = Matrix.Identity;
-
 		public void Draw(RenderContext context)
 		{
-			using (var scope = new TransformScope(context, Transform))
+			using (var scope = new TransformScope(context, AbsoluteTransform))
 			{
 				foreach (var part in _parts)
 				{

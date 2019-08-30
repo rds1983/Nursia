@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Nursia.Graphics3D.Scene
 {
@@ -9,6 +8,9 @@ namespace Nursia.Graphics3D.Scene
 	{
 		private readonly List<Bone> _bones = new List<Bone>();
 		private Matrix[] _boneTransforms = null;
+
+		internal string MeshPartId { get; set; }
+		internal string MaterialId { get; set; }
 
 		public Material Material { get; set; }
 		public VertexBuffer VertexBuffer { get; set; }
@@ -75,12 +77,11 @@ namespace Nursia.Graphics3D.Scene
 			var worldViewProj = transform * camera.View * camera.Projection;
 			var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(transform));
 
-			var boneTransforms = CalculateBoneTransforms();
 			if (BonesPerMesh != BonesPerMesh.None)
 			{
+				var boneTransforms = CalculateBoneTransforms();
 				effect.Parameters["_bones"].SetValue(boneTransforms);
 			}
-
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(Material.DiffuseColor.ToVector4());

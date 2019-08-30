@@ -2,11 +2,12 @@
 
 namespace Nursia.Graphics3D.Scene
 {
-	public class Bone: ItemWithId
+	public class Bone
 	{
 		public Matrix Transform;
 		public int Index { get; set; }
-		public BoneNode ParentNode { get; set; }
+		public Node ParentNode { get; set; }
+		internal string NodeId { get; set; }
 
 		public Bone()
 		{

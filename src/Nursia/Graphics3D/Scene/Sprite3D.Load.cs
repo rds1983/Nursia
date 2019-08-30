@@ -162,6 +162,8 @@ namespace Nursia.Graphics3D.Scene
 		private static void LoadFloat(byte[] dest, ref int destIdx, float data)
 		{
 			var byteData = BitConverter.GetBytes(data);
+
+			var aaa = BitConverter.ToSingle(byteData, 0);
 			Array.Copy(byteData, 0, dest, destIdx, byteData.Length);
 			destIdx += byteData.Length;
 		}
@@ -178,21 +180,65 @@ namespace Nursia.Graphics3D.Scene
 		}
 
 		private static VertexBuffer LoadVertexBuffer(
-			VertexDeclaration declaration, 
+			ref VertexDeclaration declaration, 
 			int elementsPerRow,
 			JArray data)
 		{
 			var rowsCount = data.Count / elementsPerRow;
+			var elements = declaration.GetVertexElements();
+
+			var blendWeightOffset = 0;
+			var blendWeightCount = (from e in elements
+									where e.VertexElementUsage == VertexElementUsage.BlendWeight
+									select e).Count();
+			var hasBlendWeight = blendWeightCount > 0;
+			if (blendWeightCount > 4)
+			{
+				throw new Exception("4 is maximum amount of weights per bone");
+			}
+			if (hasBlendWeight)
+			{
+				blendWeightOffset = (from e in elements
+									 where e.VertexElementUsage == VertexElementUsage.BlendWeight
+									 select e).First().Offset;
+
+				var newElements = new List<VertexElement>();
+				newElements.AddRange(from e in elements
+									 where e.VertexElementUsage != VertexElementUsage.BlendWeight
+									 select e);
+				newElements.Add(new VertexElement(blendWeightOffset, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0));
+				newElements.Add(new VertexElement(blendWeightOffset + 4, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 0));
+				declaration = new VertexDeclaration(newElements.ToArray());
+			}
+
 			var byteData = new byte[rowsCount * declaration.VertexStride];
 
-			var destIdx = 0;
-			var srcIdx = 0;
 			for (var i = 0; i < rowsCount; ++i)
 			{
-				var elements = declaration.GetVertexElements();
+				var destIdx = i * declaration.VertexStride;
+				var srcIdx = i * elementsPerRow;
+				var weightsCount = 0;
 				for (var j = 0; j < elements.Length; ++j)
 				{
 					var element = elements[j];
+
+					if (element.VertexElementUsage == VertexElementUsage.BlendWeight)
+					{
+						// Convert from libgdx multiple vector2 blendweight
+						// to single int4 blendindices/vector4 blendweight
+						if (element.VertexElementFormat != VertexElementFormat.Vector2)
+						{
+							throw new Exception("Only Vector2 format for BlendWeight supported.");
+						}
+
+						var offset = i * declaration.VertexStride + blendWeightOffset + weightsCount;
+						LoadByte(byteData, ref offset, (int)(float)data[srcIdx++]);
+
+						offset = i * declaration.VertexStride + blendWeightOffset + 4 + weightsCount * 4;
+						LoadFloat(byteData, ref offset, (float)data[srcIdx++]);
+						++weightsCount;
+						continue;
+					}
 
 					switch (element.VertexElementFormat)
 					{
@@ -272,7 +318,7 @@ namespace Nursia.Graphics3D.Scene
 					bonesPerMesh = BonesPerMesh.One;
 				}
 
-				var vertexBuffer = LoadVertexBuffer(declaration, elementsPerRow, vertices);
+				var vertexBuffer = LoadVertexBuffer(ref declaration, elementsPerRow, vertices);
 
 				var partsData = (JArray)meshData["parts"];
 				foreach (JObject partData in partsData)

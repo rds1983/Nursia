@@ -2,7 +2,7 @@ SET TwoMGFX="C:\Program Files (x86)\MSBuild\MonoGame\v3.0\Tools\2MGFX.exe"
 SET FXC="C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64\fxc.exe"
 
 rem No defines
-%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect.dx11.mgfxo
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect.dx11.mgfxo /Profile:DirectX_11
 %TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect.ogl.mgfxo /Profile:OpenGL
 %FXC% /T fx_2_0 /Fo ..\Resources\Effects\DefaultEffect.fxb DefaultEffect.fx
 

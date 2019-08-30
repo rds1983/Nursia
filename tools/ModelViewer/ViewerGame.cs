@@ -109,8 +109,8 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(90)) *
-				Matrix.CreateRotationY(MathHelper.ToRadians(angle));
+			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(180)) *
+				Matrix.CreateRotationY(MathHelper.ToRadians(180));
 
 			var camera = _controller.Camera;
 			_renderer.Begin();

@@ -12,7 +12,7 @@ namespace Nursia.Graphics3D
 		{
 			_context = context;
 			_oldTransform = context.Transform;
-			_context.Transform *= transform;
+			_context.Transform = transform * _context.Transform;
 		}
 
 		public void Dispose()

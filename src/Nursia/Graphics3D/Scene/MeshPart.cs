@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Nursia.Graphics3D.Scene
 {
@@ -61,25 +62,25 @@ namespace Nursia.Graphics3D.Scene
 			// Set the View matrix which defines the camera and what it's looking at
 			var camera = context.Camera;
 			camera.Viewport = new Vector2(device.Viewport.Width, device.Viewport.Height);
-			var viewProjection = camera.View * camera.Projection;
 
 			var lights = context.Lights;
 
 			// Apply the effect and render items
 			var effect = Assets.GetDefaultEffect(!Material.IgnoreLight, (int)BonesPerMesh);
 
-			if (BonesPerMesh != BonesPerMesh.None)
-			{
-				var boneTransforms = CalculateBoneTransforms();
-				effect.Parameters["_bones"].SetValue(boneTransforms);
-			}
-
 			device.SetVertexBuffer(VertexBuffer);
 			device.Indices = IndexBuffer;
 
 			var transform = context.Transform;
-			var worldViewProj = transform * viewProjection;
+			var worldViewProj = transform * camera.View * camera.Projection;
 			var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(transform));
+
+			var boneTransforms = CalculateBoneTransforms();
+			if (BonesPerMesh != BonesPerMesh.None)
+			{
+				effect.Parameters["_bones"].SetValue(boneTransforms);
+			}
+
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(Material.DiffuseColor.ToVector4());
@@ -122,7 +123,6 @@ namespace Nursia.Graphics3D.Scene
 				foreach (var pass in effect.CurrentTechnique.Passes)
 				{
 					pass.Apply();
-
 					device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0,
 						VertexBuffer.VertexCount, 0, PrimitiveCount);
 				}

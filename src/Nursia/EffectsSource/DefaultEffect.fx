@@ -62,12 +62,12 @@ VSOutput VertexShaderFunction(VSInput input)
     float4x3 skinning = 0;
     skinning += _bones[(int)input.Indices[0]] * input.Weights[0];
     
-#if BONES==2
+#if BONES>1
     skinning += _bones[(int)input.Indices[1]] * input.Weights[1];
 #endif
-#if BONES==4
-/*    skinning += _bones[(int)input.Indices[2]] * input.Weights[2];
-    skinning += _bones[(int)input.Indices[3]] * input.Weights[3];*/
+#if BONES>2
+    skinning += _bones[(int)input.Indices[2]] * input.Weights[2];
+    skinning += _bones[(int)input.Indices[3]] * input.Weights[3];
 #endif    
     input.Position.xyz = mul(input.Position, skinning);
 #ifdef LIGHTNING

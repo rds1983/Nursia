@@ -66,7 +66,7 @@ namespace ModelViewer
 
 			_context.Lights.Add(new DirectionalLight
 			{
-				Color = Color.Red,
+				Color = Color.White,
 				Direction = new Vector3(-1.0f, 0.0f, -1.0f)
 			});
 
@@ -112,7 +112,7 @@ namespace ModelViewer
 			GraphicsDevice.Clear(Color.Black);
 
 			_model.UpdateCurrentAnimation();
-			//			_model.Transform = Matrix.CreateRotationZ(MathHelper.ToRadians(angle));
+//			_model.Transform = Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
 			_context.View = _camera.View;
 			_context.Projection = Matrix.CreatePerspectiveFieldOfView(

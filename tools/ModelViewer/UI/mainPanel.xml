@@ -12,8 +12,8 @@
         <Proportion />
       </RowsProportions>
       <TextBlock Text="Model" />
-      <TextField Text="" Width="400" GridColumn="1" />
-      <TextButton Text="Browse..." Id="_buttonBrowse" GridColumn="2" />
+      <TextField Text="" Readonly="True" Id="_textPath" Width="400" GridColumn="1" />
+      <TextButton Text="Open..." Id="_buttonBrowse" GridColumn="2" />
       <TextBlock Text="Animations" GridRow="1" />
       <ComboBox Id="_comboAnimations" GridColumn="1" GridRow="1">
         <ListItem />

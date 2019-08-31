@@ -11,7 +11,7 @@ using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System;
 using System.IO;
-
+using System.Reflection;
 using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
 using RenderContext = Nursia.Graphics3D.RenderContext;
 
@@ -27,7 +27,6 @@ namespace ModelViewer
 		private readonly RenderContext _context = new RenderContext();
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
-		private string _lastPath;
 
 		public ViewerGame()
 		{
@@ -63,13 +62,10 @@ namespace ModelViewer
 				}
 			}
 
-			_lastPath = file;
+			_mainPanel._textPath.Text = file;
 
 			// Reset camera
-			_camera.SetLookAt(
-				new Vector3(0, 50, 0),
-				Vector3.Zero,
-				Vector3.Up);
+			_camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 		}
 
 		protected override void LoadContent()
@@ -105,9 +101,13 @@ namespace ModelViewer
 
 			try
 			{
-				if (!string.IsNullOrEmpty(_lastPath))
+				if (!string.IsNullOrEmpty(_mainPanel._textPath.Text))
 				{
-					dlg.Folder = Path.GetDirectoryName(_lastPath);
+					dlg.Folder = Path.GetDirectoryName(_mainPanel._textPath.Text);
+				} else
+				{
+					var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+					dlg.Folder = @"D:\Projects\Nursia\samples\models";
 				}
 			}
 			catch (Exception)

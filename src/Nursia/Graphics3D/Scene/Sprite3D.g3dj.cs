@@ -333,11 +333,16 @@ namespace Nursia.Graphics3D.Scene
 				material.DiffuseColor = new Color(obj.ToVector4(1.0f));
 			}
 
+			material.Texture = Assets.White;
+
 			var texturesData = (JArray)materialData["textures"];
-			var name = texturesData[0]["filename"].ToString();
-			if (!string.IsNullOrEmpty(name))
+			if (texturesData != null)
 			{
-				material.Texture = textureGetter(name);
+				var name = texturesData[0]["filename"].ToString();
+				if (!string.IsNullOrEmpty(name))
+				{
+					material.Texture = textureGetter(name);
+				}
 			}
 
 			return material;
@@ -425,7 +430,8 @@ namespace Nursia.Graphics3D.Scene
 			var children = (JArray)root["nodes"];
 			foreach (JObject childData in children)
 			{
-				result.RootNode.Children.Add(LoadNode(childData));
+				var node = LoadNode(childData);
+				result.RootNode.Children.Add(node);
 			}
 
 			if (result.RootNode != null)

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
 using SpriteFontPlus;
 using System.Reflection;
@@ -9,12 +10,27 @@ namespace Nursia
 	{
 		private static SpriteFont _debugFont;
 		private static Effect[] _defaultEffect = new Effect[10];
+		private static Texture2D _white;
 
 		private static Assembly Assembly
 		{
 			get
 			{
 				return typeof(Assets).Assembly;
+			}
+		}
+
+		internal static Texture2D White
+		{
+			get
+			{
+				if (_white == null)
+				{
+					_white = new Texture2D(Nrs.GraphicsDevice, 1, 1);
+					_white.SetData(new[] { Color.White });
+				}
+
+				return _white;
 			}
 		}
 

@@ -6,7 +6,7 @@ namespace Nursia.Graphics3D
 	public class Camera
 	{
 		private Vector3 _position;
-		private float _yawAngle, _pitchAngle;
+		private float _yawAngle, _pitchAngle, _rollAngle;
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private bool _dirty = true;
@@ -45,6 +45,19 @@ namespace Nursia.Graphics3D
 				if (_pitchAngle != value)
 				{
 					_pitchAngle = value;
+					Invalidate();
+				}
+			}
+		}
+
+		public float RollAngle
+		{
+			get { return _rollAngle; }
+			set
+			{
+				if (_rollAngle != value)
+				{
+					_rollAngle = value;
 					Invalidate();
 				}
 			}
@@ -90,17 +103,15 @@ namespace Nursia.Graphics3D
 		{
 		}
 
-		public void SetLookAt(Vector3 position,
-			Vector3 target,
-			Vector3 up)
+		public void SetLookAt(Vector3 position, Vector3 target)
 		{
 			Position = position;
 
 			var direction = target - _position;
 			direction.Normalize();
 
-			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(direction, Vector3.Forward)));
-			YawAngle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(up, Vector3.Up)));
+			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Asin(direction.Y));
+			YawAngle = MathHelper.ToDegrees((float)Math.Atan2(direction.X, direction.Y));
 		}
 
 		private void Invalidate()
@@ -117,10 +128,10 @@ namespace Nursia.Graphics3D
 
 			var rotation = Matrix.CreateFromYawPitchRoll(
 				MathHelper.ToRadians(YawAngle), 
-				MathHelper.ToRadians(PitchAngle), 
-				0);
+				MathHelper.ToRadians(PitchAngle),
+				MathHelper.ToRadians(RollAngle));
 
-			_direction = Vector3.Transform(new Vector3(0, 0, -1), rotation);
+			_direction = Vector3.Transform(Vector3.Backward, rotation);
 			_up = Vector3.Transform(Vector3.Up, rotation);
 			_right = Vector3.Cross(_direction, _up);
 			_right.Normalize();

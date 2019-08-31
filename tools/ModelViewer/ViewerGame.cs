@@ -6,6 +6,7 @@ using Nursia.Graphics3D;
 using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System.IO;
+
 using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
 
 namespace ModelViewer
@@ -14,6 +15,7 @@ namespace ModelViewer
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Sprite3D _model;
+		private Camera _camera;
 		private CameraInputController _controller;
 		private SpriteBatch _spriteBatch;
 		private ForwardRenderer _renderer;
@@ -40,11 +42,11 @@ namespace ModelViewer
 
 			_renderer = new ForwardRenderer();
 
-			var data = File.ReadAllText(@"D:\Projects\Nursia\temp\swordsman\Model.g3dj");
-			_model = Sprite3D.LoadFromJson(data, 
+			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\models\skeleton\Model.g3dj");
+			_model = Sprite3D.LoadFromJson(data,
 				n =>
 				{
-					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\temp\swordsman", n)))
+					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples\models\skeleton", n)))
 					{
 						return Texture2D.FromStream(GraphicsDevice, stream);
 					}
@@ -52,11 +54,11 @@ namespace ModelViewer
 
 			_model.CurrentAnimation = "Skeleton01_anim_walk";
 
-/*			_model = new Sprite3D();
-			var newMesh = PrimitivesFactory.CreateCube(1);
-			_model.Meshes.Add(newMesh);*/
+			/*			_model = new Sprite3D();
+						var newMesh = PrimitivesFactory.CreateCube(1);
+						_model.Meshes.Add(newMesh);*/
 
-/*			_context.Lights.Add(new DirectionalLight
+			_context.Lights.Add(new DirectionalLight
 			{
 				Color = Color.White,
 				Direction = new Vector3(1.0f, 0.0f, -1.0f)
@@ -66,12 +68,14 @@ namespace ModelViewer
 			{
 				Color = Color.Red,
 				Direction = new Vector3(-1.0f, 0.0f, -1.0f)
-			});*/
+			});
 
-			_context.View = Matrix.CreateLookAt(
-				new Vector3(0, 50, 1.0f),
+			_camera = new Camera(
+				new Vector3(0, 0, 50),
 				Vector3.Zero,
-				new Vector3(0, 1.0f, 0));
+				Vector3.Up);
+
+			_controller = new CameraInputController(_camera);
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -82,7 +86,7 @@ namespace ModelViewer
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
 				Exit();
 
-/*			// Manage camera input controller
+			// Manage camera input controller
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
@@ -94,10 +98,9 @@ namespace ModelViewer
 			_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
 			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 
-
 			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 
-			_controller.Update();*/
+			_controller.Update();
 		}
 
 		int angle = 0;
@@ -108,9 +111,10 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-/*			_model.UpdateCurrentAnimation();
-			_model.Transform = Matrix.CreateRotationZ(MathHelper.ToRadians(angle));*/
+			_model.UpdateCurrentAnimation();
+			//			_model.Transform = Matrix.CreateRotationZ(MathHelper.ToRadians(angle));
 
+			_context.View = _camera.View;
 			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
 					MathHelper.ToRadians(67.0f),
 					_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
@@ -123,13 +127,9 @@ namespace ModelViewer
 
 			_spriteBatch.Begin();
 
-			Vector3 scale, translation;
-			Quaternion rotation;
-			_context.View.Decompose(out scale, out rotation, out translation);
-
-			_spriteBatch.DrawString(Assets.DebugFont, "View: " + translation, Vector2.Zero, Color.White);
-			_spriteBatch.DrawString(Assets.DebugFont, "Rotation Angle: " + angle, new Vector2(0, 32), Color.White);
-
+			_spriteBatch.DrawString(Assets.DebugFont, "Position: " + _camera.Position, Vector2.Zero, Color.White);
+			_spriteBatch.DrawString(Assets.DebugFont, "Yaw: " + _camera.YawAngle, new Vector2(0, 32), Color.White);
+			_spriteBatch.DrawString(Assets.DebugFont, "Pitch: " + _camera.PitchAngle, new Vector2(0, 64), Color.White);
 			_spriteBatch.End();
 
 			++angle;

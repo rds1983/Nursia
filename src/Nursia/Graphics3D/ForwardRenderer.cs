@@ -18,6 +18,7 @@ namespace Nursia.Graphics3D
 			_rasterizerState = device.RasterizerState;
 			_blendState = device.BlendState;
 
+			device.BlendState = BlendState.AlphaBlend;
 			device.DepthStencilState = DepthStencilState.Default;
 			device.RasterizerState = RasterizerState.CullNone;
 

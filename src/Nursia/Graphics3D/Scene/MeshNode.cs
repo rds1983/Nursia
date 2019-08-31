@@ -2,7 +2,7 @@
 
 namespace Nursia.Graphics3D.Scene
 {
-	public class MeshNode: Node
+	public class MeshNode : Node
 	{
 		private readonly List<MeshPart> _parts = new List<MeshPart>();
 
@@ -16,7 +16,7 @@ namespace Nursia.Graphics3D.Scene
 
 		public void Draw(RenderContext context)
 		{
-			using (var scope = new TransformScope(context, AbsoluteTransform))
+			using (var scope = new TransformScope(context, Transform))
 			{
 				foreach (var part in _parts)
 				{

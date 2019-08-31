@@ -18,7 +18,7 @@ namespace Nursia.Graphics3D.Scene
 			public VertexElementFormat Format { get; private set; }
 			public VertexElementUsage Usage { get; private set; }
 
-			public AttributeInfo(int size, int elementsCount, 
+			public AttributeInfo(int size, int elementsCount,
 				VertexElementFormat format, VertexElementUsage usage)
 			{
 				Size = size;
@@ -99,72 +99,12 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
-		private static Node LoadNode(JObject data)
-		{
-			if (data == null)
-			{
-				return null;
-			}
-
-			Node result;
-			if (data.ContainsKey("parts"))
-			{
-				// Mesh
-				var mesh = new MeshNode();
-
-				var partsData = (JArray)data["parts"];
-				foreach (JObject partData in partsData)
-				{
-					var newPart = new MeshPart
-					{
-						MeshPartId = partData["meshpartid"].ToString(),
-						MaterialId = partData["materialid"].ToString()
-					};
-
-					if (partData.ContainsKey("bones"))
-					{
-						var bonesData = (JArray)partData["bones"];
-						foreach (JObject boneData in bonesData)
-						{
-							var bone = LoadBone(boneData);
-							newPart.Bones.Add(bone);
-						}
-					}
-
-					mesh.Parts.Add(newPart);
-				}
-
-				result = mesh;
-			}
-			else
-			{
-				// Ordinary node
-				result = new Node();
-			}
-
-			result.Id = data.GetId();
-			result.Transform = LoadTransform(data);
-
-			if (data.ContainsKey("children"))
-			{
-				var children = (JArray)data["children"];
-				foreach (JObject child in children)
-				{
-					var childNode = LoadNode(child);
-					childNode.Parent = result;
-					result.Children.Add(childNode);
-				}
-			}
-
-			return result;
-		}
-
 		private static VertexDeclaration LoadDeclaration(JArray data, out int elementsPerData)
 		{
 			elementsPerData = 0;
 			var elements = new List<VertexElement>();
 			var offset = 0;
-			foreach(var elementData in data)
+			foreach (var elementData in data)
 			{
 				var name = elementData.ToString();
 				var usage = 0;
@@ -183,9 +123,9 @@ namespace Nursia.Graphics3D.Scene
 					throw new Exception(string.Format("Unknown attribute '{0}'", name));
 				}
 
-				var element = new VertexElement(offset, 
-					attributeInfo.Format, 
-					attributeInfo.Usage, 
+				var element = new VertexElement(offset,
+					attributeInfo.Format,
+					attributeInfo.Usage,
 					usage);
 				elements.Add(element);
 
@@ -217,7 +157,7 @@ namespace Nursia.Graphics3D.Scene
 		}
 
 		private static VertexBuffer LoadVertexBuffer(
-			ref VertexDeclaration declaration, 
+			ref VertexDeclaration declaration,
 			int elementsPerRow,
 			JArray data)
 		{
@@ -313,6 +253,152 @@ namespace Nursia.Graphics3D.Scene
 			return result;
 		}
 
+		private static void LoadMeshData(JObject meshData, Dictionary<string, MeshPart> meshes)
+		{
+			// Determine vertex type
+			int elementsPerRow;
+			var declaration = LoadDeclaration((JArray)meshData["attributes"], out elementsPerRow);
+			var vertices = (JArray)meshData["vertices"];
+
+			int bonesCount = 0;
+			foreach (var element in declaration.GetVertexElements())
+			{
+				if (element.VertexElementUsage != VertexElementUsage.BlendWeight)
+				{
+					continue;
+				}
+
+				if (element.UsageIndex + 1 > bonesCount)
+				{
+					bonesCount = element.UsageIndex + 1;
+				}
+			}
+
+			var bonesPerMesh = BonesPerMesh.None;
+			if (bonesCount >= 3)
+			{
+				bonesPerMesh = BonesPerMesh.Four;
+			}
+			else if (bonesCount == 2)
+			{
+				bonesPerMesh = BonesPerMesh.Two;
+			}
+			else if (bonesCount == 1)
+			{
+				bonesPerMesh = BonesPerMesh.One;
+			}
+
+			var vertexBuffer = LoadVertexBuffer(ref declaration, elementsPerRow, vertices);
+
+			var partsData = (JArray)meshData["parts"];
+			foreach (JObject partData in partsData)
+			{
+				var id = partData.GetId();
+
+				// var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
+				var indicesData = (JArray)partData["indices"];
+				var indices = new short[indicesData.Count];
+				for (var i = 0; i < indicesData.Count; ++i)
+				{
+					indices[i] = Convert.ToInt16(indicesData[i]);
+				}
+
+				var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits,
+					indices.Length, BufferUsage.None);
+				indexBuffer.SetData(indices);
+
+				meshes[id] = new MeshPart
+				{
+					IndexBuffer = indexBuffer,
+					VertexBuffer = vertexBuffer,
+					BonesPerMesh = bonesPerMesh
+				};
+			}
+		}
+
+		private static Material LoadMaterial(JObject materialData, Func<string, Texture2D> textureGetter)
+		{
+			var material = new Material
+			{
+				Id = materialData.GetId(),
+				DiffuseColor = Color.White
+			};
+
+			JToken obj;
+			if (materialData.TryGetValue("diffuse", out obj) && obj != null)
+			{
+				material.DiffuseColor = new Color(obj.ToVector4(1.0f));
+			}
+
+			var texturesData = (JArray)materialData["textures"];
+			var name = texturesData[0]["filename"].ToString();
+			if (!string.IsNullOrEmpty(name))
+			{
+				material.Texture = textureGetter(name);
+			}
+
+			return material;
+		}
+
+		private static Node LoadNode(JObject data)
+		{
+			if (data == null)
+			{
+				return null;
+			}
+
+			Node result;
+			if (data.ContainsKey("parts"))
+			{
+				// Mesh
+				var mesh = new MeshNode();
+
+				var partsData = (JArray)data["parts"];
+				foreach (JObject partData in partsData)
+				{
+					var newPart = new MeshPart
+					{
+						MeshPartId = partData["meshpartid"].ToString(),
+						MaterialId = partData["materialid"].ToString()
+					};
+
+					if (partData.ContainsKey("bones"))
+					{
+						var bonesData = (JArray)partData["bones"];
+						foreach (JObject boneData in bonesData)
+						{
+							var bone = LoadBone(boneData);
+							newPart.Bones.Add(bone);
+						}
+					}
+
+					mesh.Parts.Add(newPart);
+				}
+
+				result = mesh;
+			}
+			else
+			{
+				result = new Node();
+			}
+
+			result.Id = data.GetId();
+			result.Transform = LoadTransform(data);
+
+			if (data.ContainsKey("children"))
+			{
+				var children = (JArray)data["children"];
+				foreach (JObject child in children)
+				{
+					var childNode = LoadNode(child);
+					childNode.Parent = result;
+					result.Children.Add(childNode);
+				}
+			}
+
+			return result;
+		}
+
 		public static Sprite3D LoadFromJson(string json, Func<string, Texture2D> textureGetter)
 		{
 			var root = JObject.Parse(json);
@@ -322,90 +408,13 @@ namespace Nursia.Graphics3D.Scene
 			var meshes = new Dictionary<string, MeshPart>();
 			foreach (JObject meshData in meshesData)
 			{
-				// Determine vertex type
-				int elementsPerRow;
-				var declaration = LoadDeclaration((JArray)meshData["attributes"], out elementsPerRow);
-				var vertices = (JArray)meshData["vertices"];
-
-				int bonesCount = 0;
-				foreach(var element in declaration.GetVertexElements())
-				{
-					if (element.VertexElementUsage != VertexElementUsage.BlendWeight)
-					{
-						continue;
-					}
-
-					if (element.UsageIndex + 1 > bonesCount)
-					{
-						bonesCount = element.UsageIndex + 1;
-					}
-				}
-				
-				var bonesPerMesh = BonesPerMesh.None;
-				if (bonesCount >= 3)
-				{
-					bonesPerMesh = BonesPerMesh.Four;
-				}
-				else if (bonesCount == 2)
-				{
-					bonesPerMesh = BonesPerMesh.Two;
-				}
-				else if (bonesCount == 1)
-				{
-					bonesPerMesh = BonesPerMesh.One;
-				}
-
-				var vertexBuffer = LoadVertexBuffer(ref declaration, elementsPerRow, vertices);
-
-				var partsData = (JArray)meshData["parts"];
-				foreach (JObject partData in partsData)
-				{
-					var id = partData.GetId();
-
-					// var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
-					var indicesData = (JArray)partData["indices"];
-					var indices = new short[indicesData.Count];
-					for (var i = 0; i < indicesData.Count; ++i)
-					{
-						indices[i] = Convert.ToInt16(indicesData[i]);
-					}
-
-					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits,
-						indices.Length, BufferUsage.None);
-					indexBuffer.SetData(indices);
-
-					meshes[id] = new MeshPart
-					{
-						IndexBuffer = indexBuffer,
-						VertexBuffer = vertexBuffer,
-						BonesPerMesh = bonesPerMesh
-					};
-				}
+				LoadMeshData(meshData, meshes);
 			}
 
-			var materials = (JArray)root["materials"];
-			foreach (JObject materialData in materials)
+			var materialsData = (JArray)root["materials"];
+			foreach (JObject materialData in materialsData)
 			{
-				var material = new Material
-				{
-					Id = materialData.GetId(),
-					DiffuseColor = Color.White
-				};
-
-				JToken obj;
-				if (materialData.TryGetValue("diffuse", out obj) && obj != null)
-				{
-					material.DiffuseColor = new Color(obj.ToVector4(1.0f));
-				}
-
-				var texturesData = (JArray)materialData["textures"];
-				var name = texturesData[0]["filename"].ToString();
-				if (!string.IsNullOrEmpty(name))
-				{
-					material.Texture = textureGetter(name);
-				}
-
-				result.Materials.Add(material);
+				result.Materials.Add(LoadMaterial(materialData, textureGetter));
 			}
 
 			// Load nodes hierarchy
@@ -414,16 +423,22 @@ namespace Nursia.Graphics3D.Scene
 
 			if (result.RootNode != null)
 			{
-				// Update meshes and materials
+				var nodesDict = new Dictionary<string, Node>();
 				result.TraverseNodes(bn =>
 				{
-					var asMesh = bn as MeshNode;
-					if (asMesh == null)
+					nodesDict[bn.Id] = bn;
+				});
+
+				result.TraverseNodes(n =>
+				{
+					var mesh = n as MeshNode;
+					if (mesh == null)
 					{
 						return;
 					}
 
-					foreach (var part in asMesh.Parts)
+					// Update meshes and materials
+					foreach (var part in mesh.Parts)
 					{
 						var meshPart = meshes[part.MeshPartId];
 
@@ -431,19 +446,24 @@ namespace Nursia.Graphics3D.Scene
 						part.IndexBuffer = meshPart.IndexBuffer;
 						part.BonesPerMesh = meshPart.BonesPerMesh;
 
+						// Set parent nodes
+						foreach (var bone in part.Bones)
+						{
+							Node bn;
+							if (nodesDict.TryGetValue(bone.NodeId, out bn))
+							{
+								bone.ParentNode = bn;
+							}
+						}
+
+						// Set material
 						part.Material = (from m in result.Materials where m.Id == part.MaterialId select m).First();
 					}
 
-					result.Meshes.Add(asMesh);
+					result.Meshes.Add(mesh);
 				});
 
-				var NodesDict = new Dictionary<string, Node>();
-				result.TraverseNodes(bn =>
-				{
-					NodesDict[bn.Id] = bn;
-				});
 
-				// Set parent nodes
 				foreach (var m in result.Meshes)
 				{
 					foreach (var part in m.Parts)
@@ -451,7 +471,7 @@ namespace Nursia.Graphics3D.Scene
 						foreach (var bone in part.Bones)
 						{
 							Node bn;
-							if (NodesDict.TryGetValue(bone.NodeId, out bn))
+							if (nodesDict.TryGetValue(bone.NodeId, out bn))
 							{
 								bone.ParentNode = bn;
 							}
@@ -472,7 +492,7 @@ namespace Nursia.Graphics3D.Scene
 					};
 
 					var bonesData = (JArray)animationData["bones"];
-					foreach(JObject boneData in bonesData)
+					foreach (JObject boneData in bonesData)
 					{
 						var boneId = boneData["boneId"].ToString();
 						var Node = result.FindNodeById(boneId);

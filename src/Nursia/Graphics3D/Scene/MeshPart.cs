@@ -90,7 +90,6 @@ namespace Nursia.Graphics3D.Scene
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(context.World));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				device.BlendState = BlendState.Opaque;
 				for (var i = 0; i < lights.Count; ++i)
 				{
 					if (i == 1)
@@ -109,6 +108,12 @@ namespace Nursia.Graphics3D.Scene
 						device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0,
 							VertexBuffer.VertexCount, 0, PrimitiveCount);
 					}
+				}
+
+				if (lights.Count > 1)
+				{
+					// Change blend state back
+					device.BlendState = BlendState.AlphaBlend;
 				}
 			}
 			else

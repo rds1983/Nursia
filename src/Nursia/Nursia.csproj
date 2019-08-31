@@ -12,7 +12,6 @@
     <RootNamespace>Nursia</RootNamespace>
     <Version>1.0.0.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <DefineConstants>$(DefineConstants);STBSHARP_INTERNAL</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
   </PropertyGroup>
 
@@ -37,13 +36,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp" />
     <Compile Include="..\..\deps\MiniJson\**\*.cs" LinkBase="ThirdParty\MiniJson" />
     <Compile Include="..\..\deps\BMFontToSpriteFont\**\*.cs" LinkBase="ThirdParty\BMFontToSpriteFont" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Remove="Resources\Effects\DefaultEffect.dx11.mgfxo" />
   </ItemGroup>
   
   <ItemGroup>

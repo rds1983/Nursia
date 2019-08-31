@@ -62,8 +62,6 @@ namespace ModelViewer
 				}
 			}
 
-			_mainPanel._textPath.Text = file;
-
 			// Reset camera
 			_camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 		}
@@ -80,7 +78,9 @@ namespace ModelViewer
 			_mainPanel._comboAnimations.Items.Clear();
 			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
 
-			_mainPanel._buttonBrowse.Click += _buttonBrowse_Click;
+			_mainPanel._buttonChange.Click += OnChangeFolder;
+
+			_mainPanel._listFiles.SelectedIndexChanged += _listFiles_SelectedIndexChanged;
 
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainPanel);
@@ -89,15 +89,48 @@ namespace ModelViewer
 
 			LoadModel(string.Empty);
 
+			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			folder = @"D:\Projects\Nursia\samples\models";
+			SetFolder(folder);
+
 			_controller = new CameraInputController(_camera);
 		}
 
-		private void _buttonBrowse_Click(object sender, System.EventArgs e)
+		private void _listFiles_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var dlg = new FileDialog(FileDialogMode.OpenFile)
+			if (_mainPanel._listFiles.SelectedItem == null)
 			{
-				Filter = "*.g3dj"
-			};
+				LoadModel(null);
+			} else
+			{
+				LoadModel(_mainPanel._listFiles.SelectedItem.Id);
+			}
+		}
+
+		private void SetFolder(string folder)
+		{
+			_mainPanel._listFiles.Items.Clear();
+			var files = Directory.EnumerateFiles(folder, "*.g3dj");
+			foreach (var f in files)
+			{
+				var fileInfo = new FileInfo(f);
+				if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
+				{
+					continue;
+				}
+
+				_mainPanel._listFiles.Items.Add(new ListItem(fileInfo.Name)
+				{
+					Id = fileInfo.FullName
+				});
+			}
+
+			_mainPanel._textPath.Text = folder;
+		}
+
+		private void OnChangeFolder(object sender, EventArgs e)
+		{
+;			var dlg = new FileDialog(FileDialogMode.ChooseFolder);
 
 			try
 			{
@@ -107,7 +140,7 @@ namespace ModelViewer
 				} else
 				{
 					var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-					dlg.Folder = @"D:\Projects\Nursia\samples\models";
+					dlg.Folder = folder;
 				}
 			}
 			catch (Exception)
@@ -121,8 +154,7 @@ namespace ModelViewer
 					return;
 				}
 
-				var filePath = dlg.FilePath;
-				LoadModel(dlg.FilePath);
+				SetFolder(dlg.FilePath);
 			};
 
 			dlg.ShowModal(_desktop);

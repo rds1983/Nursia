@@ -157,9 +157,11 @@ namespace Nursia.Graphics3D.Scene
 				}
 
 				var found = false;
+
 				foreach(var frame in bone.Frames)
 				{
-					if (passed < frame.Time)
+					if (bone.Frames.Count == 1 ||
+						passed < frame.Time)
 					{
 						// Use this frame
 						found = true;

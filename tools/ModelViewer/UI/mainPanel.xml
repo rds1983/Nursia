@@ -1,0 +1,38 @@
+<Project>
+  <ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\tools\ModelViewer\UI" />
+  <Panel>
+    <Grid ColumnSpacing="8" RowSpacing="8">
+      <ColumnsProportions>
+        <Proportion />
+        <Proportion />
+        <Proportion />
+      </ColumnsProportions>
+      <RowsProportions>
+        <Proportion />
+        <Proportion />
+      </RowsProportions>
+      <TextBlock Text="Model" />
+      <TextField Text="" Width="400" GridColumn="1" />
+      <TextButton Text="Browse..." Id="_buttonBrowse" GridColumn="2" />
+      <TextBlock Text="Animations" GridRow="1" />
+      <ComboBox Id="_comboAnimations" GridColumn="1" GridRow="1">
+        <ListItem />
+        <ListItem Text="Move" />
+        <ListItem Text="Attack" />
+      </ComboBox>
+    </Grid>
+    <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <ColumnsProportions>
+        <Proportion />
+        <Proportion />
+      </ColumnsProportions>
+      <RowsProportions>
+        <Proportion />
+        <Proportion />
+        <Proportion />
+      </RowsProportions>
+      <TextBlock Text="FPS: 60.0" Id="_labelFps" />
+      <TextBlock Text="Camera: 0/50/0;270;0" Id="_labelCamera" GridRow="1" />
+    </Grid>
+  </Panel>
+</Project>

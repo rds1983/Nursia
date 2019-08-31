@@ -86,16 +86,20 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public Camera(Vector3 position,
+		public Camera()
+		{
+		}
+
+		public void SetLookAt(Vector3 position,
 			Vector3 target,
 			Vector3 up)
 		{
-			_position = position;
+			Position = position;
 
 			var direction = target - _position;
 			direction.Normalize();
 
-			PitchAngle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(direction, Vector3.Forward)));
+			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(direction, Vector3.Forward)));
 			YawAngle = MathHelper.ToDegrees((float)Math.Acos(Vector3.Dot(up, Vector3.Up)));
 		}
 

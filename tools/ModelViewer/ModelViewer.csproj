@@ -6,11 +6,17 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Nursia\Nursia.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
     <PackageReference Include="MonoGame.Framework.DesktopGL.Core" Version="3.7.0.7" />
+    <PackageReference Include="Myra" Version="0.9.0.171" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">
+    <PackageReference Include="Myra.FNA" Version="0.9.0.171" />
   </ItemGroup>
 </Project>

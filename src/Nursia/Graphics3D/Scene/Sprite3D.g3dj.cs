@@ -33,7 +33,8 @@ namespace Nursia.Graphics3D.Scene
 			["POSITION"] = new AttributeInfo(12, 3, VertexElementFormat.Vector3, VertexElementUsage.Position),
 			["NORMAL"] = new AttributeInfo(12, 3, VertexElementFormat.Vector3, VertexElementUsage.Normal),
 			["TEXCOORD"] = new AttributeInfo(8, 2, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate),
-			["BLENDWEIGHT"] = new AttributeInfo(8, 2, VertexElementFormat.Vector2, VertexElementUsage.BlendWeight)
+			["BLENDWEIGHT"] = new AttributeInfo(8, 2, VertexElementFormat.Vector2, VertexElementUsage.BlendWeight),
+			["COLORPACKED"] = new AttributeInfo(4, 1, VertexElementFormat.Color, VertexElementUsage.Color)
 		};
 		internal const string IdName = "name";
 
@@ -224,7 +225,6 @@ namespace Nursia.Graphics3D.Scene
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							break;
 						case VertexElementFormat.Vector3:
-						case VertexElementFormat.Color:
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
@@ -240,6 +240,9 @@ namespace Nursia.Graphics3D.Scene
 							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
 							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
 							LoadByte(byteData, ref destIdx, (int)data[srcIdx++]);
+							break;
+						case VertexElementFormat.Color:
+							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							break;
 						default:
 							throw new Exception(string.Format("{0} not supported", element.VertexElementFormat));
@@ -418,14 +421,23 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			// Load nodes hierarchy
-			var rootNode = (JObject)((JArray)root["nodes"])[0];
-			result.RootNode = LoadNode(rootNode);
+			result.RootNode = new Node();
+			var children = (JArray)root["nodes"];
+			foreach (JObject childData in children)
+			{
+				result.RootNode.Children.Add(LoadNode(childData));
+			}
 
 			if (result.RootNode != null)
 			{
 				var nodesDict = new Dictionary<string, Node>();
 				result.TraverseNodes(bn =>
 				{
+					if (bn.Id == null)
+					{
+						return;
+					}
+
 					nodesDict[bn.Id] = bn;
 				});
 

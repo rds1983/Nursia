@@ -1,13 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ModelViewer.UI;
+using Myra;
+using Myra.Graphics2D.UI;
+using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
+using System;
 using System.IO;
 
 using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
+using RenderContext = Nursia.Graphics3D.RenderContext;
 
 namespace ModelViewer
 {
@@ -15,11 +21,13 @@ namespace ModelViewer
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Sprite3D _model;
-		private Camera _camera;
+		private readonly Camera _camera = new Camera();
 		private CameraInputController _controller;
-		private SpriteBatch _spriteBatch;
 		private ForwardRenderer _renderer;
 		private readonly RenderContext _context = new RenderContext();
+		private Desktop _desktop = null;
+		private MainPanel _mainPanel;
+		private string _lastPath;
 
 		public ViewerGame()
 		{
@@ -32,50 +40,104 @@ namespace ModelViewer
 			IsMouseVisible = true;
 		}
 
+		private void LoadModel(string file)
+		{
+			if (!string.IsNullOrEmpty(file))
+			{
+				var folder = Path.GetDirectoryName(file);
+				var data = File.ReadAllText(file);
+				_model = Sprite3D.LoadFromJson(data,
+					n =>
+					{
+						using (var stream = File.OpenRead(Path.Combine(folder, n)))
+						{
+							return Texture2D.FromStream(GraphicsDevice, stream);
+						}
+					});
+
+				_mainPanel._comboAnimations.Items.Clear();
+				_mainPanel._comboAnimations.Items.Add(new ListItem(null));
+				foreach (var pair in _model.Animations)
+				{
+					_mainPanel._comboAnimations.Items.Add(new ListItem(pair.Key));
+				}
+			}
+
+			_lastPath = file;
+
+			// Reset camera
+			_camera.SetLookAt(
+				new Vector3(0, 50, 0),
+				Vector3.Zero,
+				Vector3.Up);
+		}
+
 		protected override void LoadContent()
 		{
 			base.LoadContent();
 
-			_spriteBatch = new SpriteBatch(GraphicsDevice);
+			MyraEnvironment.Game = this;
 
 			Nrs.Game = this;
 
+			_mainPanel = new MainPanel();
+			_mainPanel._comboAnimations.Items.Clear();
+			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
+
+			_mainPanel._buttonBrowse.Click += _buttonBrowse_Click;
+
+			_desktop = new Desktop();
+			_desktop.Widgets.Add(_mainPanel);
+
 			_renderer = new ForwardRenderer();
 
-			var data = File.ReadAllText(@"D:\Projects\Nursia\samples\models\skeleton\Model.g3dj");
-			_model = Sprite3D.LoadFromJson(data,
-				n =>
-				{
-					using (var stream = File.OpenRead(Path.Combine(@"D:\Projects\Nursia\samples\models\skeleton", n)))
-					{
-						return Texture2D.FromStream(GraphicsDevice, stream);
-					}
-				});
-
-			_model.CurrentAnimation = "Skeleton01_anim_walk";
-
-			/*			_model = new Sprite3D();
-						var newMesh = PrimitivesFactory.CreateCube(1);
-						_model.Meshes.Add(newMesh);*/
-
-			_context.Lights.Add(new DirectionalLight
-			{
-				Color = Color.White,
-				Direction = new Vector3(1.0f, 0.0f, -1.0f)
-			});
-
-			_context.Lights.Add(new DirectionalLight
-			{
-				Color = Color.White,
-				Direction = new Vector3(-1.0f, 0.0f, -1.0f)
-			});
-
-			_camera = new Camera(
-				new Vector3(0, 0, 50),
-				Vector3.Zero,
-				Vector3.Up);
+			LoadModel(string.Empty);
 
 			_controller = new CameraInputController(_camera);
+		}
+
+		private void _buttonBrowse_Click(object sender, System.EventArgs e)
+		{
+			var dlg = new FileDialog(FileDialogMode.OpenFile)
+			{
+				Filter = "*.g3dj"
+			};
+
+			try
+			{
+				if (!string.IsNullOrEmpty(_lastPath))
+				{
+					dlg.Folder = Path.GetDirectoryName(_lastPath);
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			dlg.Closed += (s, a) =>
+			{
+				if (!dlg.Result)
+				{
+					return;
+				}
+
+				var filePath = dlg.FilePath;
+				LoadModel(dlg.FilePath);
+			};
+
+			dlg.ShowModal(_desktop);
+		}
+
+		private void _comboAnimations_SelectedIndexChanged(object sender, System.EventArgs e)
+		{
+			if (_mainPanel._comboAnimations.SelectedItem == null)
+			{
+				_model.CurrentAnimation = null;
+			}
+			else
+			{
+				_model.CurrentAnimation = _mainPanel._comboAnimations.SelectedItem.Text;
+			}
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -103,16 +165,14 @@ namespace ModelViewer
 			_controller.Update();
 		}
 
-		int angle = 0;
-
-		protected override void Draw(GameTime gameTime)
+		private void DrawModel()
 		{
-			base.Draw(gameTime);
-
-			GraphicsDevice.Clear(Color.Black);
+			if (_model == null)
+			{
+				return;
+			}
 
 			_model.UpdateCurrentAnimation();
-//			_model.Transform = Matrix.CreateRotationY(MathHelper.ToRadians(angle));
 
 			_context.View = _camera.View;
 			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
@@ -124,19 +184,26 @@ namespace ModelViewer
 			_renderer.Begin();
 			_renderer.DrawModel(_model, _context);
 			_renderer.End();
+		}
 
-			_spriteBatch.Begin();
+		protected override void Draw(GameTime gameTime)
+		{
+			base.Draw(gameTime);
 
-			_spriteBatch.DrawString(Assets.DebugFont, "Position: " + _camera.Position, Vector2.Zero, Color.White);
-			_spriteBatch.DrawString(Assets.DebugFont, "Yaw: " + _camera.YawAngle, new Vector2(0, 32), Color.White);
-			_spriteBatch.DrawString(Assets.DebugFont, "Pitch: " + _camera.PitchAngle, new Vector2(0, 64), Color.White);
-			_spriteBatch.End();
+			GraphicsDevice.Clear(Color.Black);
 
-			++angle;
-			if (angle >= 360)
-			{
-				angle = 0;
-			}
+			DrawModel();
+
+			_mainPanel._labelCamera.Text = string.Format("Camera: {0}/{1}/{2};{3};{4}",
+				_camera.Position.X, 
+				_camera.Position.Y, 
+				_camera.Position.Z,
+				_camera.YawAngle, 
+				_camera.PitchAngle);
+
+			_desktop.Bounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth,
+				  GraphicsDevice.PresentationParameters.BackBufferHeight);
+			_desktop.Render();
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace Nursia
 	public static class Assets
 	{
 		private static SpriteFont _debugFont;
-		private static Effect[] _defaultEffect = new Effect[9];
+		private static Effect[] _defaultEffect = new Effect[10];
 
 		private static Assembly Assembly
 		{

@@ -39,5 +39,14 @@ namespace Nursia.Graphics3D.Scene
 
 			return null;
 		}
+
+		internal void UpdateAbsoluteTransforms(Matrix rootTransform)
+		{
+			AbsoluteTransform = Transform * rootTransform;
+			foreach (var child in Children)
+			{
+				child.UpdateAbsoluteTransforms(AbsoluteTransform);
+			}
+		}
 	}
 }

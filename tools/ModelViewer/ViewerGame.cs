@@ -17,7 +17,7 @@ namespace ModelViewer
 		private CameraInputController _controller;
 		private SpriteBatch _spriteBatch;
 		private ForwardRenderer _renderer;
-		private Camera _camera;
+		private readonly RenderContext _context = new RenderContext();
 
 		public ViewerGame()
 		{
@@ -56,25 +56,22 @@ namespace ModelViewer
 			var newMesh = PrimitivesFactory.CreateCube(1);
 			_model.Meshes.Add(newMesh);*/
 
-			_renderer.RenderContext.Lights.Add(new DirectionalLight
+/*			_context.Lights.Add(new DirectionalLight
 			{
 				Color = Color.White,
 				Direction = new Vector3(1.0f, 0.0f, -1.0f)
 			});
 
-			_renderer.RenderContext.Lights.Add(new DirectionalLight
+			_context.Lights.Add(new DirectionalLight
 			{
 				Color = Color.Red,
 				Direction = new Vector3(-1.0f, 0.0f, -1.0f)
-			});
+			});*/
 
-			var camera = new PerspectiveCamera
-			{
-				Position = new Vector3(0, 0, 50.0f),
-				PitchAngle = 180
-			};
-
-			_controller = new CameraInputController(camera);
+			_context.View = Matrix.CreateLookAt(
+				new Vector3(0, 50, 1.0f),
+				Vector3.Zero,
+				new Vector3(0, 1.0f, 0));
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -85,7 +82,7 @@ namespace ModelViewer
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
 				Exit();
 
-			// Manage camera input controller
+/*			// Manage camera input controller
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
@@ -100,7 +97,7 @@ namespace ModelViewer
 
 			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 
-			_controller.Update();
+			_controller.Update();*/
 		}
 
 		int angle = 0;
@@ -111,24 +108,35 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_model.UpdateCurrentAnimation();
-/*			_model.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(180)) *
-				Matrix.CreateRotationY(MathHelper.ToRadians(180));*/
+/*			_model.UpdateCurrentAnimation();
+			_model.Transform = Matrix.CreateRotationZ(MathHelper.ToRadians(angle));*/
 
-			var camera = _controller.Camera;
+			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
+					MathHelper.ToRadians(67.0f),
+					_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
+					1.0f,
+					1000.0f);
+
 			_renderer.Begin();
-			_renderer.DrawModel(_model, camera);
+			_renderer.DrawModel(_model, _context);
 			_renderer.End();
 
 			_spriteBatch.Begin();
 
-			_spriteBatch.DrawString(Assets.DebugFont, "Position: " + camera.Position, Vector2.Zero, Color.White);
-			_spriteBatch.DrawString(Assets.DebugFont, "Yaw: " + camera.YawAngle, new Vector2(0, 32), Color.White);
-			_spriteBatch.DrawString(Assets.DebugFont, "Pitch: " + camera.PitchAngle, new Vector2(0, 64), Color.White);
+			Vector3 scale, translation;
+			Quaternion rotation;
+			_context.View.Decompose(out scale, out rotation, out translation);
+
+			_spriteBatch.DrawString(Assets.DebugFont, "View: " + translation, Vector2.Zero, Color.White);
+			_spriteBatch.DrawString(Assets.DebugFont, "Rotation Angle: " + angle, new Vector2(0, 32), Color.White);
 
 			_spriteBatch.End();
 
 			++angle;
+			if (angle >= 360)
+			{
+				angle = 0;
+			}
 		}
 	}
 }

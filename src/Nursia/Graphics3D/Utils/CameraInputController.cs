@@ -5,7 +5,7 @@ namespace Nursia.Graphics3D.Utils
 {
 	public class CameraInputController
 	{
-		public enum ControlKeys
+/*		public enum ControlKeys
 		{
 			Left,
 			Right,
@@ -21,32 +21,17 @@ namespace Nursia.Graphics3D.Utils
 			Rotate
 		}
 
-		private readonly Camera _camera;
 		private Point? _touchStart;
 		public bool _moveTouchDown, _rotateTouchDown;
 		private bool _leftKeyPressed, _rightKeyPressed, _forwardKeyPressed, _backwardKeyPressed, _upKeyPressed, _downKeyPressed;
 		private DateTime? _keyboardLastTime;
 
-		public Camera Camera
-		{
-			get
-			{
-				return _camera;
-			}
-		}
-
 		public float RotateDelta { get; set; }
 		public float MoveDelta { get; set; }
 		public float KeyboardMovementSpeed { get; set; }
 
-		public CameraInputController(Camera camera)
+		public CameraInputController()
 		{
-			if (camera == null)
-			{
-				throw new ArgumentNullException("camera");
-			}
-
-			_camera = camera;
 			RotateDelta = 0.1f;
 			MoveDelta = 0.03f;
 
@@ -213,6 +198,6 @@ namespace Nursia.Graphics3D.Utils
 			}
 			
 			_keyboardLastTime = DateTime.Now;
-		}
+		}*/
 	}
 }

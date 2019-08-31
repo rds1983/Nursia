@@ -111,20 +111,6 @@ namespace Nursia.Graphics3D.Scene
 			TraverseNodes(RootNode, action);
 		}
 
-		private void UpdateNodesAbsoluteTransforms(Node root, Matrix transform)
-		{
-			if (root == null)
-			{
-				return;
-			}
-
-			root.AbsoluteTransform = root.Transform * transform;
-			foreach (var child in root.Children)
-			{
-				UpdateNodesAbsoluteTransforms(child, root.AbsoluteTransform);
-			}
-		}
-
 		internal void UpdateNodesAbsoluteTransforms()
 		{
 			if (RootNode == null)
@@ -132,7 +118,7 @@ namespace Nursia.Graphics3D.Scene
 				return;
 			}
 
-			UpdateNodesAbsoluteTransforms(RootNode, Transform);
+			RootNode.UpdateAbsoluteTransforms(Matrix.Identity);
 		}
 
 		public void UpdateCurrentAnimation()

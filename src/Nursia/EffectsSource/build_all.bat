@@ -20,3 +20,23 @@ rem No lightning, four bones
 %TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_BONES_4.dx11.mgfxo /Defines:BONES=4 /Profile:DirectX_11
 %TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_BONES_4.ogl.mgfxo /Defines:BONES=4 /Profile:OpenGL
 %FXC% /T fx_2_0 /D BONES=4 /Fo ..\Resources\Effects\DefaultEffect_BONES_4.fxb DefaultEffect.fx
+
+rem Lightning, no bones
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING.dx11.mgfxo /Defines:LIGHTNING=1 /Profile:DirectX_11
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING.ogl.mgfxo /Defines:LIGHTNING=1 /Profile:OpenGL
+%FXC% /T fx_2_0 /D LIGHTNING=1 /Fo ..\Resources\Effects\DefaultEffect_LIGHTNING.fxb DefaultEffect.fx
+
+rem Lightning, one bone
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_1.dx11.mgfxo /Defines:LIGHTNING=1;BONES=1 /Profile:DirectX_11
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_1.ogl.mgfxo /Defines:LIGHTNING=1;BONES=1 /Profile:OpenGL
+%FXC% /T fx_2_0 /D LIGHTNING=1 /D BONES=1 /Fo ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_1.fxb DefaultEffect.fx
+
+rem Lightning, two bones
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_2.dx11.mgfxo /Defines:LIGHTNING=1;BONES=2 /Profile:DirectX_11
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_2.ogl.mgfxo /Defines:LIGHTNING=1;BONES=2 /Profile:OpenGL
+%FXC% /T fx_2_0 /D LIGHTNING=1 /D BONES=2 /Fo ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_2.fxb DefaultEffect.fx
+
+rem Lightning, four bones
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_4.dx11.mgfxo /Defines:LIGHTNING=1;BONES=4 /Profile:DirectX_11
+%TwoMGFX% DefaultEffect.fx ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_4.ogl.mgfxo /Defines:LIGHTNING=1;BONES=4 /Profile:OpenGL
+%FXC% /T fx_2_0 /D LIGHTNING=1 /D BONES=4 /Fo ..\Resources\Effects\DefaultEffect_LIGHTNING_BONES_4.fxb DefaultEffect.fx

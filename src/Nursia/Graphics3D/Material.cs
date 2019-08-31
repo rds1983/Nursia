@@ -7,7 +7,6 @@ namespace Nursia.Graphics3D
 	{
 		public Color DiffuseColor;
 		public Texture2D Texture;
-		public bool IgnoreLight = true;
 
 		public Material Clone()
 		{

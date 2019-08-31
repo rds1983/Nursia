@@ -10,15 +10,6 @@ namespace Nursia.Graphics3D
 		private RasterizerState _rasterizerState;
 		private BlendState _blendState;
 		private bool _beginCalled;
-		private readonly RenderContext _renderContext = new RenderContext();
-
-		public RenderContext RenderContext
-		{
-			get
-			{
-				return _renderContext;
-			}
-		}
 
 		public void Begin()
 		{
@@ -33,19 +24,21 @@ namespace Nursia.Graphics3D
 			_beginCalled = true;
 		}
 
-		public void DrawModel(Sprite3D model, Camera camera)
+		public void DrawModel(Sprite3D model, RenderContext context)
 		{
 			if (!_beginCalled)
 			{
 				throw new Exception("Begin wasnt called");
 			}
 
-			_renderContext.Camera = camera;
-
+			context.ViewProjection = context.View * context.Projection;
 			model.UpdateNodesAbsoluteTransforms();
-			foreach (var mesh in model.Meshes)
+			using (var transformScope = new TransformScope(context, model.Transform))
 			{
-				mesh.Draw(_renderContext);
+				foreach (var mesh in model.Meshes)
+				{
+					mesh.Draw(context);
+				}
 			}
 		}
 

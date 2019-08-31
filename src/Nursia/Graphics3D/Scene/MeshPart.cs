@@ -61,21 +61,15 @@ namespace Nursia.Graphics3D.Scene
 
 			var device = Nrs.GraphicsDevice;
 
-			// Set the View matrix which defines the camera and what it's looking at
-			var camera = context.Camera;
-			camera.Viewport = new Vector2(device.Viewport.Width, device.Viewport.Height);
-
 			var lights = context.Lights;
 
 			// Apply the effect and render items
-			var effect = Assets.GetDefaultEffect(!Material.IgnoreLight, (int)BonesPerMesh);
+			var effect = Assets.GetDefaultEffect(lights.Count > 0, (int)BonesPerMesh);
 
 			device.SetVertexBuffer(VertexBuffer);
 			device.Indices = IndexBuffer;
 
-			var transform = context.Transform;
-			var worldViewProj = transform * camera.View * camera.Projection;
-			var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(transform));
+			var worldViewProj = context.World * context.ViewProjection;
 
 			if (BonesPerMesh != BonesPerMesh.None)
 			{
@@ -91,31 +85,29 @@ namespace Nursia.Graphics3D.Scene
 				effect.Parameters["_texture"].SetValue(Material.Texture);
 			}
 
-			if (!Material.IgnoreLight)
+			if (lights.Count > 0)
 			{
+				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(context.World));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				if (lights != null)
+				device.BlendState = BlendState.Opaque;
+				for (var i = 0; i < lights.Count; ++i)
 				{
-					device.BlendState = BlendState.Opaque;
-					for (var i = 0; i < lights.Count; ++i)
+					if (i == 1)
 					{
-						if (i == 1)
-						{
-							device.BlendState = BlendState.Additive;
-						}
+						device.BlendState = BlendState.Additive;
+					}
 
-						var dl = lights[i];
+					var dl = lights[i];
 
-						effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
-						effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
+					effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
+					effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
 
-						foreach (var pass in effect.CurrentTechnique.Passes)
-						{
-							pass.Apply();
-							device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 
-								VertexBuffer.VertexCount, 0, PrimitiveCount);
-						}
+					foreach (var pass in effect.CurrentTechnique.Passes)
+					{
+						pass.Apply();
+						device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0,
+							VertexBuffer.VertexCount, 0, PrimitiveCount);
 					}
 				}
 			}

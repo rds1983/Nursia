@@ -8,12 +8,6 @@ namespace Nursia.Graphics3D
 	{
 		private readonly List<DirectionalLight> _lights = new List<DirectionalLight>();
 
-		public Camera Camera
-		{
-			get;
-			set;
-		}
-
 		public List<DirectionalLight> Lights
 		{
 			get
@@ -22,11 +16,15 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public Matrix Transform { get; set; }
+		public Matrix Projection { get; set; } = Matrix.Identity;
+		public Matrix View { get; set; } = Matrix.Identity;
+
+		internal Matrix ViewProjection { get; set; }
+		internal Matrix World { get; set; }
 
 		public RenderContext()
 		{
-			Transform = Matrix.Identity;
+			World = Matrix.Identity;
 		}
 	}
 }

@@ -11,13 +11,13 @@ namespace Nursia.Graphics3D
 		public TransformScope(RenderContext context, Matrix transform)
 		{
 			_context = context;
-			_oldTransform = context.Transform;
-			_context.Transform = transform * _context.Transform;
+			_oldTransform = context.World;
+			_context.World = transform * _context.World;
 		}
 
 		public void Dispose()
 		{
-			_context.Transform = _oldTransform;
+			_context.World = _oldTransform;
 		}
 	}
 }

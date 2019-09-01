@@ -27,6 +27,7 @@ namespace ModelViewer
 		private readonly RenderContext _context = new RenderContext();
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
+		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
 
 		public ViewerGame()
 		{
@@ -35,6 +36,7 @@ namespace ModelViewer
 				PreferredBackBufferWidth = 1200,
 				PreferredBackBufferHeight = 800
 			};
+
 			Window.AllowUserResizing = true;
 			IsMouseVisible = true;
 		}
@@ -136,7 +138,7 @@ namespace ModelViewer
 			{
 				if (!string.IsNullOrEmpty(_mainPanel._textPath.Text))
 				{
-					dlg.Folder = Path.GetDirectoryName(_mainPanel._textPath.Text);
+					dlg.Folder = _mainPanel._textPath.Text;
 				} else
 				{
 					var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -176,9 +178,9 @@ namespace ModelViewer
 		{
 			base.Update(gameTime);
 
+			_fpsCounter.Update(gameTime);
+
 			var keyboardState = Keyboard.GetState();
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
-				Exit();
 
 			// Manage camera input controller
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
@@ -210,7 +212,7 @@ namespace ModelViewer
 			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
 					MathHelper.ToRadians(67.0f),
 					_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
-					1.0f,
+					0.1f,
 					1000.0f);
 
 			_renderer.Begin();
@@ -226,16 +228,14 @@ namespace ModelViewer
 
 			DrawModel();
 
-			_mainPanel._labelCamera.Text = string.Format("Camera: {0}/{1}/{2};{3};{4}",
-				_camera.Position.X, 
-				_camera.Position.Y, 
-				_camera.Position.Z,
-				_camera.YawAngle, 
-				_camera.PitchAngle);
+			_mainPanel._labelCamera.Text = "Camera: " + _camera.ToString();
+			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
 
 			_desktop.Bounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth,
 				  GraphicsDevice.PresentationParameters.BackBufferHeight);
 			_desktop.Render();
+
+			_fpsCounter.Draw(gameTime);
 		}
 	}
 }

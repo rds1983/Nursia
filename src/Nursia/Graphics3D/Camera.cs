@@ -10,6 +10,7 @@ namespace Nursia.Graphics3D
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private bool _dirty = true;
+		private string _string;
 
 		public Vector3 Position
 		{
@@ -29,6 +30,7 @@ namespace Nursia.Graphics3D
 			get { return _yawAngle; }
 			set
 			{
+				value = ClampDegree(value);
 				if (_yawAngle != value)
 				{
 					_yawAngle = value;
@@ -42,6 +44,7 @@ namespace Nursia.Graphics3D
 			get { return _pitchAngle; }
 			set
 			{
+				value = ClampDegree(value);
 				if (_pitchAngle != value)
 				{
 					_pitchAngle = value;
@@ -55,6 +58,7 @@ namespace Nursia.Graphics3D
 			get { return _rollAngle; }
 			set
 			{
+				value = ClampDegree(value);
 				if (_rollAngle != value)
 				{
 					_rollAngle = value;
@@ -103,6 +107,20 @@ namespace Nursia.Graphics3D
 		{
 		}
 
+		private float ClampDegree(float deg)
+		{
+			var isNegative = deg < 0;
+			deg = Math.Abs(deg);
+			deg = deg % 360;
+			if (isNegative)
+			{
+				deg = 360 - deg;
+			}
+
+			return deg;
+
+		}
+
 		public void SetLookAt(Vector3 position, Vector3 target)
 		{
 			Position = position;
@@ -138,7 +156,20 @@ namespace Nursia.Graphics3D
 
 			_view = Matrix.CreateLookAt(Position, Position + _direction, _up);
 
+			_string = string.Format("{0:0.##}/{1:0.##}/{2:0.##};{3:0.##};{4:0.##}",
+				Position.X,
+				Position.Y,
+				Position.Z,
+				YawAngle,
+				PitchAngle);
+
 			_dirty = false;
+		}
+
+		public override string ToString()
+		{
+			Update();
+			return _string;
 		}
 	}
 }

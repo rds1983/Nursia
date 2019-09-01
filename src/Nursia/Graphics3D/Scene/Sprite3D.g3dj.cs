@@ -391,7 +391,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			result.Id = data.GetId();
-			result.Transform = LoadTransform(data);
+			result.DefaultTransform = result.Transform = LoadTransform(data);
 
 			if (data.ContainsKey("children"))
 			{

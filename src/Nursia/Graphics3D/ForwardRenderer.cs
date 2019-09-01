@@ -6,21 +6,29 @@ namespace Nursia.Graphics3D
 {
 	public class ForwardRenderer
 	{
-		private DepthStencilState _depthStencilState;
-		private RasterizerState _rasterizerState;
-		private BlendState _blendState;
+		private DepthStencilState _oldDepthStencilState;
+		private RasterizerState _oldRasterizerState;
+		private BlendState _oldBlendState;
+		private SamplerState _oldSamplerState;
 		private bool _beginCalled;
+
+		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
+		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
+		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
+		public SamplerState SamplerState { get; set; } = SamplerState.LinearWrap;
 
 		public void Begin()
 		{
 			var device = Nrs.GraphicsDevice;
-			_depthStencilState = device.DepthStencilState;
-			_rasterizerState = device.RasterizerState;
-			_blendState = device.BlendState;
+			_oldDepthStencilState = device.DepthStencilState;
+			_oldRasterizerState = device.RasterizerState;
+			_oldBlendState = device.BlendState;
+			_oldSamplerState = device.SamplerStates[0];
 
-			device.BlendState = BlendState.AlphaBlend;
-			device.DepthStencilState = DepthStencilState.Default;
-			device.RasterizerState = RasterizerState.CullNone;
+			device.BlendState = BlendState;
+			device.DepthStencilState = DepthStencilState;
+			device.RasterizerState = RasterizerState;
+			device.SamplerStates[0] = SamplerState;
 
 			_beginCalled = true;
 		}
@@ -51,12 +59,14 @@ namespace Nursia.Graphics3D
 			}
 
 			var device = Nrs.GraphicsDevice;
-			device.DepthStencilState = _depthStencilState;
-			_depthStencilState = null;
-			device.RasterizerState = _rasterizerState;
-			_rasterizerState = null;
-			device.BlendState = _blendState;
-			_blendState = null;
+			device.DepthStencilState = _oldDepthStencilState;
+			_oldDepthStencilState = null;
+			device.RasterizerState = _oldRasterizerState;
+			_oldRasterizerState = null;
+			device.BlendState = _oldBlendState;
+			_oldBlendState = null;
+			device.SamplerStates[0] = _oldSamplerState;
+			_oldSamplerState = null;
 
 			_beginCalled = false;
 		}

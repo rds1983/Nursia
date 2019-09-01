@@ -9,6 +9,8 @@ namespace Nursia.Graphics3D.Scene
 
 		public Node Parent { get; set; }
 
+		public Matrix DefaultTransform { get; set; } = Matrix.Identity;
+
 		public Matrix Transform { get; set; } = Matrix.Identity;
 
 		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;

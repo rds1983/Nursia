@@ -64,6 +64,7 @@ namespace Nursia.Graphics3D.Scene
 
 				_currentAnimation = value;
 				_lastAnimationUpdate = null;
+				ResetTransforms();
 			}
 		}
 
@@ -119,6 +120,11 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			RootNode.UpdateAbsoluteTransforms(Matrix.Identity);
+		}
+
+		internal void ResetTransforms()
+		{
+			TraverseNodes(n => n.Transform = n.DefaultTransform);
 		}
 
 		public void UpdateCurrentAnimation()

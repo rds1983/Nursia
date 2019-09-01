@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace Nursia.Graphics3D.Scene
 {
@@ -23,7 +24,7 @@ namespace Nursia.Graphics3D.Scene
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
 				using (var scope = new TransformScope(context,
-					part.BonesPerMesh != BonesPerMesh.None ? Transform : AbsoluteTransform))
+					part.Bones.Count > 0 ? Matrix.Identity : AbsoluteTransform))
 				{
 					part.Draw(context);
 				}

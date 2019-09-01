@@ -11,14 +11,20 @@ namespace Nursia.Graphics3D
 		private BlendState _oldBlendState;
 		private SamplerState _oldSamplerState;
 		private bool _beginCalled;
+		private Context3d _context;
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
 		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
 		public SamplerState SamplerState { get; set; } = SamplerState.LinearWrap;
 
-		public void Begin()
+		public void Begin(Context3d context)
 		{
+			if (context == null)
+			{
+				throw new ArgumentNullException("context");
+			}
+
 			var device = Nrs.GraphicsDevice;
 			_oldDepthStencilState = device.DepthStencilState;
 			_oldRasterizerState = device.RasterizerState;
@@ -31,22 +37,23 @@ namespace Nursia.Graphics3D
 			device.SamplerStates[0] = SamplerState;
 
 			_beginCalled = true;
+			_context = context;
+			_context.ResetStatistics();
 		}
 
-		public void DrawModel(Sprite3D model, RenderContext context)
+		public void DrawModel(Sprite3D model)
 		{
 			if (!_beginCalled)
 			{
 				throw new Exception("Begin wasnt called");
 			}
 
-			context.ViewProjection = context.View * context.Projection;
 			model.UpdateNodesAbsoluteTransforms();
-			using (var transformScope = new TransformScope(context, model.Transform))
+			using (var transformScope = new TransformScope(_context, model.Transform))
 			{
 				foreach (var mesh in model.Meshes)
 				{
-					mesh.Draw(context);
+					mesh.Draw(_context);
 				}
 			}
 		}

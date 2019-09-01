@@ -15,10 +15,18 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public void Draw(RenderContext context)
+		public BoundingSphere BoundingSphere { get; set; }
+
+		public void Draw(Context3d context)
 		{
 			foreach (var part in _parts)
 			{
+				var boundingSphere = part.BoundingSphere.Transform(AbsoluteTransform);
+				if (context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+				{
+					continue;
+				}
+
 				// If part has bones, then parent node transform had been already
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use

@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
-using RenderContext = Nursia.Graphics3D.RenderContext;
 
 namespace ModelViewer
 {
@@ -25,7 +24,7 @@ namespace ModelViewer
 		private readonly Camera _camera = new Camera();
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
-		private readonly RenderContext _context = new RenderContext();
+		private readonly Context3d _context = new Context3d();
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
@@ -250,8 +249,8 @@ namespace ModelViewer
 					0.1f,
 					1000.0f);
 
-			_renderer.Begin();
-			_renderer.DrawModel(_model, _context);
+			_renderer.Begin(_context);
+			_renderer.DrawModel(_model);
 			_renderer.End();
 		}
 
@@ -265,6 +264,7 @@ namespace ModelViewer
 
 			_mainPanel._labelCamera.Text = "Camera: " + _camera.ToString();
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
+			_mainPanel._labelMeshes.Text = "Meshes: " + _context.MeshesDrawn;
 
 			_desktop.Bounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth,
 				  GraphicsDevice.PresentationParameters.BackBufferHeight);

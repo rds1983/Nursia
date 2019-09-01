@@ -160,7 +160,8 @@ namespace Nursia.Graphics3D.Scene
 		private static VertexBuffer LoadVertexBuffer(
 			ref VertexDeclaration declaration,
 			int elementsPerRow,
-			JArray data)
+			JArray data,
+			out List<Vector3> positions)
 		{
 			var rowsCount = data.Count / elementsPerRow;
 			var elements = declaration.GetVertexElements();
@@ -189,6 +190,7 @@ namespace Nursia.Graphics3D.Scene
 				declaration = new VertexDeclaration(newElements.ToArray());
 			}
 
+			positions = new List<Vector3>();
 			var byteData = new byte[rowsCount * declaration.VertexStride];
 
 			for (var i = 0; i < rowsCount; ++i)
@@ -225,9 +227,18 @@ namespace Nursia.Graphics3D.Scene
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
 							break;
 						case VertexElementFormat.Vector3:
-							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
-							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
-							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
+							var v = new Vector3((float)data[srcIdx++],
+								(float)data[srcIdx++],
+								(float)data[srcIdx++]);
+
+							if (element.VertexElementUsage == VertexElementUsage.Position)
+							{
+								positions.Add(v);
+							}
+
+							LoadFloat(byteData, ref destIdx, v.X);
+							LoadFloat(byteData, ref destIdx, v.Y);
+							LoadFloat(byteData, ref destIdx, v.Z);
 							break;
 						case VertexElementFormat.Vector4:
 							LoadFloat(byteData, ref destIdx, (float)data[srcIdx++]);
@@ -291,7 +302,11 @@ namespace Nursia.Graphics3D.Scene
 				bonesPerMesh = BonesPerMesh.One;
 			}
 
-			var vertexBuffer = LoadVertexBuffer(ref declaration, elementsPerRow, vertices);
+			List<Vector3> positions;
+			var vertexBuffer = LoadVertexBuffer(ref declaration, 
+				elementsPerRow, 
+				vertices, 
+				out positions);
 
 			var partsData = (JArray)meshData["parts"];
 			foreach (JObject partData in partsData)
@@ -299,22 +314,28 @@ namespace Nursia.Graphics3D.Scene
 				var id = partData.GetId();
 
 				// var type = (PrimitiveType)Enum.Parse(typeof(PrimitiveType), partData.EnsureString("type"));
+				var partPositions = new List<Vector3>();
 				var indicesData = (JArray)partData["indices"];
 				var indices = new short[indicesData.Count];
 				for (var i = 0; i < indicesData.Count; ++i)
 				{
-					indices[i] = Convert.ToInt16(indicesData[i]);
+					var idx = Convert.ToInt16(indicesData[i]);
+					indices[i] = idx;
+					partPositions.Add(positions[idx]);
 				}
 
 				var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits,
 					indices.Length, BufferUsage.None);
 				indexBuffer.SetData(indices);
 
+				var boundingSphere = BoundingSphere.CreateFromPoints(partPositions);
+
 				meshes[id] = new MeshPart
 				{
 					IndexBuffer = indexBuffer,
 					VertexBuffer = vertexBuffer,
-					BonesPerMesh = bonesPerMesh
+					BonesPerMesh = bonesPerMesh,
+					BoundingSphere = boundingSphere
 				};
 			}
 		}
@@ -463,6 +484,7 @@ namespace Nursia.Graphics3D.Scene
 						part.VertexBuffer = meshPart.VertexBuffer;
 						part.IndexBuffer = meshPart.IndexBuffer;
 						part.BonesPerMesh = meshPart.BonesPerMesh;
+						part.BoundingSphere = meshPart.BoundingSphere;
 
 						// Set parent nodes
 						foreach (var bone in part.Bones)

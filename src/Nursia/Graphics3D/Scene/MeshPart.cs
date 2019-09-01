@@ -18,6 +18,8 @@ namespace Nursia.Graphics3D.Scene
 
 		public BonesPerMesh BonesPerMesh { get; set; }
 
+		public BoundingSphere BoundingSphere { get; set; }
+
 		public List<Bone> Bones
 		{
 			get
@@ -50,7 +52,7 @@ namespace Nursia.Graphics3D.Scene
 			return _boneTransforms;
 		}
 
-		public void Draw(RenderContext context)
+		public void Draw(Context3d context)
 		{
 			if (VertexBuffer == null || 
 				IndexBuffer == null || 
@@ -125,6 +127,8 @@ namespace Nursia.Graphics3D.Scene
 						VertexBuffer.VertexCount, 0, PrimitiveCount);
 				}
 			}
+
+			++context.MeshesDrawn;
 		}
 
 		internal static MeshPart Create<T>(T[] vertices, short[] indices, PrimitiveType primitiveType) where T : struct, IVertexType

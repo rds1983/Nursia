@@ -10,6 +10,7 @@
         <Proportion />
         <Proportion />
         <Proportion />
+        <Proportion />
       </RowsProportions>
       <TextField Text="" Readonly="True" Id="_textPath" Width="300" />
       <TextButton Text="Change..." Id="_buttonChange" GridColumn="1" />
@@ -23,6 +24,7 @@
         <ListItem Text="Move" />
         <ListItem Text="Attack" />
       </ComboBox>
+      <CheckBox Text="Lightning On" Id="_checkLightning" GridRow="3" />
     </Grid>
     <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <ColumnsProportions>

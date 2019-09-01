@@ -10,6 +10,7 @@ using Nursia.Graphics3D;
 using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
@@ -23,11 +24,33 @@ namespace ModelViewer
 		private Sprite3D _model;
 		private readonly Camera _camera = new Camera();
 		private CameraInputController _controller;
-		private ForwardRenderer _renderer;
+		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private readonly RenderContext _context = new RenderContext();
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
+		private static readonly List<DirectionalLight> _defaultLights = new List<DirectionalLight>();
+
+		static ViewerGame()
+		{
+			_defaultLights.Add(new DirectionalLight
+			{
+				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
+				Color = new Color(1, 0.9607844f, 0.8078432f)
+			});
+
+			_defaultLights.Add(new DirectionalLight
+			{
+				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
+				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
+			});
+
+			_defaultLights.Add(new DirectionalLight
+			{
+				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
+				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
+			});
+		}
 
 		public ViewerGame()
 		{
@@ -39,6 +62,9 @@ namespace ModelViewer
 
 			Window.AllowUserResizing = true;
 			IsMouseVisible = true;
+
+			IsFixedTimeStep = false;
+			_graphics.SynchronizeWithVerticalRetrace = false;
 		}
 
 		private void LoadModel(string file)
@@ -72,10 +98,8 @@ namespace ModelViewer
 		{
 			base.LoadContent();
 
+			// UI
 			MyraEnvironment.Game = this;
-
-			Nrs.Game = this;
-
 			_mainPanel = new MainPanel();
 			_mainPanel._comboAnimations.Items.Clear();
 			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
@@ -84,11 +108,13 @@ namespace ModelViewer
 
 			_mainPanel._listFiles.SelectedIndexChanged += _listFiles_SelectedIndexChanged;
 
+			_mainPanel._checkLightning.PressedChanged += _checkLightning_PressedChanged;
+
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainPanel);
 
-			_renderer = new ForwardRenderer();
-
+			// Nursia
+			Nrs.Game = this;
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -96,6 +122,15 @@ namespace ModelViewer
 			SetFolder(folder);
 
 			_controller = new CameraInputController(_camera);
+		}
+
+		private void _checkLightning_PressedChanged(object sender, EventArgs e)
+		{
+			_context.Lights.Clear();
+			if (_mainPanel._checkLightning.IsPressed)
+			{
+				_context.Lights.AddRange(_defaultLights);
+			}
 		}
 
 		private void _listFiles_SelectedIndexChanged(object sender, EventArgs e)

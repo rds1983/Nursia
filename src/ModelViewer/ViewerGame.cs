@@ -62,8 +62,11 @@ namespace ModelViewer
 			Window.AllowUserResizing = true;
 			IsMouseVisible = true;
 
-			IsFixedTimeStep = false;
-			_graphics.SynchronizeWithVerticalRetrace = false;
+			if (Configuration.NoFixedStep)
+			{
+				IsFixedTimeStep = false;
+				_graphics.SynchronizeWithVerticalRetrace = false;
+			}
 		}
 
 		private void LoadModel(string file)

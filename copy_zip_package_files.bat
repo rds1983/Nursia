@@ -5,6 +5,7 @@ rem Create required folders
 mkdir "ZipPackage"
 mkdir "ZipPackage\x64"
 mkdir "ZipPackage\x86"
+mkdir "ZipPackage\samples"
 
 set "CONFIGURATION=bin\MonoGame\Release\net45"
 
@@ -26,3 +27,5 @@ copy "src\ModelViewer\%CONFIGURATION%\x86\SDL2.dll" "ZipPackage\x86" /Y
 copy "src\ModelViewer\%CONFIGURATION%\x86\soft_oal.dll" "ZipPackage\x86" /Y
 copy "src\ModelViewer\%CONFIGURATION%\libSDL2-2.0.0.dylib" "ZipPackage" /Y
 copy "src\ModelViewer\%CONFIGURATION%\libopenal.1.dylib" "ZipPackage" /Y
+
+xcopy "samples\models\*.*" "ZipPackage\samples\*.*" /s

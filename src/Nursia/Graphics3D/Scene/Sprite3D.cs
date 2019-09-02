@@ -9,7 +9,7 @@ namespace Nursia.Graphics3D.Scene
 		private readonly List<MeshNode> _meshes = new List<MeshNode>();
 		private readonly List<Material> _materials = new List<Material>();
 		private readonly Dictionary<string, Sprite3DAnimation> _animations = new Dictionary<string, Sprite3DAnimation>();
-		private string _currentAnimation = null;
+		private Sprite3DAnimation _currentAnimation = null;
 		private DateTime? _lastAnimationUpdate;
 
 		public Matrix Transform = Matrix.Identity;
@@ -43,7 +43,7 @@ namespace Nursia.Graphics3D.Scene
 			get; set;
 		}
 
-		public string CurrentAnimation
+		public Sprite3DAnimation CurrentAnimation
 		{
 			get
 			{
@@ -57,9 +57,9 @@ namespace Nursia.Graphics3D.Scene
 					return;
 				}
 
-				if (value != null && !Animations.ContainsKey(value))
+				if (value != null && !Animations.ContainsValue(value))
 				{
-					throw new ArgumentException(string.Format("There's no animation '{0}'", value));
+					throw new ArgumentException("This animation doesnt not belong to this model");
 				}
 
 				_currentAnimation = value;
@@ -134,12 +134,6 @@ namespace Nursia.Graphics3D.Scene
 				return;
 			}
 
-			Sprite3DAnimation animation;
-			if (!Animations.TryGetValue(_currentAnimation, out animation))
-			{
-				throw new Exception(string.Format("There's no animation '{0}'", _currentAnimation));
-			}
-
 			TimeSpan? passed = null;
 			var now = DateTime.Now;
 			if (_lastAnimationUpdate != null)
@@ -148,7 +142,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			var allFound = true;
-			foreach(var bone in animation.BoneAnimations)
+			foreach(var bone in _currentAnimation.BoneAnimations)
 			{
 				if (bone.Frames.Count == 0)
 				{

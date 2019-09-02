@@ -7,13 +7,13 @@ using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Graphics3D;
+using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Scene;
 using Nursia.Graphics3D.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using DirectionalLight = Nursia.Graphics3D.Lights.DirectionalLight;
 
 namespace ModelViewer
 {
@@ -28,23 +28,23 @@ namespace ModelViewer
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
-		private static readonly List<DirectionalLight> _defaultLights = new List<DirectionalLight>();
+		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 
 		static ViewerGame()
 		{
-			_defaultLights.Add(new DirectionalLight
+			_defaultLights.Add(new DirectLight
 			{
 				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
 				Color = new Color(1, 0.9607844f, 0.8078432f)
 			});
 
-			_defaultLights.Add(new DirectionalLight
+			_defaultLights.Add(new DirectLight
 			{
 				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
 				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
 			});
 
-			_defaultLights.Add(new DirectionalLight
+			_defaultLights.Add(new DirectLight
 			{
 				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
 				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
@@ -85,7 +85,11 @@ namespace ModelViewer
 				_mainPanel._comboAnimations.Items.Add(new ListItem(null));
 				foreach (var pair in _model.Animations)
 				{
-					_mainPanel._comboAnimations.Items.Add(new ListItem(pair.Key));
+					_mainPanel._comboAnimations.Items.Add(
+						new ListItem(pair.Key)
+						{
+							Tag = pair.Value
+						});
 				}
 			}
 
@@ -117,7 +121,7 @@ namespace ModelViewer
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Projects\Nursia\samples\models";
+//			folder = @"D:\Projects\Nursia\samples\models";
 			SetFolder(folder);
 
 			_controller = new CameraInputController(_camera);
@@ -204,7 +208,7 @@ namespace ModelViewer
 			}
 			else
 			{
-				_model.CurrentAnimation = _mainPanel._comboAnimations.SelectedItem.Text;
+				_model.CurrentAnimation = (Sprite3DAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
 			}
 		}
 

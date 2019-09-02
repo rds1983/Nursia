@@ -9,9 +9,9 @@ namespace Nursia.Graphics3D
 		private Matrix? _viewProjection;
 		private BoundingFrustum _frustrum;
 		private Matrix _projection = Matrix.Identity, _view = Matrix.Identity;
-		private readonly List<DirectionalLight> _lights = new List<DirectionalLight>();
+		private readonly List<DirectLight> _lights = new List<DirectLight>();
 
-		public List<DirectionalLight> Lights
+		public List<DirectLight> Lights
 		{
 			get
 			{

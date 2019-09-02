@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Authors>NursiaTeam</Authors>
     <Product>Nursia</Product>
-    <Description>Game Engine for MonoGame/FNA</Description>
+    <Description>Lightweight 3D Engine for MonoGame/FNA</Description>
     <PackageLicenseUrl>https://en.wikipedia.org/wiki/MIT_License</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/rds1983/Nursia</PackageProjectUrl>
     <NoWarn>NU1701</NoWarn>
@@ -17,7 +17,7 @@
 
   <PropertyGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
-    <PackageId>Nursia</PackageId>
+    <PackageId>Nursia.MonoGame</PackageId>
     <OutputPath>bin\MonoGame\$(Configuration)</OutputPath>
   </PropertyGroup>
 
@@ -32,11 +32,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">
-    <ProjectReference Include="$(FNAProj)" />
+    <ProjectReference Include="$(FNAProj)" PrivateAssets="All" />
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\..\deps\MiniJson\**\*.cs" LinkBase="ThirdParty\MiniJson" />
     <Compile Include="..\..\deps\BMFontToSpriteFont\**\*.cs" LinkBase="ThirdParty\BMFontToSpriteFont" />
   </ItemGroup>
   
@@ -45,6 +44,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 
 namespace Nursia.Graphics3D.Lights
 {
-	public class DirectionalLight : BaseLight
+	public class DirectLight : BaseLight
 	{
 		private Vector3 _direction;
 		private Vector3 _normalizedDirection;

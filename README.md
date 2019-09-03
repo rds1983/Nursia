@@ -18,3 +18,11 @@ For now it can only load and render 3d models in the G3DJ(libgdx json 3d model) 
 ## Screenshots
 Nursia Model Viewer
 ![](/screenshots/01-09-2019.png)
+
+## Credits
+* [MonoGame](http://www.monogame.net/)
+* [FNA](https://github.com/FNA-XNA/FNA)
+* [MonoGame.Extended](https://github.com/craftworkgames/MonoGame.Extended)
+* [Myra](https://github.com/rds1983/Myra)
+* [LibGDX](http://libgdx.badlogicgames.com/)
+* [Cyotek.Drawing.BitmapFont](https://github.com/cyotek/Cyotek.Drawing.BitmapFont)

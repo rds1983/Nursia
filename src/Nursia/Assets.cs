@@ -1,7 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using EffectFarm;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
 using SpriteFontPlus;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Nursia
@@ -9,7 +11,8 @@ namespace Nursia
 	public static class Assets
 	{
 		private static SpriteFont _debugFont;
-		private static Effect[] _defaultEffect = new Effect[10];
+		private static MultiVariantEffect _defaultEffect;
+		private static Effect[] _defaultEffects = new Effect[10];
 		private static Texture2D _white;
 
 		private static Assembly Assembly
@@ -70,33 +73,33 @@ namespace Nursia
 				key |= bones << 1;
 			}
 
-			if (_defaultEffect[key] != null)
+			if (_defaultEffects[key] != null)
 			{
-				return _defaultEffect[key];
+				return _defaultEffects[key];
 			}
 
-			var resourceKey = "Resources.Effects.DefaultEffect";
+			if (_defaultEffect == null)
+			{
+				_defaultEffect = new MultiVariantEffect(() =>
+				{
+					return Assembly.OpenResourceStream("Resources.Effects.DefaultEffect.efb");
+				});
+			}
+
+			var defines = new Dictionary<string, string>();
 			if (lightning)
 			{
-				resourceKey += "_LIGHTNING";
+				defines["LIGHTNING"] = "1";
 			}
 
 			if (bones > 0)
 			{
-				resourceKey += "_BONES_" + bones.ToString();
+				defines["BONES"] = bones.ToString();
 			}
 
-#if MONOGAME
-			resourceKey += Nrs.IsOpenGL ? ".ogl" : ".dx11";
-			resourceKey += ".mgfxo";
-#else
-			resourceKey += ".fxb";
-#endif
+			var result = _defaultEffect.GetEffect(Nrs.GraphicsDevice, defines);
 
-			var bytes = Assembly.ReadResourceAsBytes(resourceKey);
-
-			var result = new Effect(Nrs.GraphicsDevice, bytes);
-			_defaultEffect[key] = result;
+			_defaultEffects[key] = result;
 			return result;
 		}
 	}

@@ -1,0 +1,17 @@
+<Root>
+    <Targets>
+        <MonoGameDirectX/>
+        <MonoGameOpenGL/>
+        <FNA/>
+    </Targets>
+    <RootEntry>
+        <Define/>
+        <Define Name="LIGHTNING" />
+        <Entry>
+            <Define/>
+            <Define Name="BONES" Value="1"/>
+            <Define Name="BONES" Value="2"/>
+            <Define Name="BONES" Value="4"/>
+        </Entry>
+    </RootEntry>
+</Root>

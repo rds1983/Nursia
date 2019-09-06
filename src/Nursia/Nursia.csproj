@@ -37,6 +37,7 @@
   
   <ItemGroup>
     <Compile Include="..\..\deps\BMFontToSpriteFont\**\*.cs" LinkBase="ThirdParty\BMFontToSpriteFont" />
+    <Compile Include="..\..\deps\EffectFarm\src\EffectFarm\**\*.cs" LinkBase="ThirdParty\EffectFarm" />
   </ItemGroup>
   
   <ItemGroup>

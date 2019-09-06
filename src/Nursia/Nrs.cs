@@ -61,25 +61,6 @@ namespace Nursia
 			}
 		}
 
-#if MONOGAME
-		private static bool? _isOpenGL;
-		public static bool IsOpenGL
-		{
-			get
-			{
-				if (_isOpenGL == null)
-				{
-					_isOpenGL = (from f in typeof(GraphicsDevice).GetFields(BindingFlags.NonPublic |
-						 BindingFlags.Instance)
-								 where f.Name == "glFramebuffer"
-								 select f).FirstOrDefault() != null;
-				}
-
-				return _isOpenGL.Value;
-			}
-		}
-#endif
-
 		private static string FormatMessage(string message, params object[] args)
 		{
 			string str;

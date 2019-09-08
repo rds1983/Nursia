@@ -273,8 +273,6 @@ namespace ModelViewer
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
 			_mainPanel._labelMeshes.Text = "Meshes: " + _context.MeshesDrawn;
 
-			_desktop.Bounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth,
-				  GraphicsDevice.PresentationParameters.BackBufferHeight);
 			_desktop.Render();
 
 			_fpsCounter.Draw(gameTime);

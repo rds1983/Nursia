@@ -1,4 +1,4 @@
-﻿namespace Nursia.Graphics3D.Scene
+﻿namespace Nursia.Graphics3D.Modelling
 {
 	public enum BonesPerMesh
 	{

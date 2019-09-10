@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
 	public partial class Sprite3D
 	{
@@ -38,7 +38,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public Node RootNode
+		public ModelNode RootNode
 		{
 			get; set;
 		}
@@ -68,7 +68,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		public Node FindNodeById(string id)
+		public ModelNode FindNodeById(string id)
 		{
 			return RootNode.FindNodeById(id);
 		}
@@ -92,7 +92,7 @@ namespace Nursia.Graphics3D.Scene
 			return null;
 		}
 
-		private static void TraverseNodes(Node root, Action<Node> action)
+		private static void TraverseNodes(ModelNode root, Action<ModelNode> action)
 		{
 			if (root == null)
 			{
@@ -107,7 +107,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		internal void TraverseNodes(Action<Node> action)
+		internal void TraverseNodes(Action<ModelNode> action)
 		{
 			TraverseNodes(RootNode, action);
 		}

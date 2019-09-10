@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
 	public class AnimationKeyframe
 	{

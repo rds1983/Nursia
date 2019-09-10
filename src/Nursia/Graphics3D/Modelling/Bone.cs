@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
 	public class Bone
 	{
 		public Matrix Transform;
-		public Node ParentNode { get; set; }
+		public ModelNode ParentNode { get; set; }
 		internal string NodeId { get; set; }
 
 		public Bone()

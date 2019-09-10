@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
 	public class MeshPart
 	{

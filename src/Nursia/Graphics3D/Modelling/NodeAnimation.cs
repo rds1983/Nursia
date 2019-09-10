@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
-	public class BoneAnimation
+	public class NodeAnimation
 	{
 		private readonly List<AnimationKeyframe> _frames = new List<AnimationKeyframe>();
 
-		public Node Node { get; set; }
+		public ModelNode Node { get; set; }
 		public List<AnimationKeyframe> Frames
 		{
 			get

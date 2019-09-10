@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
 	partial class Sprite3D
 	{
@@ -369,14 +369,14 @@ namespace Nursia.Graphics3D.Scene
 			return material;
 		}
 
-		private static Node LoadNode(JObject data)
+		private static ModelNode LoadNode(JObject data)
 		{
 			if (data == null)
 			{
 				return null;
 			}
 
-			Node result;
+			ModelNode result;
 			if (data.ContainsKey("parts"))
 			{
 				// Mesh
@@ -408,7 +408,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 			else
 			{
-				result = new Node();
+				result = new ModelNode();
 			}
 
 			result.Id = data.GetId();
@@ -447,7 +447,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 
 			// Load nodes hierarchy
-			result.RootNode = new Node();
+			result.RootNode = new ModelNode();
 			var children = (JArray)root["nodes"];
 			foreach (JObject childData in children)
 			{
@@ -457,7 +457,7 @@ namespace Nursia.Graphics3D.Scene
 
 			if (result.RootNode != null)
 			{
-				var nodesDict = new Dictionary<string, Node>();
+				var nodesDict = new Dictionary<string, ModelNode>();
 				result.TraverseNodes(bn =>
 				{
 					if (bn.Id == null)
@@ -489,7 +489,7 @@ namespace Nursia.Graphics3D.Scene
 						// Set parent nodes
 						foreach (var bone in part.Bones)
 						{
-							Node bn;
+							ModelNode bn;
 							if (nodesDict.TryGetValue(bone.NodeId, out bn))
 							{
 								bone.ParentNode = bn;
@@ -510,7 +510,7 @@ namespace Nursia.Graphics3D.Scene
 					{
 						foreach (var bone in part.Bones)
 						{
-							Node bn;
+							ModelNode bn;
 							if (nodesDict.TryGetValue(bone.NodeId, out bn))
 							{
 								bone.ParentNode = bn;
@@ -541,7 +541,7 @@ namespace Nursia.Graphics3D.Scene
 							throw new Exception(string.Format("Could not find bone '{0}'.", boneId));
 						}
 
-						var boneAnimation = new BoneAnimation
+						var boneAnimation = new NodeAnimation
 						{
 							Node = Node
 						};

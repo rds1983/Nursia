@@ -1,13 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.Scene
+namespace Nursia.Graphics3D.Modelling
 {
-	public class Node: ItemWithId
+	public class ModelNode: ItemWithId
 	{
-		private readonly List<Node> _children = new List<Node>();
+		private readonly List<ModelNode> _children = new List<ModelNode>();
 
-		public Node Parent { get; set; }
+		public ModelNode Parent { get; set; }
 
 		public Matrix DefaultTransform { get; set; } = Matrix.Identity;
 
@@ -15,7 +15,7 @@ namespace Nursia.Graphics3D.Scene
 
 		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;
 
-		public List<Node> Children
+		public List<ModelNode> Children
 		{
 			get
 			{
@@ -23,7 +23,7 @@ namespace Nursia.Graphics3D.Scene
 			}
 		}
 
-		internal Node FindNodeById(string id)
+		internal ModelNode FindNodeById(string id)
 		{
 			if (Id == id)
 			{

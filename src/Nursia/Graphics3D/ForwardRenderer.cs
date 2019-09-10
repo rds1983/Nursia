@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using Nursia.Graphics3D.Scene;
+using Nursia.Graphics3D.Modelling;
 using System;
 
 namespace Nursia.Graphics3D

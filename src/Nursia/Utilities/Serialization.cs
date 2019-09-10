@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
-using Nursia.Graphics3D.Scene;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

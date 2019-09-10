@@ -13,8 +13,7 @@ namespace Nursia.Graphics3D.Modelling
 		internal string MaterialId { get; set; }
 
 		public Material Material { get; set; }
-		public VertexBuffer VertexBuffer { get; set; }
-		public IndexBuffer IndexBuffer { get; set; }
+		public Mesh Mesh { get; set; }
 
 		public BonesPerMesh BonesPerMesh { get; set; }
 
@@ -25,14 +24,6 @@ namespace Nursia.Graphics3D.Modelling
 			get
 			{
 				return _bones;
-			}
-		}
-
-		public int PrimitiveCount
-		{
-			get
-			{
-				return IndexBuffer.IndexCount / 3;
 			}
 		}
 
@@ -54,8 +45,9 @@ namespace Nursia.Graphics3D.Modelling
 
 		internal void Draw(RenderContext context)
 		{
-			if (VertexBuffer == null || 
-				IndexBuffer == null || 
+			if (Mesh == null ||
+				Mesh.VertexBuffer == null ||
+				Mesh.IndexBuffer == null || 
 				Material == null)
 			{
 				return;
@@ -68,8 +60,9 @@ namespace Nursia.Graphics3D.Modelling
 			// Apply the effect and render items
 			var effect = Assets.GetDefaultEffect(lights.Count > 0, (int)BonesPerMesh);
 
-			device.SetVertexBuffer(VertexBuffer);
-			device.Indices = IndexBuffer;
+
+			device.SetVertexBuffer(Mesh.VertexBuffer);
+			device.Indices = Mesh.IndexBuffer;
 
 			var worldViewProj = context.World * context.ViewProjection;
 
@@ -86,6 +79,8 @@ namespace Nursia.Graphics3D.Modelling
 			{
 				effect.Parameters["_texture"].SetValue(Material.Texture);
 			}
+
+			device.Apply(Mesh);
 
 			if (lights.Count > 0)
 			{
@@ -107,8 +102,7 @@ namespace Nursia.Graphics3D.Modelling
 					foreach (var pass in effect.CurrentTechnique.Passes)
 					{
 						pass.Apply();
-						device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0,
-							VertexBuffer.VertexCount, 0, PrimitiveCount);
+						device.DrawIndexedPrimitives(Mesh);
 					}
 				}
 
@@ -123,28 +117,11 @@ namespace Nursia.Graphics3D.Modelling
 				foreach (var pass in effect.CurrentTechnique.Passes)
 				{
 					pass.Apply();
-					device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0,
-						VertexBuffer.VertexCount, 0, PrimitiveCount);
+					device.DrawIndexedPrimitives(Mesh);
 				}
 			}
 
 			++context.Statistics.MeshesDrawn;
-		}
-
-		internal static MeshPart Create<T>(T[] vertices, short[] indices, PrimitiveType primitiveType) where T : struct, IVertexType
-		{
-			var vertexBuffer = new VertexBuffer(Nrs.GraphicsDevice, VertexPositionNormalTexture.VertexDeclaration, vertices.Length,
-													BufferUsage.None);
-			vertexBuffer.SetData(vertices);
-
-			var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits, indices.Length, BufferUsage.None);
-			indexBuffer.SetData(indices);
-
-			return new MeshPart
-			{
-				VertexBuffer = vertexBuffer,
-				IndexBuffer = indexBuffer
-			};
 		}
 	}
 }

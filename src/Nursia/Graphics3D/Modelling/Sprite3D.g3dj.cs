@@ -330,10 +330,15 @@ namespace Nursia.Graphics3D.Modelling
 
 				var boundingSphere = BoundingSphere.CreateFromPoints(partPositions);
 
-				meshes[id] = new MeshPart
+				var mesh = new Mesh
 				{
 					IndexBuffer = indexBuffer,
-					VertexBuffer = vertexBuffer,
+					VertexBuffer = vertexBuffer
+				};
+
+				meshes[id] = new MeshPart
+				{
+					Mesh = mesh,
 					BonesPerMesh = bonesPerMesh,
 					BoundingSphere = boundingSphere
 				};
@@ -481,8 +486,7 @@ namespace Nursia.Graphics3D.Modelling
 					{
 						var meshPart = meshes[part.MeshPartId];
 
-						part.VertexBuffer = meshPart.VertexBuffer;
-						part.IndexBuffer = meshPart.IndexBuffer;
+						part.Mesh = meshPart.Mesh;
 						part.BonesPerMesh = meshPart.BonesPerMesh;
 						part.BoundingSphere = meshPart.BoundingSphere;
 

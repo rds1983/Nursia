@@ -1,11 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Graphics3D.CommonRendering;
 using Nursia.Graphics3D.Modelling;
+using Nursia.Graphics3D.Water;
 using System;
 
-namespace Nursia.Graphics3D
+namespace Nursia.Graphics3D.ForwardRendering
 {
-	public class ForwardRenderer
+	public partial class ForwardRenderer
 	{
 		private DepthStencilState _oldDepthStencilState;
 		private RasterizerState _oldRasterizerState;
@@ -13,6 +15,7 @@ namespace Nursia.Graphics3D
 		private SamplerState _oldSamplerState;
 		private bool _beginCalled;
 		private readonly RenderContext _context = new RenderContext();
+		private WaterRenderer _waterRenderer;
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
@@ -25,6 +28,10 @@ namespace Nursia.Graphics3D
 			{
 				return _context.Statistics;
 			}
+		}
+
+		public ForwardRenderer()
+		{
 		}
 
 		public void Begin()
@@ -45,6 +52,28 @@ namespace Nursia.Graphics3D
 			_context.Statistics.Reset();
 		}
 
+		internal void DrawMeshNode(MeshNode meshNode)
+		{
+			foreach (var part in meshNode.Parts)
+			{
+				var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform);
+				if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+				{
+					continue;
+				}
+
+				// If part has bones, then parent node transform had been already
+				// applied to bones transform
+				// Thus to avoid applying parent transform twice, we use
+				// ordinary Transform(not AbsoluteTransform) for parts with bones
+				using (var scope = new TransformScope(_context,
+					part.Bones.Count > 0 ? Matrix.Identity : meshNode.AbsoluteTransform))
+				{
+					DrawMeshPart(part);
+				}
+			}
+		}
+
 		private void DrawModel(Sprite3D model)
 		{
 			if (!_beginCalled)
@@ -57,7 +86,7 @@ namespace Nursia.Graphics3D
 			{
 				foreach (var mesh in model.Meshes)
 				{
-					mesh.Draw(_context);
+					DrawMeshNode(mesh);
 				}
 			}
 		}
@@ -77,9 +106,19 @@ namespace Nursia.Graphics3D
 					0.1f,
 					1000.0f);
 
-			foreach(var model in scene.Models)
+			foreach (var model in scene.Models)
 			{
 				DrawModel(model);
+			}
+
+			if (scene.WaterTiles.Count > 0)
+			{
+				if (_waterRenderer == null)
+				{
+					_waterRenderer = new WaterRenderer();
+				}
+
+				_waterRenderer.DrawWater(_context);
 			}
 		}
 

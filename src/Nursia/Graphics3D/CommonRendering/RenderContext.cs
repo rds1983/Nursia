@@ -2,7 +2,7 @@
 using Nursia.Graphics3D.Lights;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D
+namespace Nursia.Graphics3D.CommonRendering
 {
 	internal class RenderContext
 	{

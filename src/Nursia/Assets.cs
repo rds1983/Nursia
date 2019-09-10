@@ -11,7 +11,8 @@ namespace Nursia
 	public static class Assets
 	{
 		private static SpriteFont _debugFont;
-		private static MultiVariantEffect _defaultEffect;
+		private static MultiVariantEffect _defaultMultiEffect, _waterMultiEffect;
+		private static Effect _waterEffect;
 		private static Effect[] _defaultEffects = new Effect[10];
 		private static Texture2D _white;
 
@@ -78,9 +79,9 @@ namespace Nursia
 				return _defaultEffects[key];
 			}
 
-			if (_defaultEffect == null)
+			if (_defaultMultiEffect == null)
 			{
-				_defaultEffect = new MultiVariantEffect(() =>
+				_defaultMultiEffect = new MultiVariantEffect(() =>
 				{
 					return Assembly.OpenResourceStream("Resources.Effects.DefaultEffect.efb");
 				});
@@ -97,10 +98,29 @@ namespace Nursia
 				defines["BONES"] = bones.ToString();
 			}
 
-			var result = _defaultEffect.GetEffect(Nrs.GraphicsDevice, defines);
+			var result = _defaultMultiEffect.GetEffect(Nrs.GraphicsDevice, defines);
 
 			_defaultEffects[key] = result;
 			return result;
+		}
+
+		internal static Effect GetWaterEffect()
+		{
+			if (_waterEffect != null)
+			{
+				return _waterEffect;
+			}
+
+			if (_waterMultiEffect == null)
+			{
+				_waterMultiEffect = new MultiVariantEffect(() =>
+				{
+					return Assembly.OpenResourceStream("Resources.Effects.WaterEffect.efb");
+				});
+			}
+
+			_waterEffect = _waterMultiEffect.GetEffect(Nrs.GraphicsDevice, null);
+			return _waterEffect;
 		}
 	}
 }

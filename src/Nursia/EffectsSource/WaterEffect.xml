@@ -1,0 +1,10 @@
+<Root>
+    <Targets>
+        <MonoGameDirectX/>
+        <MonoGameOpenGL/>
+        <FNA/>
+    </Targets>
+    <RootEntry>
+        <Define/>
+    </RootEntry>
+</Root>

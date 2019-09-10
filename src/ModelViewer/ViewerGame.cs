@@ -7,6 +7,7 @@ using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Graphics3D;
+using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;

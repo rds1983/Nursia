@@ -16,27 +16,5 @@ namespace Nursia.Graphics3D.Modelling
 		}
 
 		public BoundingSphere BoundingSphere { get; set; }
-
-		internal void Draw(RenderContext context)
-		{
-			foreach (var part in _parts)
-			{
-				var boundingSphere = part.BoundingSphere.Transform(AbsoluteTransform);
-				if (context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
-				{
-					continue;
-				}
-
-				// If part has bones, then parent node transform had been already
-				// applied to bones transform
-				// Thus to avoid applying parent transform twice, we use
-				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				using (var scope = new TransformScope(context,
-					part.Bones.Count > 0 ? Matrix.Identity : AbsoluteTransform))
-				{
-					part.Draw(context);
-				}
-			}
-		}
 	}
 }

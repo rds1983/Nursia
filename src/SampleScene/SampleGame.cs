@@ -7,9 +7,11 @@ using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Graphics3D;
+using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
+using Nursia.Graphics3D.Water;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -123,6 +125,9 @@ namespace ModelViewer
 
 			// Nursia
 			Nrs.Game = this;
+
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 1));
+
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -244,12 +249,10 @@ namespace ModelViewer
 
 		private void DrawModel()
 		{
-			if (_model == null)
+			if (_model != null)
 			{
-				return;
+				_model.UpdateCurrentAnimation();
 			}
-
-			_model.UpdateCurrentAnimation();
 
 			_renderer.Begin();
 			_renderer.DrawScene(_scene);

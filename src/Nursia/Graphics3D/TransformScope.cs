@@ -5,10 +5,10 @@ namespace Nursia.Graphics3D
 {
 	internal struct TransformScope: IDisposable
 	{
-		private readonly Context3d _context;
+		private readonly RenderContext _context;
 		private readonly Matrix _oldTransform;
 
-		public TransformScope(Context3d context, Matrix transform)
+		public TransformScope(RenderContext context, Matrix transform)
 		{
 			_context = context;
 			_oldTransform = context.World;

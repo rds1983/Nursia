@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Modelling;
 using System;
 
@@ -11,20 +12,23 @@ namespace Nursia.Graphics3D
 		private BlendState _oldBlendState;
 		private SamplerState _oldSamplerState;
 		private bool _beginCalled;
-		private Context3d _context;
+		private readonly RenderContext _context = new RenderContext();
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
 		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
 		public SamplerState SamplerState { get; set; } = SamplerState.LinearWrap;
 
-		public void Begin(Context3d context)
+		public RenderStatistics Statistics
 		{
-			if (context == null)
+			get
 			{
-				throw new ArgumentNullException("context");
+				return _context.Statistics;
 			}
+		}
 
+		public void Begin()
+		{
 			var device = Nrs.GraphicsDevice;
 			_oldDepthStencilState = device.DepthStencilState;
 			_oldRasterizerState = device.RasterizerState;
@@ -37,11 +41,11 @@ namespace Nursia.Graphics3D
 			device.SamplerStates[0] = SamplerState;
 
 			_beginCalled = true;
-			_context = context;
-			_context.ResetStatistics();
+
+			_context.Statistics.Reset();
 		}
 
-		public void DrawModel(Sprite3D model)
+		private void DrawModel(Sprite3D model)
 		{
 			if (!_beginCalled)
 			{
@@ -55,6 +59,27 @@ namespace Nursia.Graphics3D
 				{
 					mesh.Draw(_context);
 				}
+			}
+		}
+
+		public void DrawScene(Scene scene)
+		{
+			if (Nrs.GraphicsDevice.Viewport.Height == 0)
+			{
+				return;
+			}
+
+			_context.Scene = scene;
+			_context.View = scene.Camera.View;
+			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
+					MathHelper.ToRadians(scene.Camera.ViewAngle),
+					Nrs.GraphicsDevice.Viewport.AspectRatio,
+					0.1f,
+					1000.0f);
+
+			foreach(var model in scene.Models)
+			{
+				DrawModel(model);
 			}
 		}
 

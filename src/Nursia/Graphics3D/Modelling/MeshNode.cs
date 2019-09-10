@@ -17,7 +17,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		public BoundingSphere BoundingSphere { get; set; }
 
-		public void Draw(Context3d context)
+		internal void Draw(RenderContext context)
 		{
 			foreach (var part in _parts)
 			{

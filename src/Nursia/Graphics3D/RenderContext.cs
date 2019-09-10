@@ -4,20 +4,23 @@ using System.Collections.Generic;
 
 namespace Nursia.Graphics3D
 {
-	public class Context3d
+	internal class RenderContext
 	{
+		private readonly RenderStatistics _statistics = new RenderStatistics();
 		private Matrix? _viewProjection;
 		private BoundingFrustum _frustrum;
 		private Matrix _projection = Matrix.Identity, _view = Matrix.Identity;
-		private readonly List<DirectLight> _lights = new List<DirectLight>();
+
+		public Scene Scene { get; set; }
 
 		public List<DirectLight> Lights
 		{
 			get
 			{
-				return _lights;
+				return Scene.Lights;
 			}
 		}
+
 
 		public Matrix Projection
 		{
@@ -84,13 +87,14 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		internal Matrix World { get; set; }
+		public Matrix World { get; set; }
 
-		public int MeshesDrawn { get; internal set; }
-
-		public void ResetStatistics()
+		public RenderStatistics Statistics
 		{
-			MeshesDrawn = 0;
+			get
+			{
+				return _statistics;
+			}
 		}
 
 		private void ResetView()
@@ -99,7 +103,7 @@ namespace Nursia.Graphics3D
 			_frustrum = null;
 		}
 
-		public Context3d()
+		public RenderContext()
 		{
 			World = Matrix.Identity;
 		}

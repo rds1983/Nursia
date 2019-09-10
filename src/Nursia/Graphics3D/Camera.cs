@@ -7,6 +7,7 @@ namespace Nursia.Graphics3D
 	{
 		private Vector3 _position;
 		private float _yawAngle, _pitchAngle, _rollAngle;
+		private float _viewAngle = 67.0f;
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private bool _dirty = true;
@@ -100,6 +101,19 @@ namespace Nursia.Graphics3D
 			{
 				Update();
 				return _view;
+			}
+		}
+
+		public float ViewAngle
+		{
+			get
+			{
+				return _viewAngle;
+			}
+
+			set
+			{
+				_viewAngle = value;
 			}
 		}
 

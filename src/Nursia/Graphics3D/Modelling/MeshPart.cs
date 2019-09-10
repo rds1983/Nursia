@@ -52,7 +52,7 @@ namespace Nursia.Graphics3D.Modelling
 			return _boneTransforms;
 		}
 
-		public void Draw(Context3d context)
+		internal void Draw(RenderContext context)
 		{
 			if (VertexBuffer == null || 
 				IndexBuffer == null || 
@@ -128,7 +128,7 @@ namespace Nursia.Graphics3D.Modelling
 				}
 			}
 
-			++context.MeshesDrawn;
+			++context.Statistics.MeshesDrawn;
 		}
 
 		internal static MeshPart Create<T>(T[] vertices, short[] indices, PrimitiveType primitiveType) where T : struct, IVertexType

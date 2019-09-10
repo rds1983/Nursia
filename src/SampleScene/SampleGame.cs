@@ -17,7 +17,7 @@ using System.Reflection;
 
 namespace ModelViewer
 {
-	public class ViewerGame : Game
+	public class SampleGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Sprite3D _model;
@@ -29,7 +29,7 @@ namespace ModelViewer
 		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 		private readonly Scene _scene = new Scene();
 
-		static ViewerGame()
+		static SampleGame()
 		{
 			_defaultLights.Add(new DirectLight
 			{
@@ -50,7 +50,7 @@ namespace ModelViewer
 			});
 		}
 
-		public ViewerGame()
+		public SampleGame()
 		{
 			_graphics = new GraphicsDeviceManager(this)
 			{

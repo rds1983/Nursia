@@ -14,14 +14,14 @@ namespace Nursia.Graphics3D.ForwardRendering
 			// Create water tile
 			// Water effect ignores y
 			// So it's always set to zero
-			var vertices = new VertexPosition[]
+			var vertices = new VertexPositionTexture[]
 			{
-				new VertexPosition(new Vector3(-1, 0, -1)),
-				new VertexPosition(new Vector3(-1, 0, 1)),
-				new VertexPosition(new Vector3(1, 0, -1)),
-				new VertexPosition(new Vector3(1, 0, -1)),
-				new VertexPosition(new Vector3(-1, 0, 1)),
-				new VertexPosition(new Vector3(1, 0, 1))
+				new VertexPositionTexture(new Vector3(-1, 0, -1), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(-1, 0, 1), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(1, 0, -1), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(1, 0, -1), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(-1, 0, 1), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(1, 0, 1), Vector2.Zero)
 			};
 
 			var indices = new short[]

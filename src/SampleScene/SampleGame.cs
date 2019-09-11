@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using ModelViewer.UI;
 using Myra;
 using Myra.Graphics2D.UI;
-using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
@@ -15,14 +14,13 @@ using Nursia.Graphics3D.Water;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace ModelViewer
 {
 	public class SampleGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private Sprite3D _model1, _model2;
+		private Sprite3D _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private Desktop _desktop = null;
@@ -92,6 +90,23 @@ namespace ModelViewer
 			return result;
 		}
 
+		private void LoadImage(string path, ref Color[] data)
+		{
+			Texture2D texture;
+			using (var stream = File.OpenRead(path))
+			{
+				texture = Texture2D.FromStream(GraphicsDevice, stream);
+			}
+
+			var size = new Point(texture.Width, texture.Height);
+			if (data == null || data.Length != size.X * size.Y)
+			{
+				data = new Color[size.X * size.Y];
+			}
+			texture.GetData(data);
+			texture.Dispose();
+		}
+
 		protected override void LoadContent()
 		{
 			base.LoadContent();
@@ -110,14 +125,31 @@ namespace ModelViewer
 			// Nursia
 			Nrs.Game = this;
 
-			_scene.WaterTiles.Add(new WaterTile(0, 0, 0));
+			_scene.WaterTiles.Add(new WaterTile(0, 0, -10));
 
-			_model1 = LoadModel(@"D:\Projects\Nursia\samples\models\skeleton.g3dj");
-			_model1.Transform = Matrix.CreateTranslation(0, -50, 0);
-			_model1.CurrentAnimation = _model1.Animations["Skeleton01_anim_walk"];
+			_model = LoadModel(@"D:\Projects\Nursia\samples\models\knight.g3dj");
+			_model.CurrentAnimation = _model.Animations["Attack"];
 
-			_model2 = LoadModel(@"D:\Projects\Nursia\samples\models\knight.g3dj");
-			_model2.CurrentAnimation = _model2.Animations["Attack"];
+			var texture = new TextureCube(GraphicsDevice, 1024,
+				false, SurfaceFormat.Color);
+			Color[] data = null;
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\negX.png", ref data);
+			texture.SetData(CubeMapFace.NegativeX, data);
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\negY.png", ref data);
+			texture.SetData(CubeMapFace.NegativeY, data);
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\negZ.png", ref data);
+			texture.SetData(CubeMapFace.NegativeZ, data);
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\posX.png", ref data);
+			texture.SetData(CubeMapFace.PositiveX, data);
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\posY.png", ref data);
+			texture.SetData(CubeMapFace.PositiveY, data);
+			LoadImage(@"D:\Projects\Nursia\samples\skybox\posZ.png", ref data);
+			texture.SetData(CubeMapFace.PositiveZ, data);
+
+			_scene.Skybox = new Skybox(100)
+			{
+				Texture = texture
+			};
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -182,13 +214,13 @@ namespace ModelViewer
 
 			_desktop.Render();
 
-/*			_spriteBatch.Begin();
+			_spriteBatch.Begin();
 
-			_spriteBatch.Draw(_renderer.WaterRefraction, 
+			_spriteBatch.Draw(_renderer.WaterReflection, 
 				new Rectangle(0, 500, 600, 300), 
 				Color.White);
 
-			_spriteBatch.End();*/
+			_spriteBatch.End();
 
 			_fpsCounter.Draw(gameTime);
 		}

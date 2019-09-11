@@ -11,7 +11,11 @@ namespace Nursia
 	public static class Assets
 	{
 		private static SpriteFont _debugFont;
-		private static MultiVariantEffect _defaultMultiEffect, _waterMultiEffect;
+		private static MultiVariantEffect 
+			_defaultMultiEffect, 
+			_waterMultiEffect,
+			_skyboxMultiEffect;
+		private static Effect[] _skyboxEffects = new Effect[2];
 		private static Effect _waterEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white;
@@ -133,6 +137,34 @@ namespace Nursia
 
 			_waterEffect = _waterMultiEffect.GetEffect(Nrs.GraphicsDevice, null);
 			return _waterEffect;
+		}
+
+		internal static Effect GetSkyboxEffect(bool clipPlane)
+		{
+			var key = clipPlane ? 1 : 0;
+
+			if (_skyboxEffects[key] != null)
+			{
+				return _skyboxEffects[key];
+			}
+
+			if (_skyboxMultiEffect == null)
+			{
+				_skyboxMultiEffect = new MultiVariantEffect(() =>
+				{
+					return Assembly.OpenResourceStream("Resources.Effects.SkyboxEffect.efb");
+				});
+			}
+
+			var defines = new Dictionary<string, string>();
+
+			if (clipPlane)
+			{
+				defines["CLIP_PLANE"] = "1";
+			}
+
+			_skyboxEffects[key] = _skyboxMultiEffect.GetEffect(Nrs.GraphicsDevice, defines);
+			return _skyboxEffects[key];
 		}
 	}
 }

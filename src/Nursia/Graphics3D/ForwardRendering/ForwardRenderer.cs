@@ -121,6 +121,40 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 		}
 
+		private void RefractionPass(Scene scene)
+		{
+			foreach (var model in scene.Models)
+			{
+				DrawModel(model);
+			}
+		}
+
+		private void ReflectionPass(Scene scene)
+		{
+			var skybox = scene.Skybox;
+			if (skybox != null && skybox.Texture != null)
+			{
+				var device = Nrs.GraphicsDevice;
+				var effect = Assets.GetSkyboxEffect(_context.ClipPlane != null);
+
+				var view = _context.View;
+				view.Translation = Vector3.Zero;
+				var transform = view * _context.Projection;
+
+				effect.Parameters["_transform"].SetValue(transform);
+				effect.Parameters["_texture"].SetValue(skybox.Texture);
+
+				device.Apply(skybox.Mesh);
+				device.DrawIndexedPrimitives(effect, skybox.Mesh);
+				++_context.Statistics.MeshesDrawn;
+			}
+
+			foreach (var model in scene.Models)
+			{
+				DrawModel(model);
+			}
+		}
+
 		public void DrawScene(Scene scene)
 		{
 			if (Nrs.GraphicsDevice.Viewport.Height == 0)
@@ -144,26 +178,23 @@ namespace Nursia.Graphics3D.ForwardRendering
 						NearPlaneDistance, FarPlaneDistance);
 
 					device.SetRenderTarget(waterRenderer.TargetRefraction);
+
 					_context.ClipPlane = WaterRenderer.CreatePlane(
 						scene.WaterTiles[0].Height,
 						-Vector3.Up,
 						_context.ViewProjection,
 						false);
-					foreach (var model in scene.Models)
-					{
-						DrawModel(model);
-					}
+					RefractionPass(scene);
 
 					device.SetRenderTarget(waterRenderer.TargetReflection);
+					device.Clear(Color.Black);
+
 					_context.ClipPlane = WaterRenderer.CreatePlane(
 						scene.WaterTiles[0].Height,
 						-Vector3.Up,
 						_context.ViewProjection,
 						true);
-					foreach (var model in scene.Models)
-					{
-						DrawModel(model);
-					}
+					ReflectionPass(scene);
 				}
 				finally
 				{
@@ -177,10 +208,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				NearPlaneDistance, FarPlaneDistance);
 			_context.ClipPlane = null;
 
-			foreach (var model in scene.Models)
-			{
-				DrawModel(model);
-			}
+			ReflectionPass(scene);
 
 			if (scene.WaterTiles.Count > 0)
 			{

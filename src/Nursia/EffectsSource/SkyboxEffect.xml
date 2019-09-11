@@ -1,0 +1,11 @@
+<Root>
+    <Targets>
+        <MonoGameDirectX/>
+        <MonoGameOpenGL/>
+        <FNA/>
+    </Targets>
+    <RootEntry>
+        <Define/>
+        <Define Name="CLIP_PLANE" />
+    </RootEntry>
+</Root>

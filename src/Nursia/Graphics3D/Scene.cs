@@ -20,6 +20,8 @@ namespace Nursia.Graphics3D
 			}
 		}
 
+		public Skybox Skybox;
+
 		public List<Sprite3D> Models
 		{
 			get

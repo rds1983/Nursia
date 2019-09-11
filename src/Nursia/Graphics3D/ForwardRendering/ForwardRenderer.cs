@@ -135,6 +135,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (skybox != null && skybox.Texture != null)
 			{
 				var device = Nrs.GraphicsDevice;
+
+				device.DepthStencilState = DepthStencilState.DepthRead;
 				var effect = Assets.GetSkyboxEffect(_context.ClipPlane != null);
 
 				var view = _context.View;
@@ -147,6 +149,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				device.Apply(skybox.Mesh);
 				device.DrawIndexedPrimitives(effect, skybox.Mesh);
 				++_context.Statistics.MeshesDrawn;
+
+				device.DepthStencilState = DepthStencilState;
 			}
 
 			foreach (var model in scene.Models)

@@ -2,7 +2,7 @@
 using Nursia.Graphics3D.Lights;
 using System.Collections.Generic;
 
-namespace Nursia.Graphics3D.CommonRendering
+namespace Nursia.Graphics3D
 {
 	internal class RenderContext
 	{
@@ -13,6 +13,8 @@ namespace Nursia.Graphics3D.CommonRendering
 
 		public Scene Scene { get; set; }
 
+		public Plane? ClipPlane;
+
 		public List<DirectLight> Lights
 		{
 			get
@@ -20,7 +22,6 @@ namespace Nursia.Graphics3D.CommonRendering
 				return Scene.Lights;
 			}
 		}
-
 
 		public Matrix Projection
 		{

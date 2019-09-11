@@ -21,7 +21,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var lights = _context.Lights;
 
 			// Apply the effect and render items
-			var effect = Assets.GetDefaultEffect(lights.Count > 0, (int)part.BonesPerMesh);
+			var effect = Assets.GetDefaultEffect(
+				_context.ClipPlane != null,
+				lights.Count > 0, 
+				(int)part.BonesPerMesh);
 
 			var worldViewProj = _context.World * _context.ViewProjection;
 
@@ -37,6 +40,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (part.Material.Texture != null)
 			{
 				effect.Parameters["_texture"].SetValue(part.Material.Texture);
+			}
+
+			if (_context.ClipPlane != null)
+			{
+				var v = _context.ClipPlane.Value;
+				effect.Parameters["_clipPlane"].SetValue(new Vector4(v.Normal, v.D));
 			}
 
 			device.Apply(part.Mesh);

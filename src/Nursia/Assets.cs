@@ -13,7 +13,7 @@ namespace Nursia
 		private static SpriteFont _debugFont;
 		private static MultiVariantEffect _defaultMultiEffect, _waterMultiEffect;
 		private static Effect _waterEffect;
-		private static Effect[] _defaultEffects = new Effect[10];
+		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white;
 
 		private static Assembly Assembly
@@ -61,17 +61,23 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect GetDefaultEffect(bool lightning, int bones)
+		internal static Effect GetDefaultEffect(bool clipPlane, bool lightning, int bones)
 		{
 			var key = 0;
-			if (lightning)
+
+			if (clipPlane)
 			{
 				key |= 1;
 			}
 
+			if (lightning)
+			{
+				key |= 2;
+			}
+
 			if (bones > 0)
 			{
-				key |= bones << 1;
+				key |= bones << 2;
 			}
 
 			if (_defaultEffects[key] != null)
@@ -88,6 +94,12 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
+
+			if (clipPlane)
+			{
+				defines["CLIP_PLANE"] = "1";
+			}
+
 			if (lightning)
 			{
 				defines["LIGHTNING"] = "1";

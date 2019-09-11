@@ -1,30 +1,14 @@
 <Project>
-  <ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\tools\ModelViewer\UI" />
+  <ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\SampleScene\UI" />
   <Panel>
     <Grid ColumnSpacing="8" RowSpacing="8">
       <ColumnsProportions>
         <Proportion />
-        <Proportion />
       </ColumnsProportions>
       <RowsProportions>
         <Proportion />
-        <Proportion />
-        <Proportion />
-        <Proportion />
       </RowsProportions>
-      <TextField Text="" Readonly="True" Id="_textPath" Width="300" />
-      <TextButton Text="Change..." Id="_buttonChange" GridColumn="1" />
-      <ListBox Id="_listFiles" Height="200" HorizontalAlignment="Stretch" GridRow="1" >
-        <ListItem Text="model1.g3dj" />
-        <ListItem Text="another_model.g3db" />
-        <ListItem Text="tree.g3dj" />
-      </ListBox>
-      <ComboBox Id="_comboAnimations" HorizontalAlignment="Stretch" GridRow="2" >
-        <ListItem />
-        <ListItem Text="Move" />
-        <ListItem Text="Attack" />
-      </ComboBox>
-      <CheckBox Text="Lightning On" Id="_checkLightning" GridRow="3" />
+      <CheckBox Text="Lightning On" Id="_checkLightning" />
     </Grid>
     <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <ColumnsProportions>

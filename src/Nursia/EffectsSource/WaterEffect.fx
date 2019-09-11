@@ -1,6 +1,7 @@
 #include "Macros.fxh"
 
-DECLARE_TEXTURE(_texture, 0);
+DECLARE_TEXTURE(_textureRefraction, 0);
+DECLARE_TEXTURE(_textureReflection, 1);
 
 BEGIN_CONSTANTS
 
@@ -18,7 +19,7 @@ struct VSInput
 struct VSOutput
 {
     float4 Position: SV_POSITION;
-    float2 TexCoord: TEXCOORD0;
+    float4 ClipSpace: TEXCOORD0;
 };
 
 VSOutput VertexShaderFunction(VSInput input)
@@ -26,14 +27,21 @@ VSOutput VertexShaderFunction(VSInput input)
     VSOutput output = (VSOutput)0;
     
     output.Position = mul(input.Position, _worldViewProj);
-    output.TexCoord = float2(input.Position.x/2.0 + 0.5, input.Position.y/2.0 + 0.5);
+    output.ClipSpace = output.Position;
 
     return output;
 }
 
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
-    return float4(0, 0, 1, 1);
+    float2 ndc = (input.ClipSpace.xy / input.ClipSpace.w)/2.0 + 0.5;
+
+    float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, ndc);
+    float4 colorReflection = SAMPLE_TEXTURE(_textureReflection, float2(ndc.x, -ndc.y));
+
+    float4 result = lerp(colorRefraction, colorReflection, 0.5);
+    
+    return result;
 }
 
 TECHNIQUE(Default, VertexShaderFunction, PixelShaderFunction);

@@ -22,11 +22,12 @@ namespace ModelViewer
 	public class SampleGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private Sprite3D _model;
+		private Sprite3D _model1, _model2;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
+		private SpriteBatch _spriteBatch;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
 		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 		private readonly Scene _scene = new Scene();
@@ -70,13 +71,11 @@ namespace ModelViewer
 			}
 		}
 
-		private void LoadModel(string file)
+		private Sprite3D LoadModel(string file)
 		{
-			if (!string.IsNullOrEmpty(file))
-			{
-				var folder = Path.GetDirectoryName(file);
-				var data = File.ReadAllText(file);
-				_model = Sprite3D.LoadFromJson(data,
+			var folder = Path.GetDirectoryName(file);
+			var data = File.ReadAllText(file);
+			var result = Sprite3D.LoadFromJson(data,
 					n =>
 					{
 						using (var stream = File.OpenRead(Path.Combine(folder, n)))
@@ -85,38 +84,23 @@ namespace ModelViewer
 						}
 					});
 
-				_mainPanel._comboAnimations.Items.Clear();
-				_mainPanel._comboAnimations.Items.Add(new ListItem(null));
-				foreach (var pair in _model.Animations)
-				{
-					_mainPanel._comboAnimations.Items.Add(
-						new ListItem(pair.Key)
-						{
-							Tag = pair.Value
-						});
-				}
-
-				_scene.Models.Clear();
-				_scene.Models.Add(_model);
-			}
+			_scene.Models.Add(result);
 
 			// Reset camera
 			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
+
+			return result;
 		}
 
 		protected override void LoadContent()
 		{
 			base.LoadContent();
 
+			_spriteBatch = new SpriteBatch(GraphicsDevice);
+
 			// UI
 			MyraEnvironment.Game = this;
 			_mainPanel = new MainPanel();
-			_mainPanel._comboAnimations.Items.Clear();
-			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
-
-			_mainPanel._buttonChange.Click += OnChangeFolder;
-
-			_mainPanel._listFiles.SelectedIndexChanged += _listFiles_SelectedIndexChanged;
 
 			_mainPanel._checkLightning.PressedChanged += _checkLightning_PressedChanged;
 
@@ -126,13 +110,14 @@ namespace ModelViewer
 			// Nursia
 			Nrs.Game = this;
 
-			_scene.WaterTiles.Add(new WaterTile(0, 0, 1));
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 0));
 
-			LoadModel(string.Empty);
+			_model1 = LoadModel(@"D:\Projects\Nursia\samples\models\skeleton.g3dj");
+			_model1.Transform = Matrix.CreateTranslation(0, -50, 0);
+			_model1.CurrentAnimation = _model1.Animations["Skeleton01_anim_walk"];
 
-			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Projects\Nursia\samples\models";
-			SetFolder(folder);
+			_model2 = LoadModel(@"D:\Projects\Nursia\samples\models\knight.g3dj");
+			_model2.CurrentAnimation = _model2.Animations["Attack"];
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -143,82 +128,6 @@ namespace ModelViewer
 			if (_mainPanel._checkLightning.IsPressed)
 			{
 				_scene.Lights.AddRange(_defaultLights);
-			}
-		}
-
-		private void _listFiles_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_mainPanel._listFiles.SelectedItem == null)
-			{
-				LoadModel(null);
-			} else
-			{
-				LoadModel(_mainPanel._listFiles.SelectedItem.Id);
-			}
-		}
-
-		private void SetFolder(string folder)
-		{
-			_mainPanel._listFiles.Items.Clear();
-			var files = Directory.EnumerateFiles(folder, "*.g3dj");
-			foreach (var f in files)
-			{
-				var fileInfo = new FileInfo(f);
-				if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
-				{
-					continue;
-				}
-
-				_mainPanel._listFiles.Items.Add(new ListItem(fileInfo.Name)
-				{
-					Id = fileInfo.FullName
-				});
-			}
-
-			_mainPanel._textPath.Text = folder;
-		}
-
-		private void OnChangeFolder(object sender, EventArgs e)
-		{
-;			var dlg = new FileDialog(FileDialogMode.ChooseFolder);
-
-			try
-			{
-				if (!string.IsNullOrEmpty(_mainPanel._textPath.Text))
-				{
-					dlg.Folder = _mainPanel._textPath.Text;
-				} else
-				{
-					var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-					dlg.Folder = folder;
-				}
-			}
-			catch (Exception)
-			{
-			}
-
-			dlg.Closed += (s, a) =>
-			{
-				if (!dlg.Result)
-				{
-					return;
-				}
-
-				SetFolder(dlg.FilePath);
-			};
-
-			dlg.ShowModal(_desktop);
-		}
-
-		private void _comboAnimations_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			if (_mainPanel._comboAnimations.SelectedItem == null)
-			{
-				_model.CurrentAnimation = null;
-			}
-			else
-			{
-				_model.CurrentAnimation = (Sprite3DAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
 			}
 		}
 
@@ -249,9 +158,9 @@ namespace ModelViewer
 
 		private void DrawModel()
 		{
-			if (_model != null)
+			foreach(var model in _scene.Models)
 			{
-				_model.UpdateCurrentAnimation();
+				model.UpdateCurrentAnimation();
 			}
 
 			_renderer.Begin();
@@ -272,6 +181,14 @@ namespace ModelViewer
 			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer.Statistics.MeshesDrawn;
 
 			_desktop.Render();
+
+/*			_spriteBatch.Begin();
+
+			_spriteBatch.Draw(_renderer.WaterRefraction, 
+				new Rectangle(0, 500, 600, 300), 
+				Color.White);
+
+			_spriteBatch.End();*/
 
 			_fpsCounter.Draw(gameTime);
 		}

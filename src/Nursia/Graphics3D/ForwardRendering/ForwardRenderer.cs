@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Graphics3D.CommonRendering;
 using Nursia.Graphics3D.Modelling;
-using Nursia.Graphics3D.Water;
 using System;
 
 namespace Nursia.Graphics3D.ForwardRendering
@@ -30,6 +28,38 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 		}
 
+		private WaterRenderer WaterRenderer
+		{
+			get
+			{
+				if (_waterRenderer == null)
+				{
+					_waterRenderer = new WaterRenderer();
+				}
+
+				return _waterRenderer;
+			}
+		}
+
+		public RenderTarget2D WaterReflection
+		{
+			get
+			{
+				return WaterRenderer.TargetReflection;
+			}
+		}
+
+		public RenderTarget2D WaterRefraction
+		{
+			get
+			{
+				return WaterRenderer.TargetRefraction;
+			}
+		}
+
+		public float NearPlaneDistance = 0.1f;
+		public float FarPlaneDistance = 1000.0f;
+
 		public ForwardRenderer()
 		{
 		}
@@ -56,7 +86,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			foreach (var part in meshNode.Parts)
 			{
-				var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform);
+				var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
 				if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
 				{
 					continue;
@@ -100,11 +130,52 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			_context.Scene = scene;
 			_context.View = scene.Camera.View;
+
+			if (scene.WaterTiles.Count > 0)
+			{
+				// Render reflection texture
+				var waterRenderer = WaterRenderer;
+				var device = Nrs.GraphicsDevice;
+				try
+				{
+					_context.Projection = Matrix.CreatePerspectiveFieldOfView(
+						MathHelper.ToRadians(scene.Camera.ViewAngle),
+						WaterRenderer.TargetWidth / WaterRenderer.TargetHeight,
+						NearPlaneDistance, FarPlaneDistance);
+
+					device.SetRenderTarget(waterRenderer.TargetRefraction);
+					_context.ClipPlane = WaterRenderer.CreatePlane(
+						scene.WaterTiles[0].Height,
+						-Vector3.Up,
+						_context.ViewProjection,
+						false);
+					foreach (var model in scene.Models)
+					{
+						DrawModel(model);
+					}
+
+					device.SetRenderTarget(waterRenderer.TargetReflection);
+					_context.ClipPlane = WaterRenderer.CreatePlane(
+						scene.WaterTiles[0].Height,
+						-Vector3.Up,
+						_context.ViewProjection,
+						true);
+					foreach (var model in scene.Models)
+					{
+						DrawModel(model);
+					}
+				}
+				finally
+				{
+					device.SetRenderTarget(null);
+				}
+			}
+
 			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
-					MathHelper.ToRadians(scene.Camera.ViewAngle),
-					Nrs.GraphicsDevice.Viewport.AspectRatio,
-					0.1f,
-					1000.0f);
+				MathHelper.ToRadians(scene.Camera.ViewAngle),
+				Nrs.GraphicsDevice.Viewport.AspectRatio,
+				NearPlaneDistance, FarPlaneDistance);
+			_context.ClipPlane = null;
 
 			foreach (var model in scene.Models)
 			{
@@ -113,12 +184,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			if (scene.WaterTiles.Count > 0)
 			{
-				if (_waterRenderer == null)
-				{
-					_waterRenderer = new WaterRenderer();
-				}
-
-				_waterRenderer.DrawWater(_context);
+				var waterRenderer = WaterRenderer;
+				WaterRenderer.DrawWater(_context);
 			}
 		}
 

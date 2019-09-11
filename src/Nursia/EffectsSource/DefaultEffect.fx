@@ -20,6 +20,12 @@ float3 _lightColor;
 
 #endif
 
+#ifdef CLIP_PLANE
+
+float4 _clipPlane;
+
+#endif
+
 float4 _diffuseColor;
 
 MATRIX_CONSTANTS
@@ -50,7 +56,11 @@ struct VSOutput
     float2 TexCoord: TEXCOORD0;
 
 #ifdef LIGHTNING
-	float3 WorldNormal: TEXCOORD2;
+	float3 WorldNormal: TEXCOORD1;
+#endif
+
+#ifdef CLIP_PLANE
+    float4 ClipDistances: TEXCOORD2;
 #endif
 };
 
@@ -82,6 +92,11 @@ VSOutput VertexShaderFunction(VSInput input)
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
 #endif
 
+#ifdef CLIP_PLANE
+    output.ClipDistances.yzw = 0;
+    output.ClipDistances.x = dot(output.Position, _clipPlane); 
+#endif
+
     return output;
 }
 
@@ -95,6 +110,10 @@ float3 ComputeLighting(float3 normalVector, float3 lightDirection, float3 lightC
 
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
+#ifdef CLIP_PLANE
+    clip(input.ClipDistances); 
+#endif
+
     float4 color = SAMPLE_TEXTURE(_texture, input.TexCoord);
 
 #ifdef LIGHTNING

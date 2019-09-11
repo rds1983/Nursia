@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Nursia.Graphics3D.CommonRendering
+namespace Nursia.Graphics3D
 {
 	internal struct TransformScope: IDisposable
 	{

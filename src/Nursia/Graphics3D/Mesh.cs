@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Nursia.Graphics3D
 {
-	public class Mesh
+	public class Mesh: IDisposable
 	{
 		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
@@ -13,6 +14,24 @@ namespace Nursia.Graphics3D
 			{
 				return IndexBuffer.IndexCount / 3;
 			}
+		}
+
+		public Mesh()
+		{
+		}
+
+		~Mesh()
+		{
+			Dispose(true);
+		}
+
+		public void Dispose()
+		{
+			Dispose(false);
+		}
+
+		private void Dispose(bool disposing)
+		{
 		}
 
 		internal static Mesh Create<T>(T[] vertices, 

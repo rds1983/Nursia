@@ -9,8 +9,9 @@ using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
+using Nursia.Graphics3D.Terrain;
 using Nursia.Graphics3D.Utils;
-using Nursia.Graphics3D.Water;
+using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,13 +75,7 @@ namespace ModelViewer
 			var folder = Path.GetDirectoryName(file);
 			var data = File.ReadAllText(file);
 			var result = Sprite3D.LoadFromJson(data,
-					n =>
-					{
-						using (var stream = File.OpenRead(Path.Combine(folder, n)))
-						{
-							return Texture2D.FromStream(GraphicsDevice, stream);
-						}
-					});
+					n => LoadTexture(Path.Combine(folder, n)));
 
 			_scene.Models.Add(result);
 
@@ -90,21 +85,26 @@ namespace ModelViewer
 			return result;
 		}
 
-		private void LoadImage(string path, ref Color[] data)
+		private Texture2D LoadTexture(string path)
 		{
-			Texture2D texture;
 			using (var stream = File.OpenRead(path))
 			{
-				texture = Texture2D.FromStream(GraphicsDevice, stream);
+				return Texture2D.FromStream(GraphicsDevice, stream);
 			}
+		}
 
-			var size = new Point(texture.Width, texture.Height);
-			if (data == null || data.Length != size.X * size.Y)
+		private Image2D LoadImage(string path)
+		{
+			using (var stream = File.OpenRead(path))
 			{
-				data = new Color[size.X * size.Y];
+				return Image2D.FromStream(stream);
 			}
-			texture.GetData(data);
-			texture.Dispose();
+		}
+
+		private void LoadColors(string path, ref Color[] data)
+		{
+			var image = LoadImage(path);
+			data = image.Data;
 		}
 
 		protected override void LoadContent()
@@ -125,25 +125,41 @@ namespace ModelViewer
 			// Nursia
 			Nrs.Game = this;
 
-			_scene.WaterTiles.Add(new WaterTile(0, 0, -10));
+			var folder = @"D:\Projects\Nursia\samples";
 
-			_model = LoadModel(@"D:\Projects\Nursia\samples\models\knight.g3dj");
+			// Water
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 0));
+
+			// Model
+			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));
+			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
 			_model.CurrentAnimation = _model.Animations["Attack"];
 
+			// Terrain
+			var heightMapImage = LoadImage(Path.Combine(folder, @"terrain\heightmap.png"));
+			var terrainTile = new TerrainTile(heightMapImage)
+			{
+				Texture = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"))
+			};
+
+			_scene.TerrainTiles.Add(terrainTile);
+
+			// Skybox
+			var skyboxFolder = Path.Combine(folder, "skybox");
 			var texture = new TextureCube(GraphicsDevice, 1024,
 				false, SurfaceFormat.Color);
 			Color[] data = null;
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\negX.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder,  @"negX.png"), ref data);
 			texture.SetData(CubeMapFace.NegativeX, data);
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\negY.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"negY.png"), ref data);
 			texture.SetData(CubeMapFace.NegativeY, data);
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\negZ.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"negZ.png"), ref data);
 			texture.SetData(CubeMapFace.NegativeZ, data);
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\posX.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posX.png"), ref data);
 			texture.SetData(CubeMapFace.PositiveX, data);
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\posY.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posY.png"), ref data);
 			texture.SetData(CubeMapFace.PositiveY, data);
-			LoadImage(@"D:\Projects\Nursia\samples\skybox\posZ.png", ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posZ.png"), ref data);
 			texture.SetData(CubeMapFace.PositiveZ, data);
 
 			_scene.Skybox = new Skybox(100)
@@ -214,13 +230,13 @@ namespace ModelViewer
 
 			_desktop.Render();
 
-			_spriteBatch.Begin();
+/*			_spriteBatch.Begin();
 
 			_spriteBatch.Draw(_renderer.WaterReflection, 
 				new Rectangle(0, 500, 600, 300), 
 				Color.White);
 
-			_spriteBatch.End();
+			_spriteBatch.End();*/
 
 			_fpsCounter.Draw(gameTime);
 		}

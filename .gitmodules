@@ -4,3 +4,6 @@
 [submodule "deps/EffectFarm"]
 	path = deps/EffectFarm
 	url = https://github.com/rds1983/EffectFarm.git
+[submodule "deps/StbImageSharp"]
+	path = deps/StbImageSharp
+	url = https://github.com/StbSharp/StbImageSharp.git

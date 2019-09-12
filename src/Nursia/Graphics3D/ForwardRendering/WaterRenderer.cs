@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Graphics3D.Water;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -77,7 +76,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 			foreach (var waterTile in scene.WaterTiles)
 			{
 				var world = Matrix.CreateScale(WaterTile.Size) *
-					Matrix.CreateTranslation(waterTile.X, waterTile.Height, waterTile.Z);
+					Matrix.CreateTranslation(waterTile.X, 
+						waterTile.Height, 
+						waterTile.Z);
 
 				var worldViewProj = world * context.ViewProjection;
 				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);

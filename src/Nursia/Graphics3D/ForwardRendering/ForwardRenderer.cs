@@ -82,7 +82,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_context.Statistics.Reset();
 		}
 
-		internal void DrawMeshNode(MeshNode meshNode)
+		private void DrawMeshNode(MeshNode meshNode)
 		{
 			foreach (var part in meshNode.Parts)
 			{
@@ -123,6 +123,16 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		private void RefractionPass(Scene scene)
 		{
+			foreach(var terrainTile in scene.TerrainTiles)
+			{
+				if (_context.Frustrum.Contains(terrainTile.MeshPart.BoundingSphere) == ContainmentType.Disjoint)
+				{
+					continue;
+				}
+
+				DrawMeshPart(terrainTile.MeshPart);
+			}
+
 			foreach (var model in scene.Models)
 			{
 				DrawModel(model);
@@ -153,10 +163,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				device.DepthStencilState = DepthStencilState;
 			}
 
-			foreach (var model in scene.Models)
-			{
-				DrawModel(model);
-			}
+			RefractionPass(scene);
 		}
 
 		public void DrawScene(Scene scene)
@@ -181,10 +188,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 						WaterRenderer.TargetWidth / WaterRenderer.TargetHeight,
 						NearPlaneDistance, FarPlaneDistance);
 
+					var waterTile = scene.WaterTiles[0];
 					device.SetRenderTarget(waterRenderer.TargetRefraction);
 
 					_context.ClipPlane = WaterRenderer.CreatePlane(
-						scene.WaterTiles[0].Height,
+						waterTile.Height,
 						-Vector3.Up,
 						_context.ViewProjection,
 						false);
@@ -194,11 +202,24 @@ namespace Nursia.Graphics3D.ForwardRendering
 					device.Clear(Color.Black);
 
 					_context.ClipPlane = WaterRenderer.CreatePlane(
-						scene.WaterTiles[0].Height,
+						waterTile.Height,
 						-Vector3.Up,
 						_context.ViewProjection,
 						true);
+
+					var camera = scene.Camera;
+					var distance = 2 * (camera.Position.Y - waterTile.Height);
+					var oldPos = camera.Position;
+					var pos = oldPos;
+					pos.Y -= distance;
+					camera.Position = pos;
+					camera.PitchAngle = -camera.PitchAngle;
+					_context.View = camera.View;
 					ReflectionPass(scene);
+
+					camera.Position = oldPos;
+					camera.PitchAngle = -camera.PitchAngle;
+					_context.View = camera.View;
 				}
 				finally
 				{

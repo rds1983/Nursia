@@ -35,9 +35,12 @@ VSOutput VertexShaderFunction(VSInput input)
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
     float2 ndc = (input.ClipSpace.xy / input.ClipSpace.w)/2.0 + 0.5;
+    
+    float2 refractTexCoords = float2(ndc.x, -ndc.y);
+    float2 reflectTexCoords = float2(ndc.x, ndc.y);
 
-    float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, ndc);
-    float4 colorReflection = SAMPLE_TEXTURE(_textureReflection, float2(ndc.x, -ndc.y));
+    float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, refractTexCoords);
+    float4 colorReflection = SAMPLE_TEXTURE(_textureReflection, reflectTexCoords);
 
     float4 result = lerp(colorRefraction, colorReflection, 0.5);
     

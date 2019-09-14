@@ -183,13 +183,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var device = Nrs.GraphicsDevice;
 				try
 				{
-					_context.Projection = Matrix.CreatePerspectiveFieldOfView(
-						MathHelper.ToRadians(scene.Camera.ViewAngle),
-						WaterRenderer.TargetWidth / WaterRenderer.TargetHeight,
-						NearPlaneDistance, FarPlaneDistance);
-
 					var waterTile = scene.WaterTiles[0];
 					device.SetRenderTarget(waterRenderer.TargetRefraction);
+					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
 					_context.ClipPlane = WaterRenderer.CreatePlane(
 						waterTile.Height,
@@ -199,7 +195,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					RefractionPass(scene);
 
 					device.SetRenderTarget(waterRenderer.TargetReflection);
-					device.Clear(Color.Black);
+					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
 					_context.ClipPlane = WaterRenderer.CreatePlane(
 						waterTile.Height,

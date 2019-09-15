@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Modelling;
+using Nursia.Utilities;
 using System;
 
 namespace Nursia.Graphics3D.ForwardRendering
@@ -187,8 +188,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 					device.SetRenderTarget(waterRenderer.TargetRefraction);
 					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
-					_context.ClipPlane = WaterRenderer.CreatePlane(
-						waterTile.Height,
+					_context.ClipPlane = Geometry.CreatePlane(
+						waterTile.Height + 1.5f,
 						-Vector3.Up,
 						_context.ViewProjection,
 						false);
@@ -196,12 +197,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 					device.SetRenderTarget(waterRenderer.TargetReflection);
 					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
-
-					_context.ClipPlane = WaterRenderer.CreatePlane(
-						waterTile.Height,
-						-Vector3.Up,
-						_context.ViewProjection,
-						true);
 
 					var camera = scene.Camera;
 					var distance = 2 * (camera.Position.Y - waterTile.Height);
@@ -211,6 +206,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 					camera.Position = pos;
 					camera.PitchAngle = -camera.PitchAngle;
 					_context.View = camera.View;
+
+					_context.ClipPlane = Geometry.CreatePlane(
+						waterTile.Height - 0.5f,
+						-Vector3.Up,
+						_context.ViewProjection,
+						true);
+
 					ReflectionPass(scene);
 
 					camera.Position = oldPos;

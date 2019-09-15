@@ -5,8 +5,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	internal class WaterRenderer
 	{
-		public const int TargetWidth = 1280;
-		public const int TargetHeight = 800;
+		private readonly Point TargetRefractionSize = new Point(1280, 720);
+		private readonly Point TargetReflectionSize = new Point(320, 180);
 
 		private readonly Mesh _waterMesh;
 		private readonly RenderTarget2D _targetRefraction;
@@ -51,15 +51,15 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_waterMesh = Mesh.Create(vertices, indices);
 
 			_targetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
-				TargetWidth,
-				TargetHeight,
+				TargetRefractionSize.X,
+				TargetRefractionSize.Y,
 				false,
 				SurfaceFormat.Color,
 				DepthFormat.Depth24);
 
 			_targetReflection = new RenderTarget2D(Nrs.GraphicsDevice,
-				TargetWidth,
-				TargetHeight,
+				TargetReflectionSize.X,
+				TargetReflectionSize.Y,
 				false,
 				SurfaceFormat.Color,
 				DepthFormat.Depth24);
@@ -87,25 +87,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 				device.DrawIndexedPrimitives(effect, _waterMesh);
 				++context.Statistics.MeshesDrawn;
 			}
-		}
-
-		internal static Plane CreatePlane(float height, 
-			Vector3 planeNormalDirection, 
-			Matrix viewProjection, 
-			bool clipSide)
-		{
-			planeNormalDirection.Normalize();
-			Vector4 planeCoeffs = new Vector4(planeNormalDirection, height);
-			if (clipSide)
-				planeCoeffs *= -1;
-
-			Matrix inverseWorldViewProjection = Matrix.Invert(viewProjection);
-			inverseWorldViewProjection = Matrix.Transpose(inverseWorldViewProjection);
-
-			planeCoeffs = Vector4.Transform(planeCoeffs, inverseWorldViewProjection);
-			Plane finalPlane = new Plane(planeCoeffs);
-
-			return finalPlane;
 		}
 	}
 }

@@ -15,8 +15,7 @@ namespace Nursia
 			_defaultMultiEffect, 
 			_waterMultiEffect,
 			_skyboxMultiEffect;
-		private static Effect[] _skyboxEffects = new Effect[2];
-		private static Effect _waterEffect;
+		private static Effect _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white;
 
@@ -139,13 +138,11 @@ namespace Nursia
 			return _waterEffect;
 		}
 
-		internal static Effect GetSkyboxEffect(bool clipPlane)
+		internal static Effect GetSkyboxEffect()
 		{
-			var key = clipPlane ? 1 : 0;
-
-			if (_skyboxEffects[key] != null)
+			if (_skyboxEffect != null)
 			{
-				return _skyboxEffects[key];
+				return _skyboxEffect;
 			}
 
 			if (_skyboxMultiEffect == null)
@@ -156,15 +153,8 @@ namespace Nursia
 				});
 			}
 
-			var defines = new Dictionary<string, string>();
-
-			if (clipPlane)
-			{
-				defines["CLIP_PLANE"] = "1";
-			}
-
-			_skyboxEffects[key] = _skyboxMultiEffect.GetEffect(Nrs.GraphicsDevice, defines);
-			return _skyboxEffects[key];
+			_skyboxEffect = _skyboxMultiEffect.GetEffect(Nrs.GraphicsDevice, null);
+			return _skyboxEffect;
 		}
 	}
 }

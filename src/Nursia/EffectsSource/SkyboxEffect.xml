@@ -6,6 +6,5 @@
     </Targets>
     <RootEntry>
         <Define/>
-        <Define Name="CLIP_PLANE" />
     </RootEntry>
 </Root>

@@ -148,7 +148,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var device = Nrs.GraphicsDevice;
 
 				device.DepthStencilState = DepthStencilState.DepthRead;
-				var effect = Assets.GetSkyboxEffect(_context.ClipPlane != null);
+				var effect = Assets.GetSkyboxEffect();
 
 				var view = _context.View;
 				view.Translation = Vector3.Zero;

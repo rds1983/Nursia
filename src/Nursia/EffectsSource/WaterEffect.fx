@@ -6,8 +6,11 @@ DECLARE_TEXTURE(_textureDUDV, 2);
 
 BEGIN_CONSTANTS
 
-const static float Tiling = 6.0;
+const static float Tiling = 4.0;
 const static float WaveStrength = 0.02;
+const static int BlurSize = 4;
+const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
+const static float TexelSize = 1.0 / 360;
 
 MATRIX_CONSTANTS
 
@@ -58,8 +61,15 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
     reflectTexCoords = clamp(reflectTexCoords, 0.001, 0.999);
 
     float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, refractTexCoords);
-    float4 colorReflection = SAMPLE_TEXTURE(_textureReflection, reflectTexCoords);
-
+    
+	float4 colorReflection = 0;
+    for(int i = -BlurSize; i < BlurSize; i++)
+    {
+		float offset = i * TexelSize;
+		colorReflection += SAMPLE_TEXTURE(_textureReflection, reflectTexCoords + float2(0.0, offset));
+	}
+	colorReflection /= BlurSampleCount;
+    
     float4 result = lerp(colorRefraction, colorReflection, 0.5);
     result = lerp(result, float4(0, 0.3, 0.5, 1.0), 0.2);
     

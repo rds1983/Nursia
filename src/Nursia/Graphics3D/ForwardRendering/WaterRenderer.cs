@@ -7,7 +7,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 	internal class WaterRenderer
 	{
 		private readonly Point TargetRefractionSize = new Point(1280, 720);
-		private readonly Point TargetReflectionSize = new Point(320, 180);
+		private readonly Point TargetReflectionSize = new Point(640, 360);
 		private const float WaveSpeed = 0.03f;
 
 		private readonly Mesh _waterMesh;

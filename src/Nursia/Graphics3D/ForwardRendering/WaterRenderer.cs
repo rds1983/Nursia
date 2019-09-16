@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -7,10 +8,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 	{
 		private readonly Point TargetRefractionSize = new Point(1280, 720);
 		private readonly Point TargetReflectionSize = new Point(320, 180);
+		private const float WaveSpeed = 0.03f;
 
 		private readonly Mesh _waterMesh;
 		private readonly RenderTarget2D _targetRefraction;
 		private readonly RenderTarget2D _targetReflection;
+		private DateTime? _lastRenderTime;
+		private float _moveFactor = 0;
 
 		public RenderTarget2D TargetRefraction
 		{
@@ -70,6 +74,19 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var device = Nrs.GraphicsDevice;
 			var effect = Assets.GetWaterEffect();
 
+			// Update move factor
+			var now = DateTime.Now;
+			if (_lastRenderTime != null)
+			{
+				var passed = (float)(now - _lastRenderTime.Value).TotalSeconds;
+				_moveFactor += WaveSpeed * passed;
+				_moveFactor %= 1.0f;
+			}
+
+			_lastRenderTime = now;
+
+			effect.Parameters["_moveFactor"].SetValue(_moveFactor);
+			effect.Parameters["_textureDUDV"].SetValue(Assets.WaterDUDV);
 			effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
 			effect.Parameters["_textureReflection"].SetValue(TargetReflection);
 			var scene = context.Scene;

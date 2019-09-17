@@ -85,6 +85,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			_lastRenderTime = now;
 
+			effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
 			effect.Parameters["_moveFactor"].SetValue(_moveFactor);
 			effect.Parameters["_textureDUDV"].SetValue(Assets.WaterDUDV);
 			effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
@@ -97,8 +98,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 						waterTile.Height, 
 						waterTile.Z);
 
-				var worldViewProj = world * context.ViewProjection;
-				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
+				effect.Parameters["_world"].SetValue(world);
+				effect.Parameters["_viewProjection"].SetValue(context.ViewProjection);
 
 				device.Apply(_waterMesh);
 				device.DrawIndexedPrimitives(effect, _waterMesh);

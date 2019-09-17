@@ -158,7 +158,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_texture"].SetValue(skybox.Texture);
 
 				device.Apply(skybox.Mesh);
+
+				device.SamplerStates[0] = SamplerState.LinearClamp;
 				device.DrawIndexedPrimitives(effect, skybox.Mesh);
+				device.SamplerStates[0] = SamplerState;
+
 				++_context.Statistics.MeshesDrawn;
 
 				device.DepthStencilState = DepthStencilState;

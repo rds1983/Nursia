@@ -92,7 +92,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
 			{
-				var world = Matrix.CreateScale(WaterTile.Size) *
+				var world = Matrix.CreateScale(waterTile.Size) *
 					Matrix.CreateTranslation(waterTile.X, 
 						waterTile.Height, 
 						waterTile.Z);

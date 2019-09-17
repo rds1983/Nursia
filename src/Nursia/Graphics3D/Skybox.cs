@@ -25,7 +25,7 @@ namespace Nursia.Graphics3D
 
 		public TextureCube Texture;
 
-		public Skybox(int size)
+		public Skybox(int size = 500)
 		{
 			_mesh = Mesh.Create(GenerateCube(size), _indices);
 		}

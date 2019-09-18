@@ -17,7 +17,7 @@ namespace Nursia
 			_skyboxMultiEffect;
 		private static Effect _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
-		private static Texture2D _white, _waterDUDV;
+		private static Texture2D _white, _waterDUDV, _waterNormals;
 
 		private static Assembly Assembly
 		{
@@ -54,6 +54,22 @@ namespace Nursia
 				}
 
 				return _waterDUDV;
+			}
+		}
+
+		internal static Texture2D WaterNormals
+		{
+			get
+			{
+				if (_waterNormals == null)
+				{
+					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals.png"))
+					{
+						_waterNormals = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+					}
+				}
+
+				return _waterNormals;
 			}
 		}
 

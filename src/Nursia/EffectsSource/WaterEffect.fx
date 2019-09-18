@@ -3,20 +3,25 @@
 DECLARE_TEXTURE(_textureRefraction, 0);
 DECLARE_TEXTURE(_textureReflection, 1);
 DECLARE_TEXTURE(_textureDUDV, 2);
+DECLARE_TEXTURE(_textureNormals, 3);
 
 BEGIN_CONSTANTS
 
 const static float Tiling = 4.0;
 const static float WaveStrength = 0.02;
-const static int BlurSize = 4;
+const static int BlurSize = 2;
 const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
 const static float TexelSize = 1.0 / 360;
+const static float shineDamper = 20.0;
+const static float reflectivity = 0.5;
 
 MATRIX_CONSTANTS
 
 float4x4 _world, _viewProjection;
 float _moveFactor;
 float3 _cameraPosition;
+float3 _lightPosition;
+float3 _lightColor;
 
 END_CONSTANTS
 
@@ -31,6 +36,7 @@ struct VSOutput
     float4 ClipSpace: TEXCOORD0;
     float2 TextureCoords: TEXCOORD1;
     float3 ToCamera: TEXCOORD2;
+    float3 FromLight: TEXCOORD3;
 };
 
 VSOutput VertexShaderFunction(VSInput input)
@@ -43,6 +49,7 @@ VSOutput VertexShaderFunction(VSInput input)
     output.ClipSpace = output.Position;
     output.TextureCoords = float2(input.Position.x/2.0 + 0.5, input.Position.z/2.0 + 0.5) * Tiling;
     output.ToCamera = _cameraPosition - worldPosition.xyz;
+    output.FromLight = worldPosition.xyz - _lightPosition; 
 
     return output;
 }
@@ -56,9 +63,9 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
     float2 reflectTexCoords = float2(ndc.x, ndc.y);
 
     // Calculate distortion
-    float2 distortion1 = (SAMPLE_TEXTURE(_textureDUDV, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg * 2.0 - 1.0) * WaveStrength;
-    float2 distortion2 = (SAMPLE_TEXTURE(_textureDUDV, float2(-input.TextureCoords.x + _moveFactor, input.TextureCoords.y + _moveFactor)).rg * 2.0 - 1.0) * WaveStrength;
-    float2 totalDistortion = distortion1 + distortion2;
+	float2 distortedTexCoords = SAMPLE_TEXTURE(_textureDUDV, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg*0.1;
+	distortedTexCoords = input.TextureCoords + float2(distortedTexCoords.x, distortedTexCoords.y + _moveFactor);
+	float2 totalDistortion = (SAMPLE_TEXTURE(_textureDUDV, distortedTexCoords).rg * 2.0 - 1.0) * WaveStrength;
 
     // Apply distortion to coords
     refractTexCoords += totalDistortion;
@@ -79,17 +86,29 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
         colorReflection += SAMPLE_TEXTURE(_textureReflection, reflectTexCoords + float2(0.0, offset));
     }
     colorReflection /= BlurSampleCount;
+    
+    // Normal
+    float4 normalMapColour = SAMPLE_TEXTURE(_textureNormals, distortedTexCoords);
+	float3 normal = float3(normalMapColour.r * 2.0 - 1.0, normalMapColour.b*3.0, normalMapColour.g * 2.0 - 1.0);
+	normal = normalize(normal);      
 
     // Fresnel effect
     float3 viewVector = normalize(input.ToCamera);
-    float refractiveFactor = dot(viewVector, float3(0, 1, 0));
+    float refractiveFactor = dot(viewVector, normal);
     refractiveFactor = pow(refractiveFactor, 0.5);
     refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
-
+    
+    // Specular lightning
+    float3 reflectedLight = reflect(normalize(input.FromLight), normal);
+	float specular = max(dot(reflectedLight, viewVector), 0.0);
+	specular = pow(specular, shineDamper);
+	float3 specularHighlights = _lightColor * specular * reflectivity;
+    
+    // Calculate result
     float4 result = lerp(colorReflection, colorRefraction, refractiveFactor);
     
-    // Mix with some blueness
-    result = lerp(result, float4(0, 0.3, 0.5, 1.0), 0.2);
+    // Mix with some blueness and apply lightning
+    result = lerp(result, float4(0, 0.3, 0.5, 1.0), 0.2) + float4(specularHighlights, 0);
 
     return result;
 }

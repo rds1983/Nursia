@@ -180,12 +180,17 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			_context.Scene = scene;
 			_context.View = scene.Camera.View;
+			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
+				MathHelper.ToRadians(scene.Camera.ViewAngle),
+				Nrs.GraphicsDevice.Viewport.AspectRatio,
+				NearPlaneDistance, FarPlaneDistance);
 
 			if (scene.WaterTiles.Count > 0)
 			{
 				// Render reflection texture
 				var waterRenderer = WaterRenderer;
 				var device = Nrs.GraphicsDevice;
+				var oldViewport = device.Viewport;
 				try
 				{
 					var waterTile = scene.WaterTiles[0];
@@ -226,13 +231,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				finally
 				{
 					device.SetRenderTarget(null);
+					device.Viewport = oldViewport;
 				}
 			}
 
-			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
-				MathHelper.ToRadians(scene.Camera.ViewAngle),
-				Nrs.GraphicsDevice.Viewport.AspectRatio,
-				NearPlaneDistance, FarPlaneDistance);
 			_context.ClipPlane = null;
 
 			ReflectionPass(scene);

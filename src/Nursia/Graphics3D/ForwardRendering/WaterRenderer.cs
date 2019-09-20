@@ -87,8 +87,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
 			effect.Parameters["_moveFactor"].SetValue(_moveFactor);
-			effect.Parameters["_lightPosition"].SetValue(new Vector3(10000, 10000, -10000));
-			effect.Parameters["_lightColor"].SetValue(Color.White.ToVector3());
+			effect.Parameters["_lightPosition"].SetValue(context.Scene.Lights[0].Position);
+			effect.Parameters["_lightColor"].SetValue(context.Scene.Lights[0].Color.ToVector3());
 			effect.Parameters["_textureDUDV"].SetValue(Assets.WaterDUDV);
 			effect.Parameters["_textureNormals"].SetValue(Assets.WaterNormals);
 			effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
@@ -96,7 +96,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
 			{
-				var world = Matrix.CreateScale(waterTile.Size) *
+				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
+
+					var world = Matrix.CreateScale(waterTile.Size) *
 					Matrix.CreateTranslation(waterTile.X, 
 						waterTile.Height, 
 						waterTile.Z);

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.ComponentModel;
+using System.Xml.Serialization;
 
 namespace Nursia.Graphics3D
 {
@@ -15,6 +17,8 @@ namespace Nursia.Graphics3D
 
 		private readonly Mesh _mesh;
 
+		[Browsable(false)]
+		[XmlIgnore]
 		public Mesh Mesh
 		{
 			get
@@ -23,6 +27,8 @@ namespace Nursia.Graphics3D
 			}
 		}
 
+		[Browsable(false)]
+		[XmlIgnore]
 		public TextureCube Texture;
 
 		public Skybox(int size = 500)

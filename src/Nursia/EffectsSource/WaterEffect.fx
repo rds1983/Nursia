@@ -7,7 +7,6 @@ DECLARE_TEXTURE(_textureNormals, 3);
 
 BEGIN_CONSTANTS
 
-const static float Tiling = 4.0;
 const static float WaveStrength = 0.02;
 const static int BlurSize = 2;
 const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
@@ -22,6 +21,7 @@ float _moveFactor;
 float3 _cameraPosition;
 float3 _lightPosition;
 float3 _lightColor;
+float _tiling;
 
 END_CONSTANTS
 
@@ -47,7 +47,7 @@ VSOutput VertexShaderFunction(VSInput input)
    
     output.Position = mul(worldPosition, _viewProjection);
     output.ClipSpace = output.Position;
-    output.TextureCoords = float2(input.Position.x/2.0 + 0.5, input.Position.z/2.0 + 0.5) * Tiling;
+    output.TextureCoords = float2(input.Position.x/2.0 + 0.5, input.Position.z/2.0 + 0.5) * _tiling;
     output.ToCamera = _cameraPosition - worldPosition.xyz;
     output.FromLight = worldPosition.xyz - _lightPosition; 
 

@@ -1,11 +1,23 @@
-﻿namespace Nursia.Graphics3D
+﻿using System.ComponentModel;
+
+namespace Nursia.Graphics3D
 {
 	public class WaterTile
 	{
-		public float X { get; private set; }
-		public float Z { get; private set; }
-		public float Height { get; private set; }
-		public float Size { get; private set; }
+		[Category("Position")]
+		public float X { get; set; }
+
+		[Category("Position")]
+		public float Z { get; set; }
+
+		[Category("Position")]
+		public float Height { get; set; }
+
+		[Category("Position")]
+		public float Size { get; set; }
+
+		[Category("Water Parameters")]
+		public float Tiling { get; set; } = 4.0f;
 
 		public WaterTile(float x, float z, float height, float size = 40.0f)
 		{

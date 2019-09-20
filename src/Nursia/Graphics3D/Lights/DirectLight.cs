@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using System.ComponentModel;
+using System.Xml.Serialization;
 
 namespace Nursia.Graphics3D.Lights
 {
@@ -16,7 +18,9 @@ namespace Nursia.Graphics3D.Lights
 				UpdateNormalizedDirection();
 			}
 		}
-
+		
+		[Browsable(false)]
+		[XmlIgnore]
 		public Vector3 NormalizedDirection
 		{
 			get { return _normalizedDirection; }

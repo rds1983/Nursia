@@ -105,7 +105,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 		}
 
-		private void DrawModel(Sprite3D model)
+		private void DrawModel(NursiaModel model)
 		{
 			if (!_beginCalled)
 			{

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 namespace Nursia.Graphics3D.Modelling
 {
-	public partial class Sprite3D
+	public partial class NursiaModel
 	{
 		private readonly List<MeshNode> _meshes = new List<MeshNode>();
 		private readonly List<Material> _materials = new List<Material>();
-		private readonly Dictionary<string, Sprite3DAnimation> _animations = new Dictionary<string, Sprite3DAnimation>();
-		private Sprite3DAnimation _currentAnimation = null;
+		private readonly Dictionary<string, ModelAnimation> _animations = new Dictionary<string, ModelAnimation>();
+		private ModelAnimation _currentAnimation = null;
 		private DateTime? _lastAnimationUpdate;
 
 		public Matrix Transform = Matrix.Identity;
@@ -30,7 +30,7 @@ namespace Nursia.Graphics3D.Modelling
 			}
 		}
 
-		public Dictionary<string, Sprite3DAnimation> Animations
+		public Dictionary<string, ModelAnimation> Animations
 		{
 			get
 			{
@@ -43,7 +43,7 @@ namespace Nursia.Graphics3D.Modelling
 			get; set;
 		}
 
-		public Sprite3DAnimation CurrentAnimation
+		public ModelAnimation CurrentAnimation
 		{
 			get
 			{

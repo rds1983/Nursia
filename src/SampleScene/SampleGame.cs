@@ -7,9 +7,9 @@ using Myra.Graphics2D.UI;
 using Nursia;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
+using Nursia.Graphics3D.Landscape;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
-using Nursia.Graphics3D.Terrain;
 using Nursia.Graphics3D.Utils;
 using Nursia.Utilities;
 using System;
@@ -21,7 +21,7 @@ namespace ModelViewer
 	public class SampleGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private Sprite3D _model;
+		private NursiaModel _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private Desktop _desktop = null;
@@ -70,11 +70,11 @@ namespace ModelViewer
 			}
 		}
 
-		private Sprite3D LoadModel(string file)
+		private NursiaModel LoadModel(string file)
 		{
 			var folder = Path.GetDirectoryName(file);
 			var data = File.ReadAllText(file);
-			var result = Sprite3D.LoadFromJson(data,
+			var result = NursiaModel.LoadFromJson(data,
 					n => LoadTexture(Path.Combine(folder, n)));
 
 			_scene.Models.Add(result);

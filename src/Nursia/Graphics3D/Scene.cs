@@ -1,6 +1,6 @@
-﻿using Nursia.Graphics3D.Lights;
+﻿using Nursia.Graphics3D.Landscape;
+using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
-using Nursia.Graphics3D.Terrain;
 using System.Collections.Generic;
 
 namespace Nursia.Graphics3D
@@ -9,7 +9,7 @@ namespace Nursia.Graphics3D
 	{
 		private readonly Camera _camera = new Camera();
 		private readonly List<DirectLight> _lights = new List<DirectLight>();
-		private readonly List<Sprite3D> _models = new List<Sprite3D>();
+		private readonly List<NursiaModel> _models = new List<NursiaModel>();
 		private readonly List<WaterTile> _waterTiles = new List<WaterTile>();
 		private readonly List<TerrainTile> _terrainTiles = new List<TerrainTile>();
 
@@ -23,7 +23,7 @@ namespace Nursia.Graphics3D
 
 		public Skybox Skybox;
 
-		public List<Sprite3D> Models
+		public List<NursiaModel> Models
 		{
 			get
 			{

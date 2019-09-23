@@ -1,7 +1,7 @@
 ﻿using Nursia.Utilities;
 using System;
 
-namespace Nursia.Graphics3D.Terrain
+namespace Nursia.Graphics3D.Landscape
 {
 	public class HeightMap
 	{
@@ -61,7 +61,5 @@ namespace Nursia.Graphics3D.Terrain
 				}
 			}
 		}
-
-
 	}
 }

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Nursia.Graphics3D.Modelling
 {
-	partial class Sprite3D
+	partial class NursiaModel
 	{
 		private class AttributeInfo
 		{
@@ -433,11 +433,11 @@ namespace Nursia.Graphics3D.Modelling
 			return result;
 		}
 
-		public static Sprite3D LoadFromJson(string json, Func<string, Texture2D> textureGetter)
+		public static NursiaModel LoadFromJson(string json, Func<string, Texture2D> textureGetter)
 		{
 			var root = JObject.Parse(json);
 
-			var result = new Sprite3D();
+			var result = new NursiaModel();
 			var meshesData = (JArray)root["meshes"];
 			var meshes = new Dictionary<string, MeshPart>();
 			foreach (JObject meshData in meshesData)
@@ -530,7 +530,7 @@ namespace Nursia.Graphics3D.Modelling
 				var animationsData = (JArray)root["animations"];
 				foreach (JObject animationData in animationsData)
 				{
-					var animation = new Sprite3DAnimation
+					var animation = new ModelAnimation
 					{
 						Id = animationData.GetId()
 					};

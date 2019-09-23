@@ -14,8 +14,8 @@ build_script:
 
     build_all.bat
 artifacts:
-  - path: src/Nursia/bin/MonoGame/Release/Nursia.MonoGame.$(appveyor_build_version).nupkg
-    name: Nursia.MonoGame.nupkg
+  - path: src/Nursia/bin/MonoGame/Release/Nursia.$(appveyor_build_version).nupkg
+    name: Nursia.nupkg
 
   - path: src/Nursia/bin/FNA/Release/Nursia.FNA.$(appveyor_build_version).nupkg
     name: Nursia.FNA.nupkg

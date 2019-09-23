@@ -2,7 +2,7 @@
 
 namespace Nursia.Graphics3D.Modelling
 {
-	public class Sprite3DAnimation: ItemWithId
+	public class ModelAnimation: ItemWithId
 	{
 		private readonly List<NodeAnimation> _boneAnimations = new List<NodeAnimation>();
 

@@ -5,7 +5,7 @@ using Nursia.Utilities;
 using System;
 using System.Linq;
 
-namespace Nursia.Graphics3D.Terrain
+namespace Nursia.Graphics3D.Landscape
 {
 	public class TerrainTile
 	{

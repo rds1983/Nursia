@@ -11,7 +11,6 @@ namespace Nursia.Graphics3D
 		private readonly List<DirectLight> _lights = new List<DirectLight>();
 		private readonly List<NursiaModel> _models = new List<NursiaModel>();
 		private readonly List<WaterTile> _waterTiles = new List<WaterTile>();
-		private readonly List<TerrainTile> _terrainTiles = new List<TerrainTile>();
 
 		public List<DirectLight> Lights
 		{
@@ -39,13 +38,7 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public List<TerrainTile> TerrainTiles
-		{
-			get
-			{
-				return _terrainTiles;
-			}
-		}
+		public Terrain Terrain;
 
 		public Camera Camera
 		{

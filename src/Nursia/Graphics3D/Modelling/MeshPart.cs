@@ -18,12 +18,19 @@ namespace Nursia.Graphics3D.Modelling
 
 		public BoundingSphere BoundingSphere { get; set; }
 
+		public Matrix Transform;
+
 		public List<Bone> Bones
 		{
 			get
 			{
 				return _bones;
 			}
+		}
+
+		public MeshPart()
+		{
+			Transform = Matrix.Identity;
 		}
 
 		internal Matrix[] CalculateBoneTransforms()

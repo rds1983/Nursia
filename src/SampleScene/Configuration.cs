@@ -1,4 +1,4 @@
-﻿namespace ModelViewer
+﻿namespace SampleScene
 {
 	static class Configuration
 	{

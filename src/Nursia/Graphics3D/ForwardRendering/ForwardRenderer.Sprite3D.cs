@@ -26,7 +26,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				lights.Count > 0, 
 				(int)part.BonesPerMesh);
 
-			var worldViewProj = _context.World * _context.ViewProjection;
+			var worldViewProj = part.Transform * _context.World * _context.ViewProjection;
 
 			if (part.BonesPerMesh != BonesPerMesh.None)
 			{

@@ -1,15 +1,6 @@
 <Project>
-  <ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\SampleScene\UI" />
+  <ExportOptions Namespace="SampleScene.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\SampleScene\UI" />
   <Panel>
-    <Grid ColumnSpacing="8" RowSpacing="8">
-      <ColumnsProportions>
-        <Proportion />
-      </ColumnsProportions>
-      <RowsProportions>
-        <Proportion />
-      </RowsProportions>
-      <CheckBox Text="Lightning On" Id="_checkLightning" />
-    </Grid>
     <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <ColumnsProportions>
         <Proportion />

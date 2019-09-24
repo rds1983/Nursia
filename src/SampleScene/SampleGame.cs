@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using ModelViewer.UI;
 using Myra;
 using Myra.Graphics2D.UI;
 using Nursia;
@@ -12,14 +11,15 @@ using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using Nursia.Utilities;
-using System;
-using System.Collections.Generic;
+using SampleScene.UI;
 using System.IO;
 
-namespace ModelViewer
+namespace SampleScene
 {
 	public class SampleGame : Game
 	{
+		private const int HeightImageSize = 128;
+
 		private readonly GraphicsDeviceManager _graphics;
 		private NursiaModel _model;
 		private CameraInputController _controller;
@@ -28,29 +28,7 @@ namespace ModelViewer
 		private MainPanel _mainPanel;
 		private SpriteBatch _spriteBatch;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
-		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 		private readonly Scene _scene = new Scene();
-
-		static SampleGame()
-		{
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
-				Color = new Color(1, 0.9607844f, 0.8078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
-				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
-				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
-			});
-		}
 
 		public SampleGame()
 		{
@@ -117,8 +95,6 @@ namespace ModelViewer
 			MyraEnvironment.Game = this;
 			_mainPanel = new MainPanel();
 
-			_mainPanel._checkLightning.PressedChanged += _checkLightning_PressedChanged;
-
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainPanel);
 
@@ -127,22 +103,41 @@ namespace ModelViewer
 
 			var folder = @"D:\Projects\Nursia\samples";
 
-			// Water
-			_scene.WaterTiles.Add(new WaterTile(0, 0, 0));
-
 			// Model
 			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
 			_model.CurrentAnimation = _model.Animations["Attack"];
 
 			// Terrain
-			var heightMapImage = LoadImage(Path.Combine(folder, @"terrain\heightmap.png"));
-			var terrainTile = new TerrainTile(heightMapImage)
-			{
-				Texture = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"))
-			};
+			var grassy = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"));
+			_scene.Terrain = new Terrain(8, 8);
 
-			_scene.TerrainTiles.Add(terrainTile);
+			// Generate height
+			var generator = new HeightMapGenerator();
+			GenerationConfig.Instance.WorldSize = _scene.Terrain.TilesPerX * HeightImageSize;
+			var heightMap = generator.Generate();
+			var image = new Image2D(HeightImageSize, HeightImageSize);
+			for (var x = 0; x < _scene.Terrain.TilesPerX; ++x)
+			{
+				for (var z = 0; z < _scene.Terrain.TilesPerZ; ++z)
+				{
+					for(var i = 0; i < HeightImageSize; ++i)
+					{
+						for(var j = 0; j < HeightImageSize; ++j)
+						{
+							var c = (byte)(255 * heightMap[x * HeightImageSize + j,
+								z * HeightImageSize + i]);
+							image[j, i] = new Color(c, c, c);
+						}
+					}
+					var terrainTile = _scene.Terrain[x, z];
+					terrainTile.HeightMap = new HeightMap(image);
+					terrainTile.Texture = grassy;
+				}
+			}
+
+			// Water
+			_scene.WaterTiles.Add(new WaterTile(0, 0, -10, _scene.Terrain.TotalSizeX));
 
 			// Skybox
 			var skyboxFolder = Path.Combine(folder, "skybox");
@@ -167,16 +162,14 @@ namespace ModelViewer
 				Texture = texture
 			};
 
-			_controller = new CameraInputController(_scene.Camera);
-		}
-
-		private void _checkLightning_PressedChanged(object sender, EventArgs e)
-		{
-			_scene.Lights.Clear();
-			if (_mainPanel._checkLightning.IsPressed)
+			_scene.Lights.Add(new DirectLight
 			{
-				_scene.Lights.AddRange(_defaultLights);
-			}
+				Color = Color.White,
+				Position = new Vector3(10000, 10000, -10000),
+				Direction = new Vector3(0, -1, 0)
+			});
+
+			_controller = new CameraInputController(_scene.Camera);
 		}
 
 		protected override void Update(GameTime gameTime)

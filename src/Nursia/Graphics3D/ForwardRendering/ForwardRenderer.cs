@@ -124,14 +124,21 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		private void RefractionPass(Scene scene)
 		{
-			foreach(var terrainTile in scene.TerrainTiles)
+			if (scene.Terrain != null)
 			{
-				if (_context.Frustrum.Contains(terrainTile.MeshPart.BoundingSphere) == ContainmentType.Disjoint)
+				for(var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
-					continue;
-				}
+					for (var z = 0; z < scene.Terrain.TilesPerZ; ++z)
+					{
+						var terrainTile = scene.Terrain[x, z];
+						if (_context.Frustrum.Contains(terrainTile.MeshPart.BoundingSphere) == ContainmentType.Disjoint)
+						{
+							continue;
+						}
 
-				DrawMeshPart(terrainTile.MeshPart);
+						DrawMeshPart(terrainTile.MeshPart);
+					}
+				}
 			}
 
 			foreach (var model in scene.Models)

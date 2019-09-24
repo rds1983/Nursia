@@ -21,7 +21,7 @@ namespace ModelViewer
 	public class ViewerGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private Sprite3D _model;
+		private NursiaModel _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private Desktop _desktop = null;
@@ -75,7 +75,7 @@ namespace ModelViewer
 			{
 				var folder = Path.GetDirectoryName(file);
 				var data = File.ReadAllText(file);
-				_model = Sprite3D.LoadFromJson(data,
+				_model = NursiaModel.LoadFromJson(data,
 					n =>
 					{
 						using (var stream = File.OpenRead(Path.Combine(folder, n)))
@@ -214,7 +214,7 @@ namespace ModelViewer
 			}
 			else
 			{
-				_model.CurrentAnimation = (Sprite3DAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
+				_model.CurrentAnimation = (ModelAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
 			}
 		}
 

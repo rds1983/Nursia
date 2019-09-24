@@ -12,8 +12,7 @@
 
   <PropertyGroup Condition="$(DefineConstants.Contains('FNA'))">
     <OutputPath>bin\FNA\$(Configuration)</OutputPath>
-  </PropertyGroup>  
-
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Nursia\Nursia.csproj" />
@@ -21,7 +20,7 @@
 
   <ItemGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.7.1.189" />
-    <PackageReference Include="Myra" Version="0.9.1.173" />
+    <PackageReference Include="Myra" Version="0.9.3.178" />
   </ItemGroup>
   
   <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">

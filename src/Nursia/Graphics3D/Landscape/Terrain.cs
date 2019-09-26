@@ -1,27 +1,39 @@
-﻿namespace Nursia.Graphics3D.Landscape
+﻿using Microsoft.Xna.Framework.Graphics;
+using System;
+
+namespace Nursia.Graphics3D.Landscape
 {
 	public class Terrain
 	{
 		private readonly TerrainTile[,] _tiles;
 
+		public float Size { get; set; } = 400;
+
 		public float TileSize { get; set; } = 100;
 
-		public int TilesPerX { get; private set; } = 32;
-		public int TilesPerZ { get; private set; } = 32;
+		public float Resolution { get; private set; } = 2.56f;
 
-		public float TotalSizeX
+		internal int TileResolution
 		{
 			get
 			{
-				return TileSize * TilesPerX; 
+				return (int)(TileSize * Resolution);
 			}
 		}
 
-		public float TotalSizeZ
+		public int TilesPerX
 		{
 			get
 			{
-				return TileSize * TilesPerZ;
+				return (int)(Size / TileSize);
+			}
+		}
+
+		public int TilesPerZ
+		{
+			get
+			{
+				return (int)(Size / TileSize);
 			}
 		}
 
@@ -33,17 +45,32 @@
 			}
 		}
 
-		public Terrain(int tilesPerX = 32, int tilesPerZ = 32)
-		{
-			TilesPerX = tilesPerX;
-			TilesPerZ = tilesPerZ;
+		public Func<float, float, float> HeightFunc;
 
-			_tiles = new TerrainTile[TilesPerX, tilesPerZ];
-			for(var x = 0; x < TilesPerX; ++x)
+		public Terrain(float size)
+		{
+			Size = size;
+
+			int tilesPerX = (int)(Size / TileSize);
+			int tilesPerZ = (int)(Size / TileSize);
+
+			_tiles = new TerrainTile[tilesPerX, tilesPerZ];
+			for(var x = 0; x < tilesPerX; ++x)
 			{
-				for(var z = 0; z < TilesPerZ; ++z)
+				for(var z = 0; z < tilesPerZ; ++z)
 				{
 					_tiles[x, z] = new TerrainTile(this, x, z);
+				}
+			}
+		}
+
+		public void SetTexture(Texture2D texture)
+		{
+			for(var x = 0; x < _tiles.GetLength(0); ++x)
+			{
+				for(var z = 0; z < _tiles.GetLength(1); ++z)
+				{
+					_tiles[x, z].Texture = texture;
 				}
 			}
 		}

@@ -1,13 +1,7 @@
-﻿using Nursia.Utilities;
-using System;
-
-namespace Nursia.Graphics3D.Landscape
+﻿namespace Nursia.Graphics3D.Landscape
 {
 	public class HeightMap
 	{
-		private const float MaxPixelColor = 256 * 256 * 256;
-		private const float MaxHeight = 100;
-
 		private float[,] _heights;
 
 		public int Size
@@ -31,35 +25,9 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		public HeightMap(Image2D image)
+		public HeightMap(float[,] heights)
 		{
-			SetFromImage(image);
-		}
-
-		public void SetFromImage(Image2D image)
-		{
-			if (image == null)
-			{
-				throw new ArgumentNullException(nameof(image));
-			}
-
-			_heights = new float[image.Width, image.Height];
-
-			for(var x = 0; x < image.Width; ++x)
-			{
-				for(var z = 0; z < image.Height; ++z)
-				{
-					var c = image[x, z];
-
-					float height = (c.R << 16) + (c.G << 8) + c.B;
-
-					height /= MaxPixelColor;
-					height *= MaxHeight;
-					height -= MaxHeight / 2;
-
-					_heights[x, z] = height;
-				}
-			}
+			_heights = heights;
 		}
 	}
 }

@@ -12,14 +12,13 @@ using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using Nursia.Utilities;
 using SampleScene.UI;
+using System;
 using System.IO;
 
 namespace SampleScene
 {
 	public class SampleGame : Game
 	{
-		private const int HeightImageSize = 128;
-
 		private readonly GraphicsDeviceManager _graphics;
 		private NursiaModel _model;
 		private CameraInputController _controller;
@@ -110,34 +109,46 @@ namespace SampleScene
 
 			// Terrain
 			var grassy = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"));
-			_scene.Terrain = new Terrain(8, 8);
+			_scene.Terrain = new Terrain(400);
 
 			// Generate height
 			var generator = new HeightMapGenerator();
-			GenerationConfig.Instance.WorldSize = _scene.Terrain.TilesPerX * HeightImageSize;
+			GenerationConfig.Instance.WorldSize = (int)_scene.Terrain.Size;
 			var heightMap = generator.Generate();
-			var image = new Image2D(HeightImageSize, HeightImageSize);
-			for (var x = 0; x < _scene.Terrain.TilesPerX; ++x)
+
+			_scene.Terrain.HeightFunc = (x, z) =>
 			{
-				for (var z = 0; z < _scene.Terrain.TilesPerZ; ++z)
+				if (x < 0)
 				{
-					for(var i = 0; i < HeightImageSize; ++i)
-					{
-						for(var j = 0; j < HeightImageSize; ++j)
-						{
-							var c = (byte)(255 * heightMap[x * HeightImageSize + j,
-								z * HeightImageSize + i]);
-							image[j, i] = new Color(c, c, c);
-						}
-					}
-					var terrainTile = _scene.Terrain[x, z];
-					terrainTile.HeightMap = new HeightMap(image);
-					terrainTile.Texture = grassy;
+					x = 0;
 				}
-			}
+
+				if (x >= heightMap.GetLength(0))
+				{
+					x = heightMap.GetLength(0) - 1;
+				}
+
+				if (z < 0)
+				{
+					z = 0;
+				}
+
+				if (z >= heightMap.GetLength(1))
+				{
+					z = heightMap.GetLength(1) - 1;
+				}
+
+				/*				var result = (heightMap[(int)x, (int)z] * 100) - 50;*/
+
+				int r = (int)(x / 100) + (int)(z / 100);
+
+				return r % 2 == 0 ? -10 : 10;
+			};
+
+			_scene.Terrain.SetTexture(grassy);
 
 			// Water
-			_scene.WaterTiles.Add(new WaterTile(0, 0, -10, _scene.Terrain.TotalSizeX));
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, _scene.Terrain.Size));
 
 			// Skybox
 			var skyboxFolder = Path.Combine(folder, "skybox");

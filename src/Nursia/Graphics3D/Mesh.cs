@@ -34,7 +34,7 @@ namespace Nursia.Graphics3D
 		{
 		}
 
-		internal static Mesh Create<T>(T[] vertices, 
+		public static Mesh Create<T>(T[] vertices, 
 			short[] indices, 
 			PrimitiveType primitiveType = PrimitiveType.TriangleList) where T : struct, IVertexType
 		{

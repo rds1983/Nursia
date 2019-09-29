@@ -73,7 +73,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				if (lights.Count > 1)
 				{
 					// Change blend state back
-					device.BlendState = BlendState.AlphaBlend;
+					device.BlendState = BlendState;
 				}
 			}
 			else

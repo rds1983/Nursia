@@ -121,10 +121,13 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	float3 normal = normalize(input.WorldNormal);
     result += ComputeLighting(normal, -_lightDir, _lightColor, 1.0);
 
-	return color * float4(result, 1) * _diffuseColor;
+	float4 c = color * float4(result, 1) * _diffuseColor;
 #else
-	return color * _diffuseColor;
+	float4 c = color * _diffuseColor;
 #endif
+    clip(c.a < 0.1?-1:1);
+
+    return c;
 }
 
 TECHNIQUE(Default, VertexShaderFunction, PixelShaderFunction);

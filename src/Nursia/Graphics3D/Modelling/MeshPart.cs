@@ -28,7 +28,6 @@ namespace Nursia.Graphics3D.Modelling
 			}
 		}
 
-		public int StartVertex = 0;
 		public int? VertexCount = null;
 		public int StartIndex = 0;
 		public int? PrimitiveCount = null;

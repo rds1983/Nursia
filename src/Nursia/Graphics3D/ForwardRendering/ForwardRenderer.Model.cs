@@ -67,7 +67,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
 					effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
 
-					device.DrawIndexedPrimitives(effect, part.Mesh, part.StartVertex, part.VertexCount, part.StartIndex, part.PrimitiveCount);
+					device.DrawIndexedPrimitives(effect, part.Mesh, part.VertexCount, part.StartIndex, part.PrimitiveCount);
 				}
 
 				if (lights.Count > 1)
@@ -78,7 +78,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 			else
 			{
-				device.DrawIndexedPrimitives(effect, part.Mesh, part.StartVertex, part.VertexCount, part.StartIndex, part.PrimitiveCount);
+				device.DrawIndexedPrimitives(effect, part.Mesh, part.VertexCount, part.StartIndex, part.PrimitiveCount);
 			}
 
 			++_context.Statistics.MeshesDrawn;

@@ -14,7 +14,6 @@ namespace Nursia.Graphics3D
 			this GraphicsDevice device, 
 			Effect effect,
 			Mesh mesh,
-			int startVertex = 0,
 			int? vertexCount = null,
 			int startIndex = 0,
 			int? primitiveCount = null)

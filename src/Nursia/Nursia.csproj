@@ -39,7 +39,6 @@
   <ItemGroup>
     <Compile Include="..\..\deps\StbImageSharp\src\StbImageSharp\**\*.cs" LinkBase="ThirdParty\StbImageSharp" />
     <Compile Include="..\..\deps\BMFontToSpriteFont\**\*.cs" LinkBase="ThirdParty\BMFontToSpriteFont" />
-    <Compile Include="..\..\deps\EffectFarm\src\EffectFarm\**\*.cs" LinkBase="ThirdParty\EffectFarm" />
   </ItemGroup>
   
   <ItemGroup>

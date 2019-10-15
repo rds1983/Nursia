@@ -20,7 +20,7 @@
 
   <ItemGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.7.1.189" />
-    <PackageReference Include="Myra" Version="0.9.3.178" />
+    <PackageReference Include="Myra" Version="0.9.6.184" />
   </ItemGroup>
   
   <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">

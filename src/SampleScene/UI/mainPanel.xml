@@ -1,19 +1,12 @@
 <Project>
-  <ExportOptions Namespace="SampleScene.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\SampleScene\UI" />
+  <Project.ExportOptions Namespace="SampleScene.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\SampleScene\UI" />
   <Panel>
     <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <ColumnsProportions>
-        <Proportion />
-        <Proportion />
-      </ColumnsProportions>
-      <RowsProportions>
-        <Proportion />
-        <Proportion />
-        <Proportion />
-      </RowsProportions>
-      <TextBlock Text="FPS: 60.0" Id="_labelFps" />
-      <TextBlock Text="Meshes: 15" Id="_labelMeshes" GridRow="1" />
-      <TextBlock Text="Camera: 0/50/0;270;0" Id="_labelCamera" GridRow="2" />
+      <Grid.DefaultColumnProportion Type="Auto" />
+      <Grid.DefaultRowProportion Type="Auto" />
+      <Label Text="FPS: 60.0" Id="_labelFps" />
+      <Label Text="Meshes: 15" Id="_labelMeshes" GridRow="1" />
+      <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" GridRow="2" />
     </Grid>
   </Panel>
 </Project>

@@ -1,18 +1,10 @@
 <Project>
-  <ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\ModelViewer\UI" />
+  <Project.ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\ModelViewer\UI" />
   <Panel>
     <Grid ColumnSpacing="8" RowSpacing="8">
-      <ColumnsProportions>
-        <Proportion />
-        <Proportion />
-      </ColumnsProportions>
-      <RowsProportions>
-        <Proportion />
-        <Proportion />
-        <Proportion />
-        <Proportion />
-      </RowsProportions>
-      <TextField Text="" Readonly="True" Id="_textPath" Width="300" />
+      <Grid.DefaultColumnProportion Type="Auto" />
+      <Grid.DefaultRowProportion Type="Auto" />
+      <TextBox Text="" Readonly="True" Id="_textPath" Width="300" />
       <TextButton Text="Change..." Id="_buttonChange" GridColumn="1" />
       <ListBox Id="_listFiles" Height="200" HorizontalAlignment="Stretch" GridRow="1">
         <ListItem Text="model1.g3dj" />
@@ -26,19 +18,10 @@
       </ComboBox>
       <CheckBox Text="Lightning On" Id="_checkLightning" GridRow="3" />
     </Grid>
-    <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <ColumnsProportions>
-        <Proportion />
-        <Proportion />
-      </ColumnsProportions>
-      <RowsProportions>
-        <Proportion />
-        <Proportion />
-        <Proportion />
-      </RowsProportions>
-      <TextBlock Text="FPS: 60.0" Id="_labelFps" />
-      <TextBlock Text="Meshes: 15" Id="_labelMeshes" GridRow="1" />
-      <TextBlock Text="Camera: 0/50/0;270;0" Id="_labelCamera" GridRow="2" />
-    </Grid>
+    <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <Label Text="FPS: 60.0" Id="_labelFps" />
+      <Label Text="Meshes: 15" Id="_labelMeshes" />
+      <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
+    </VerticalStackPanel>
   </Panel>
 </Project>

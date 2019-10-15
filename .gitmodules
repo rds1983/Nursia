@@ -1,9 +1,6 @@
 [submodule "deps/BMFontToSpriteFont"]
 	path = deps/BMFontToSpriteFont
 	url = https://github.com/rds1983/BMFontToSpriteFont.git
-[submodule "deps/EffectFarm"]
-	path = deps/EffectFarm
-	url = https://github.com/rds1983/EffectFarm.git
 [submodule "deps/StbImageSharp"]
 	path = deps/StbImageSharp
 	url = https://github.com/StbSharp/StbImageSharp.git

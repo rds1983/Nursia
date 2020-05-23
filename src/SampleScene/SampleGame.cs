@@ -10,9 +10,8 @@ using Nursia.Graphics3D.Landscape;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
-using Nursia.Utilities;
 using SampleScene.UI;
-using System;
+using StbImageSharp;
 using System.IO;
 
 namespace SampleScene
@@ -69,17 +68,18 @@ namespace SampleScene
 			}
 		}
 
-		private Image2D LoadImage(string path)
+		private ImageResult LoadImage(string path)
 		{
 			using (var stream = File.OpenRead(path))
 			{
-				return Image2D.FromStream(stream);
+				return ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 			}
 		}
 
-		private void LoadColors(string path, ref Color[] data)
+		private void LoadColors(string path, out byte[] data)
 		{
 			var image = LoadImage(path);
+
 			data = image.Data;
 		}
 
@@ -136,11 +136,13 @@ namespace SampleScene
 					z = heightMap.GetLength(1) - 1;
 				}
 
-				/*				var result = (heightMap[(int)x, (int)z] * 100) - 50;*/
+				var result = (heightMap[(int)x, (int)z] * 100) - 50;
 
-				int r = (int)(x / 100) + (int)(z / 100);
+				return result;
 
-				return r % 2 == 0 ? -10 : 10;
+/*				int r = (int)(x / 100) + (int)(z / 100);
+
+				return r % 2 == 0 ? -10 : 10;*/
 			};
 
 			_scene.Terrain.SetTexture(grassy);
@@ -152,18 +154,18 @@ namespace SampleScene
 			var skyboxFolder = Path.Combine(folder, "skybox");
 			var texture = new TextureCube(GraphicsDevice, 1024,
 				false, SurfaceFormat.Color);
-			Color[] data = null;
-			LoadColors(Path.Combine(skyboxFolder,  @"negX.png"), ref data);
+			byte[] data = null;
+			LoadColors(Path.Combine(skyboxFolder,  @"negX.png"), out data);
 			texture.SetData(CubeMapFace.NegativeX, data);
-			LoadColors(Path.Combine(skyboxFolder, @"negY.png"), ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"negY.png"), out data);
 			texture.SetData(CubeMapFace.NegativeY, data);
-			LoadColors(Path.Combine(skyboxFolder, @"negZ.png"), ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"negZ.png"), out data);
 			texture.SetData(CubeMapFace.NegativeZ, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posX.png"), ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posX.png"), out data);
 			texture.SetData(CubeMapFace.PositiveX, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posY.png"), ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posY.png"), out data);
 			texture.SetData(CubeMapFace.PositiveY, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posZ.png"), ref data);
+			LoadColors(Path.Combine(skyboxFolder, @"posZ.png"), out data);
 			texture.SetData(CubeMapFace.PositiveZ, data);
 
 			_scene.Skybox = new Skybox(100)

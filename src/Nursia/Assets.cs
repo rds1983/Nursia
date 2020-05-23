@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
-using SpriteFontPlus;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -10,7 +9,6 @@ namespace Nursia
 {
 	public static class Assets
 	{
-		private static SpriteFont _debugFont;
 		private static MultiVariantEffect 
 			_defaultMultiEffect, 
 			_waterMultiEffect,
@@ -70,29 +68,6 @@ namespace Nursia
 				}
 
 				return _waterNormals;
-			}
-		}
-
-		public static SpriteFont DebugFont
-		{
-			get
-			{
-				if (_debugFont != null)
-				{
-					return _debugFont;
-				}
-
-				Texture2D texture;
-				using (var stream = Assembly.OpenResourceStream("Resources.Fonts.debugFont_0.png"))
-				{
-					texture = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
-				}
-
-				var fontData = Assembly.ReadResourceAsString("Resources.Fonts.debugFont.fnt");
-
-				_debugFont = BMFontLoader.LoadXml(fontData, s => texture);
-
-				return _debugFont;
 			}
 		}
 

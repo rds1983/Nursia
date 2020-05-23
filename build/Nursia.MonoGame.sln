@@ -5,13 +5,13 @@ VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EAB0AA24-7185-4897-A866-AE87AF3F2E0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nursia", "..\..\src\Nursia\Nursia.csproj", "{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nursia", "..\src\Nursia\Nursia.MonoGame.csproj", "{7C46EF1B-6EC6-438C-B1C4-7E34951B0D30}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5CDF6B7A-71F8-43FC-858D-8B75632FBE65}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelViewer", "..\..\src\ModelViewer\ModelViewer.csproj", "{F0F490C3-5A8C-43DA-A0B0-BAFD69143573}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelViewer", "..\src\ModelViewer\ModelViewer.MonoGame.csproj", "{F0F490C3-5A8C-43DA-A0B0-BAFD69143573}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleScene", "..\..\src\SampleScene\SampleScene.csproj", "{6A8463D8-C398-4E0D-98D0-6CC7B1271F86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleScene", "..\src\SampleScene\SampleScene.MonoGame.csproj", "{6A8463D8-C398-4E0D-98D0-6CC7B1271F86}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,8 +41,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35ACDF4E-2CE2-46B1-A19F-35DC131069A1}
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Myra.UIEditor\Myra.UIEditor.csproj
 	EndGlobalSection
 EndGlobal

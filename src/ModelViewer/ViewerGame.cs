@@ -24,7 +24,6 @@ namespace ModelViewer
 		private NursiaModel _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
-		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
 		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
@@ -119,15 +118,14 @@ namespace ModelViewer
 
 			_mainPanel._checkLightning.PressedChanged += _checkLightning_PressedChanged;
 
-			_desktop = new Desktop();
-			_desktop.Widgets.Add(_mainPanel);
+			Desktop.Root = _mainPanel;
 
 			// Nursia
 			Nrs.Game = this;
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Projects\Nursia\samples\models";
+			folder = @"C:\Projects\Nursia\samples\models";
 			SetFolder(folder);
 
 			_controller = new CameraInputController(_scene.Camera);
@@ -203,7 +201,7 @@ namespace ModelViewer
 				SetFolder(dlg.FilePath);
 			};
 
-			dlg.ShowModal(_desktop);
+			dlg.ShowModal();
 		}
 
 		private void _comboAnimations_SelectedIndexChanged(object sender, System.EventArgs e)
@@ -269,7 +267,7 @@ namespace ModelViewer
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
 			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer.Statistics.MeshesDrawn;
 
-			_desktop.Render();
+			Desktop.Render();
 
 			_fpsCounter.Draw(gameTime);
 		}

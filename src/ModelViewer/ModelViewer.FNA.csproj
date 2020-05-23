@@ -1,6 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)SolutionDefines.targets" />
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net45</TargetFramework>
@@ -14,10 +12,6 @@
     <OutputPath>bin\FNA\$(Configuration)</OutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Nursia\Nursia.csproj" />
-  </ItemGroup>
-
   <ItemGroup Condition="$(DefineConstants.Contains('MONOGAME'))">
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.7.1.189" />
     <PackageReference Include="Myra" Version="0.9.6.184" />
@@ -25,5 +19,9 @@
   
   <ItemGroup Condition="$(DefineConstants.Contains('FNA'))">
     <PackageReference Include="Myra.FNA" Version="0.9.6.184" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Nursia\Nursia.MonoGame.csproj" />
   </ItemGroup>
 </Project>

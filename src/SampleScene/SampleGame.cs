@@ -23,7 +23,6 @@ namespace SampleScene
 		private NursiaModel _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
-		private Desktop _desktop = null;
 		private MainPanel _mainPanel;
 		private SpriteBatch _spriteBatch;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
@@ -94,13 +93,12 @@ namespace SampleScene
 			MyraEnvironment.Game = this;
 			_mainPanel = new MainPanel();
 
-			_desktop = new Desktop();
-			_desktop.Widgets.Add(_mainPanel);
+			Desktop.Root = _mainPanel;
 
 			// Nursia
 			Nrs.Game = this;
 
-			var folder = @"D:\Projects\Nursia\samples";
+			var folder = @"C:\Projects\Nursia\samples";
 
 			// Model
 			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));
@@ -232,7 +230,7 @@ namespace SampleScene
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
 			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer.Statistics.MeshesDrawn;
 
-			_desktop.Render();
+			Desktop.Render();
 
 /*			_spriteBatch.Begin();
 

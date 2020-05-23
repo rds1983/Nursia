@@ -1,4 +1,4 @@
-version: 0.1.0.{build}
+version: 0.2.0.{build}
 configuration: Release
 dotnet_csproj:
   patch: true
@@ -10,15 +10,10 @@ dotnet_csproj:
   informational_version: '{version}'
 build_script:
 - cmd: >-
-    git submodule update --init --recursive
-
     build_all.bat
 artifacts:
   - path: src/Nursia/bin/MonoGame/Release/Nursia.$(appveyor_build_version).nupkg
     name: Nursia.nupkg
-
-  - path: src/Nursia/bin/FNA/Release/Nursia.FNA.$(appveyor_build_version).nupkg
-    name: Nursia.FNA.nupkg
 
   - path: Nursia.$(appveyor_build_version).zip
     name: ZipPackage    

@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net45</TargetFramework>
     <OutputPath>bin\MonoGame\$(Configuration)</OutputPath>
+    <AssemblyName>SampleScene</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

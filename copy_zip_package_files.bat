@@ -15,6 +15,8 @@ copy "src\Nursia\%CONFIGURATION%\Nursia.dll" ZipPackage /Y
 copy "src\Nursia\%CONFIGURATION%\Nursia.pdb" ZipPackage /Y
 copy "src\ModelViewer\%CONFIGURATION%\ModelViewer.exe" ZipPackage /Y
 copy "src\ModelViewer\%CONFIGURATION%\Myra.dll" "ZipPackage" /Y
+copy "src\ModelViewer\%CONFIGURATION%\XNAssets.dll" "ZipPackage" /Y
+copy "src\ModelViewer\%CONFIGURATION%\EffectFarm.dll" "ZipPackage" /Y
 copy "src\ModelViewer\%CONFIGURATION%\MonoGame.Framework.dll" "ZipPackage" /Y
 copy "src\ModelViewer\%CONFIGURATION%\MonoGame.Framework.dll.config" "ZipPackage" /Y
 copy "src\ModelViewer\%CONFIGURATION%\x64\libSDL2-2.0.so.0" "ZipPackage\x64" /Y

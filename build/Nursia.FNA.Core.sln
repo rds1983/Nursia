@@ -1,0 +1,91 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EAB0AA24-7185-4897-A866-AE87AF3F2E0B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5CDF6B7A-71F8-43FC-858D-8B75632FBE65}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EffectFarm.FNA.Core", "..\..\EffectFarm\src\EffectFarm\EffectFarm.FNA.Core.csproj", "{53008277-FA41-42FF-8988-8C2E304702AE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FNA.Core", "..\..\FNA\FNA.Core.csproj", "{E3312B36-8585-4097-A8A4-7C3606730E87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nursia.FNA.Core", "..\src\Nursia\Nursia.FNA.Core.csproj", "{D72D2D67-BD03-4608-AC4E-24813A753E53}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleScene.FNA.Core", "..\src\SampleScene\SampleScene.FNA.Core.csproj", "{F2A70571-455F-4F54-B679-A7DACB605CF3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.FNA.Core", "..\..\FontStashSharp\src\XNA\FontStashSharp.FNA.Core.csproj", "{134585FE-954C-44A1-96CC-739E528E788D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Myra.FNA.Core", "..\..\Myra\src\Myra\Myra.FNA.Core.csproj", "{84611809-ACEC-4D88-814F-E9EFF8DF6459}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|x64.Build.0 = Debug|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|x64.ActiveCfg = Release|Any CPU
+		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|x64.Build.0 = Release|Any CPU
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|Any CPU.Build.0 = Debug|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|x64.ActiveCfg = Debug|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|x64.Build.0 = Debug|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Release|Any CPU.ActiveCfg = Release|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Release|Any CPU.Build.0 = Release|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Release|x64.ActiveCfg = Release|x64
+		{E3312B36-8585-4097-A8A4-7C3606730E87}.Release|x64.Build.0 = Release|x64
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Debug|x64.Build.0 = Debug|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Release|x64.ActiveCfg = Release|Any CPU
+		{D72D2D67-BD03-4608-AC4E-24813A753E53}.Release|x64.Build.0 = Release|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Debug|x64.Build.0 = Debug|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Release|x64.ActiveCfg = Release|Any CPU
+		{F2A70571-455F-4F54-B679-A7DACB605CF3}.Release|x64.Build.0 = Release|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Debug|x64.Build.0 = Debug|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Release|x64.ActiveCfg = Release|Any CPU
+		{134585FE-954C-44A1-96CC-739E528E788D}.Release|x64.Build.0 = Release|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Debug|x64.Build.0 = Debug|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Release|x64.ActiveCfg = Release|Any CPU
+		{84611809-ACEC-4D88-814F-E9EFF8DF6459}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F2A70571-455F-4F54-B679-A7DACB605CF3} = {EAB0AA24-7185-4897-A866-AE87AF3F2E0B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35ACDF4E-2CE2-46B1-A19F-35DC131069A1}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Myra.UIEditor\Myra.UIEditor.csproj
+	EndGlobalSection
+EndGlobal

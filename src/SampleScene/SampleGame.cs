@@ -26,6 +26,7 @@ namespace SampleScene
 		private SpriteBatch _spriteBatch;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
 		private readonly Scene _scene = new Scene();
+		private Desktop _desktop;
 
 		public SampleGame()
 		{
@@ -93,12 +94,13 @@ namespace SampleScene
 			MyraEnvironment.Game = this;
 			_mainPanel = new MainPanel();
 
-			Desktop.Root = _mainPanel;
+			_desktop = new Desktop();
+			_desktop.Root = _mainPanel;
 
 			// Nursia
 			Nrs.Game = this;
 
-			var folder = @"C:\Projects\Nursia\samples";
+			var folder = @"D:\Projects\Nursia\samples";
 
 			// Model
 			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));
@@ -232,7 +234,7 @@ namespace SampleScene
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
 			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer.Statistics.MeshesDrawn;
 
-			Desktop.Render();
+			_desktop.Render();
 
 /*			_spriteBatch.Begin();
 

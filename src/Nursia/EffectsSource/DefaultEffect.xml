@@ -1,21 +1,6 @@
-<Root>
-    <Targets>
-        <MonoGameDirectX/>
-        <MonoGameOpenGL/>
-        <FNA/>
-    </Targets>
-    <RootEntry>
-        <Define/>
-        <Define Name="CLIP_PLANE" />
-        <Entry>
-            <Define/>
-            <Define Name="LIGHTNING" />
-            <Entry>
-                <Define/>
-                <Define Name="BONES" Value="1"/>
-                <Define Name="BONES" Value="2"/>
-                <Define Name="BONES" Value="4"/>
-            </Entry>
-        </Entry>
-    </RootEntry>
-</Root>
+<Defines>
+	<Define Value="LIGHTNING"/>
+	<Define Value="CLIP_PLANE;LIGHTNING"/>
+	<Define Value="BONES=4;LIGHTNING"/>
+	<Define Value="BONES=4;CLIP_PLANE;LIGHTNING"/>
+</Defines>

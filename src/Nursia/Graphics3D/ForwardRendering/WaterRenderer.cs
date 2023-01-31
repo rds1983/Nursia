@@ -72,7 +72,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public void DrawWater(RenderContext context)
 		{
 			var device = Nrs.GraphicsDevice;
-			var effect = Assets.GetWaterEffect();
+			var effect = Assets.WaterEffect;
 
 			// Update move factor
 			var now = DateTime.Now;

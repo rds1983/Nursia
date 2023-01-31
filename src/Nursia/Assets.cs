@@ -9,10 +9,7 @@ namespace Nursia
 {
 	public static class Assets
 	{
-		private static MultiVariantEffect 
-			_defaultMultiEffect, 
-			_waterMultiEffect,
-			_skyboxMultiEffect;
+		private static EffectsRepository _effectsRepository;
 		private static Effect _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
@@ -36,6 +33,48 @@ namespace Nursia
 				}
 
 				return _white;
+			}
+		}
+
+		internal static EffectsRepository EffectsRepository
+		{
+			get
+			{
+				if (_effectsRepository != null)
+				{
+					return _effectsRepository;
+				}
+
+				_effectsRepository = EffectsRepository.CreateFromFolder(@"D:\Projects\Nursia\src\Nursia\EffectsSource\MonoGameOGL");
+				return _effectsRepository;
+			}
+		}
+
+		internal static Effect WaterEffect
+		{
+			get
+			{
+				if (_waterEffect != null)
+				{
+					return _waterEffect;
+				}
+
+				_waterEffect = EffectsRepository.Get(Nrs.GraphicsDevice, "WaterEffect");
+				return _waterEffect;
+			}
+		}
+
+		internal static Effect SkyboxEffect
+		{
+			get
+			{
+				if (_skyboxEffect != null)
+				{
+					return _skyboxEffect;
+				}
+
+				_skyboxEffect = EffectsRepository.Get(Nrs.GraphicsDevice, "SkyboxEffect");
+				return _skyboxEffect;
 			}
 		}
 
@@ -74,7 +113,6 @@ namespace Nursia
 		internal static Effect GetDefaultEffect(bool clipPlane, bool lightning, int bones)
 		{
 			var key = 0;
-
 			if (clipPlane)
 			{
 				key |= 1;
@@ -95,16 +133,7 @@ namespace Nursia
 				return _defaultEffects[key];
 			}
 
-			if (_defaultMultiEffect == null)
-			{
-				_defaultMultiEffect = new MultiVariantEffect(() =>
-				{
-					return Assembly.OpenResourceStream("Resources.Effects.DefaultEffect.efb");
-				});
-			}
-
 			var defines = new Dictionary<string, string>();
-
 			if (clipPlane)
 			{
 				defines["CLIP_PLANE"] = "1";
@@ -120,48 +149,10 @@ namespace Nursia
 				defines["BONES"] = bones.ToString();
 			}
 
-			var result = _defaultMultiEffect.GetEffect(Nrs.GraphicsDevice, defines);
+			var result = EffectsRepository.Get(Nrs.GraphicsDevice, "DefaultEffect", defines);
 
 			_defaultEffects[key] = result;
 			return result;
-		}
-
-		internal static Effect GetWaterEffect()
-		{
-			if (_waterEffect != null)
-			{
-				return _waterEffect;
-			}
-
-			if (_waterMultiEffect == null)
-			{
-				_waterMultiEffect = new MultiVariantEffect(() =>
-				{
-					return Assembly.OpenResourceStream("Resources.Effects.WaterEffect.efb");
-				});
-			}
-
-			_waterEffect = _waterMultiEffect.GetEffect(Nrs.GraphicsDevice, null);
-			return _waterEffect;
-		}
-
-		internal static Effect GetSkyboxEffect()
-		{
-			if (_skyboxEffect != null)
-			{
-				return _skyboxEffect;
-			}
-
-			if (_skyboxMultiEffect == null)
-			{
-				_skyboxMultiEffect = new MultiVariantEffect(() =>
-				{
-					return Assembly.OpenResourceStream("Resources.Effects.SkyboxEffect.efb");
-				});
-			}
-
-			_skyboxEffect = _skyboxMultiEffect.GetEffect(Nrs.GraphicsDevice, null);
-			return _skyboxEffect;
 		}
 	}
 }

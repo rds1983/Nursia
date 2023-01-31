@@ -4,7 +4,7 @@
     <PackageId>Nursia.MonoGame</PackageId>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);MONOGAME</DefineConstants>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <OutputPath>bin\MonoGame\$(Configuration)</OutputPath>
   </PropertyGroup>
 
@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EffectFarm.MonoGame" Version="0.6.0" />
-    <PackageReference Include="MonoGame.Framework.Portable" PrivateAssets="All" Version="3.7.1.189" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="EffectFarm.MonoGame" Version="0.6.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 </Project>

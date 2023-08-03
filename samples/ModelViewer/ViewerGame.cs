@@ -129,7 +129,7 @@ namespace ModelViewer
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Projects\Nursia\samples\models";
+			folder = @"D:\Projects\Nursia\sampleContent\models";
 			SetFolder(folder);
 
 			_controller = new CameraInputController(_scene.Camera);

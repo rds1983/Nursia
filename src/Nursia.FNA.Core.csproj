@@ -13,7 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\EffectFarm\src\EffectFarm\EffectFarm.FNA.Core.csproj" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EffectFarm\src\EffectFarm\EffectFarm.FNA.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -45,7 +45,7 @@ namespace Nursia
 					return _effectsRepository;
 				}
 
-				_effectsRepository = EffectsRepository.CreateFromFolder(@"D:\Projects\Nursia\src\Nursia\EffectsSource\" + EffectsRepository.EffectsSubfolder);
+				_effectsRepository = EffectsRepository.CreateFromFolder(@"D:\Projects\Nursia\src\EffectsSource\" + EffectsRepository.EffectsSubfolder);
 				return _effectsRepository;
 			}
 		}

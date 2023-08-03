@@ -100,7 +100,7 @@ namespace SampleScene
 			// Nursia
 			Nrs.Game = this;
 
-			var folder = @"D:\Projects\Nursia\samples";
+			var folder = @"D:\Projects\Nursia\sampleContent";
 
 			// Model
 			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));

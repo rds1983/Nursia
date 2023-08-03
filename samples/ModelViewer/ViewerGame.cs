@@ -73,16 +73,7 @@ namespace ModelViewer
 		{
 			if (!string.IsNullOrEmpty(file))
 			{
-				var folder = Path.GetDirectoryName(file);
-				var data = File.ReadAllText(file);
-				_model = NursiaModel.LoadFromJson(data,
-					n =>
-					{
-						using (var stream = File.OpenRead(Path.Combine(folder, n)))
-						{
-							return Texture2D.FromStream(GraphicsDevice, stream);
-						}
-					});
+				_model = NursiaModel.LoadFromGltf(file);
 
 				_mainPanel._comboAnimations.Items.Clear();
 				_mainPanel._comboAnimations.Items.Add(new ListItem(null));
@@ -129,7 +120,7 @@ namespace ModelViewer
 			LoadModel(string.Empty);
 
 			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Projects\Nursia\sampleContent\models";
+			folder = @"D:\Temp\Sinbad";
 			SetFolder(folder);
 
 			_controller = new CameraInputController(_scene.Camera);
@@ -158,7 +149,7 @@ namespace ModelViewer
 		private void SetFolder(string folder)
 		{
 			_mainPanel._listFiles.Items.Clear();
-			var files = Directory.EnumerateFiles(folder, "*.g3dj");
+			var files = Directory.EnumerateFiles(folder, "*.glb");
 			foreach (var f in files)
 			{
 				var fileInfo = new FileInfo(f);

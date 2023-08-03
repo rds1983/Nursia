@@ -48,10 +48,7 @@ namespace SampleScene
 
 		private NursiaModel LoadModel(string file)
 		{
-			var folder = Path.GetDirectoryName(file);
-			var data = File.ReadAllText(file);
-			var result = NursiaModel.LoadFromJson(data,
-					n => LoadTexture(Path.Combine(folder, n)));
+			var result = NursiaModel.LoadFromGltf(file);
 
 			_scene.Models.Add(result);
 
@@ -103,7 +100,7 @@ namespace SampleScene
 			var folder = @"D:\Projects\Nursia\sampleContent";
 
 			// Model
-			_model = LoadModel(Path.Combine(folder, @"models\knight.g3dj"));
+			_model = LoadModel(@"D:\Temp\Sinbad\Sinbad.glb");
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
 			_model.CurrentAnimation = _model.Animations["Attack"];
 

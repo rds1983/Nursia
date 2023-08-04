@@ -5,8 +5,8 @@ namespace Nursia.Graphics3D
 {
 	public class Mesh : IDisposable
 	{
-		public int VertexCount => VertexBuffers[0].VertexBuffer.VertexCount;
-		public VertexBufferBinding[] VertexBuffers { get; set; }
+		public int VertexCount => VertexBuffer.VertexCount;
+		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
 
 		public int PrimitiveCount
@@ -53,10 +53,9 @@ namespace Nursia.Graphics3D
 				BufferUsage.None);
 			indexBuffer.SetData(indices);
 
-			var vbb = new VertexBufferBinding(vertexBuffer);
 			return new Mesh
 			{
-				VertexBuffers = new VertexBufferBinding[] { vbb },
+				VertexBuffer = vertexBuffer,
 				IndexBuffer = indexBuffer
 			};
 		}

@@ -9,7 +9,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		internal void DrawMeshPart(MeshPart part)
 		{
 			if (part.Mesh == null ||
-				part.Mesh.VertexBuffers == null ||
+				part.Mesh.VertexBuffer == null ||
 				part.Mesh.IndexBuffer == null ||
 				part.Material == null)
 			{
@@ -23,7 +23,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			// Apply the effect and render items
 			var effect = Assets.GetDefaultEffect(
 				_context.ClipPlane != null,
-				lights.Count > 0, 
+				lights.Count > 0,
 				(int)part.BonesPerMesh);
 
 			var worldViewProj = part.Transform * _context.World * _context.ViewProjection;

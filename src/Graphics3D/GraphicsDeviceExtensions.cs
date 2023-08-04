@@ -6,7 +6,7 @@ namespace Nursia.Graphics3D
 	{
 		public static void Apply(this GraphicsDevice device, Mesh mesh)
 		{
-			device.SetVertexBuffers(mesh.VertexBuffers);
+			device.SetVertexBuffer(mesh.VertexBuffer);
 			device.Indices = mesh.IndexBuffer;
 		}
 

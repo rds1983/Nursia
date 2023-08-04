@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using glTFLoader;
 using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Utilities;
 
 namespace Nursia.Graphics3D.Modelling
 {
 	internal class GltfLoader
 	{
-		private static Random rnd = new Random();
-
 		struct VertexElementInfo
 		{
 			public VertexElementFormat Format;
@@ -28,8 +29,6 @@ namespace Nursia.Graphics3D.Modelling
 		private string _path;
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
-
-
 
 		private byte[] GetBuffer(int index)
 		{
@@ -108,26 +107,33 @@ namespace Nursia.Graphics3D.Modelling
 				foreach (var primitive in gltfMesh.Primitives)
 				{
 					// Read vertex declaration
-					var vertexBufferBindings = new List<VertexBufferBinding>();
-					var boundingSphere = new BoundingSphere();
+					var vertexInfos = new List<VertexElementInfo>();
+					int? vertexCount = null;
 					foreach (var pair in primitive.Attributes)
 					{
 						var accessor = _gltf.Accessors[pair.Value];
-						var element = new VertexElement();
+						var newVertexCount = accessor.Count;
+						if (vertexCount != null && vertexCount.Value != newVertexCount)
+						{
+							throw new NotSupportedException($"Vertex count changed. Previous value: {vertexCount}. New value: {newVertexCount}");
+						}
 
+						vertexCount = newVertexCount;
+
+						var element = new VertexElementInfo();
 						switch (pair.Key)
 						{
 							case "POSITION":
-								element.VertexElementUsage = VertexElementUsage.Position;
+								element.Usage = VertexElementUsage.Position;
 								break;
 							case "NORMAL":
-								element.VertexElementUsage = VertexElementUsage.Normal;
+								element.Usage = VertexElementUsage.Normal;
 								break;
 							case "TEXCOORD_0":
-								element.VertexElementUsage = VertexElementUsage.TextureCoordinate;
+								element.Usage = VertexElementUsage.TextureCoordinate;
 								break;
 							case "TANGENT":
-								element.VertexElementUsage = VertexElementUsage.Tangent;
+								element.Usage = VertexElementUsage.Tangent;
 								break;
 							case "JOINTS_0":
 							case "WEIGHTS_0":
@@ -137,51 +143,61 @@ namespace Nursia.Graphics3D.Modelling
 								throw new NotSupportedException($"Attribute {pair.Key} isn't supported");
 						}
 
-						element.VertexElementFormat = GetAccessorFormat(pair.Value);
+						element.Format = GetAccessorFormat(pair.Value);
+						element.AccessorIndex = pair.Value;
 
-						var vd = new VertexDeclaration(element);
-						var vertexBuffer = new VertexBuffer(Nrs.GraphicsDevice, vd, accessor.Count, BufferUsage.None);
-
-						var data = GetAccessorData(pair.Value);
-						vertexBuffer.SetData(data.Array, data.Offset, data.Count);
-
-						if (element.VertexElementUsage == VertexElementUsage.Position)
-						{
-							var partPositions = new Vector3[data.Count / 12];
-
-							unsafe
-							{
-								fixed (byte* bptr = &data.Array[data.Offset])
-								fixed (Vector3* vptr = partPositions)
-								{
-									System.Buffer.MemoryCopy(bptr, vptr, partPositions.Length * sizeof(Vector3), data.Count);
-								}
-							}
-							boundingSphere = BoundingSphere.CreateFromPoints(partPositions);
-						}
-
-						var vbb = new VertexBufferBinding(vertexBuffer);
-						vertexBufferBindings.Add(vbb);
-					}
-
-					// Determine vertex count
-					int? vertexCount = null;
-					foreach (var vbb in vertexBufferBindings)
-					{
-						if (vertexCount == null)
-						{
-							vertexCount = vbb.VertexBuffer.VertexCount;
-						}
-						else if (vertexCount.Value != vbb.VertexBuffer.VertexCount)
-						{
-							throw new NotSupportedException("Vertex buffers of different sizes aren't supported");
-						}
+						vertexInfos.Add(element);
 					}
 
 					if (vertexCount == null)
 					{
-						throw new NotSupportedException("Absence of vertex buffers isn't supported");
+						throw new NotSupportedException("Vertex count is not set");
 					}
+
+					var vertexElements = new VertexElement[vertexInfos.Count];
+					var offset = 0;
+					for (var i = 0; i < vertexInfos.Count; ++i)
+					{
+						vertexElements[i] = new VertexElement(offset, vertexInfos[i].Format, vertexInfos[i].Usage, 0);
+						offset += vertexInfos[i].Format.GetSize();
+					}
+
+					var vd = new VertexDeclaration(vertexElements);
+					var vertexBuffer = new VertexBuffer(Nrs.GraphicsDevice, vd, vertexCount.Value, BufferUsage.None);
+
+					// Set vertex data
+					var vertexData = new byte[vertexCount.Value * vd.VertexStride];
+					var partPositions = new List<Vector3>();
+					offset = 0;
+					for (var i = 0; i < vertexInfos.Count; ++i)
+					{
+						var sz = vertexInfos[i].Format.GetSize();
+						var data = GetAccessorData(vertexInfos[i].AccessorIndex);
+						for (var j = 0; j < vertexCount.Value; ++j)
+						{
+							Array.Copy(data.Array, data.Offset + j * sz, vertexData, j * vd.VertexStride + offset, sz);
+
+							if (vertexInfos[i].Usage == VertexElementUsage.Position)
+							{
+								unsafe
+								{
+									fixed (byte* bptr = &data.Array[data.Offset + j * sz])
+									{
+										Vector3* vptr = (Vector3*)bptr;
+										partPositions.Add(*vptr);
+									}
+								}
+							}
+						}
+
+						offset += sz;
+					}
+
+					vertexBuffer.SetData(vertexData);
+					var boundingSphere = BoundingSphere.CreateFromPoints(partPositions);
+
+					/*					var vertices = new VertexPositionNormalTexture[vertexCount.Value];
+										vertexBuffer.GetData(vertices);*/
 
 					if (primitive.Indices == null)
 					{
@@ -198,15 +214,18 @@ namespace Nursia.Graphics3D.Modelling
 					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits, indexAccessor.Count, BufferUsage.None);
 					indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
 
+					/*					var indices = new ushort[indexAccessor.Count];
+										indexBuffer.GetData(indices);*/
+
 					var mesh = new Mesh
 					{
-						VertexBuffers = vertexBufferBindings.ToArray(),
+						VertexBuffer = vertexBuffer,
 						IndexBuffer = indexBuffer,
 					};
 
 					var material = new Material
 					{
-						DiffuseColor = new Color((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256)),
+						DiffuseColor = Color.GreenYellow,
 						Texture = Assets.White
 					};
 
@@ -224,9 +243,10 @@ namespace Nursia.Graphics3D.Modelling
 			}
 
 			var result = new NursiaModel();
-			foreach (var mesh in meshes)
+
+			foreach (var meshNode in meshes)
 			{
-				result.Meshes.Add(mesh);
+				result.Meshes.Add(meshNode);
 			}
 
 			return result;

@@ -9,7 +9,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		internal void DrawMeshPart(MeshPart part)
 		{
 			if (part.Mesh == null ||
-				part.Mesh.VertexBuffer == null ||
+				part.Mesh.VertexBuffers == null ||
 				part.Mesh.IndexBuffer == null ||
 				part.Material == null)
 			{

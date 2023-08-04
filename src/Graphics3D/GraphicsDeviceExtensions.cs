@@ -6,12 +6,12 @@ namespace Nursia.Graphics3D
 	{
 		public static void Apply(this GraphicsDevice device, Mesh mesh)
 		{
-			device.SetVertexBuffer(mesh.VertexBuffer);
+			device.SetVertexBuffers(mesh.VertexBuffers);
 			device.Indices = mesh.IndexBuffer;
 		}
 
 		public static void DrawIndexedPrimitives(
-			this GraphicsDevice device, 
+			this GraphicsDevice device,
 			Effect effect,
 			Mesh mesh,
 			int? vertexCount = null,
@@ -21,10 +21,10 @@ namespace Nursia.Graphics3D
 			foreach (var pass in effect.CurrentTechnique.Passes)
 			{
 				pass.Apply();
-				device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 
+				device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
 					0,
-					vertexCount ?? mesh.VertexBuffer.VertexCount, 
-					startIndex, 
+					vertexCount ?? mesh.VertexCount,
+					startIndex,
 					primitiveCount ?? mesh.PrimitiveCount);
 			}
 		}

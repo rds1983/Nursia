@@ -102,7 +102,6 @@ namespace SampleScene
 			// Model
 			_model = LoadModel(@"D:\Temp\Sinbad\Sinbad.glb");
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
-			_model.CurrentAnimation = _model.Animations["Attack"];
 
 			// Terrain
 			var grassy = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"));

@@ -8,8 +8,10 @@
     <OutputPath>bin\FNA.Core\$(Configuration)</OutputPath>
   </PropertyGroup>
 
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\*.*" />
+    <EmbeddedResource Include="EffectsSource\FNA\*.*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EffectFarm\src\EffectFarm\EffectFarm.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\XNAssets\src\XNAssets.FNA.Core.csproj" />
   </ItemGroup>
 </Project>

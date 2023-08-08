@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using glTFLoader;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace Nursia.Graphics3D.Modelling
+﻿namespace Nursia.Graphics3D.Modelling
 {
 	partial class NursiaModel
 	{

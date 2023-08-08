@@ -5,8 +5,6 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EAB0AA24-7185-4897-A866-AE87AF3F2E0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EffectFarm.FNA.Core", "..\..\EffectFarm\src\EffectFarm\EffectFarm.FNA.Core.csproj", "{53008277-FA41-42FF-8988-8C2E304702AE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FNA.Core", "..\..\FNA\FNA.Core.csproj", "{E3312B36-8585-4097-A8A4-7C3606730E87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.FNA.Core", "..\..\FontStashSharp\src\XNA\FontStashSharp.FNA.Core.csproj", "{134585FE-954C-44A1-96CC-739E528E788D}"
@@ -19,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelViewer.FNA.Core", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleScene.FNA.Core", "..\samples\SampleScene\SampleScene.FNA.Core.csproj", "{88CC29C5-8190-4D9B-93CC-5D7A85E94DC3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XNAssets.FNA.Core", "..\..\XNAssets\src\XNAssets.FNA.Core.csproj", "{76F4A57C-7983-40E6-8307-F251EC0BBF3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,14 +27,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Debug|x64.Build.0 = Debug|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|x64.ActiveCfg = Release|Any CPU
-		{53008277-FA41-42FF-8988-8C2E304702AE}.Release|x64.Build.0 = Release|Any CPU
 		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|Any CPU.Build.0 = Debug|x64
 		{E3312B36-8585-4097-A8A4-7C3606730E87}.Debug|x64.ActiveCfg = Debug|x64
@@ -83,6 +75,14 @@ Global
 		{88CC29C5-8190-4D9B-93CC-5D7A85E94DC3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88CC29C5-8190-4D9B-93CC-5D7A85E94DC3}.Release|x64.ActiveCfg = Release|Any CPU
 		{88CC29C5-8190-4D9B-93CC-5D7A85E94DC3}.Release|x64.Build.0 = Release|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Debug|x64.Build.0 = Debug|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Release|x64.ActiveCfg = Release|Any CPU
+		{76F4A57C-7983-40E6-8307-F251EC0BBF3C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

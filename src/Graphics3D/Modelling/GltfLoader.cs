@@ -207,7 +207,7 @@ namespace Nursia.Graphics3D.Modelling
 					var indexAccessor = _gltf.Accessors[primitive.Indices.Value];
 					if (indexAccessor.Type != Accessor.TypeEnum.SCALAR || indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
 					{
-						throw new NotSupportedException("Only Scalar/unsigned short index buffer are supported");
+						throw new NotSupportedException("Only scalar/unsigned short index buffer are supported");
 					}
 
 					var indexData = GetAccessorData(primitive.Indices.Value);

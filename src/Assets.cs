@@ -1,4 +1,4 @@
-﻿using EffectFarm;
+﻿using AssetManagementBase;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
@@ -9,7 +9,7 @@ namespace Nursia
 {
 	public static class Assets
 	{
-		private static EffectsRepository _effectsRepository;
+		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
@@ -36,20 +36,6 @@ namespace Nursia
 			}
 		}
 
-		internal static EffectsRepository EffectsRepository
-		{
-			get
-			{
-				if (_effectsRepository != null)
-				{
-					return _effectsRepository;
-				}
-
-				_effectsRepository = EffectsRepository.CreateFromFolder(@"D:\Projects\Nursia\src\EffectsSource\" + EffectsRepository.EffectsSubfolder);
-				return _effectsRepository;
-			}
-		}
-
 		internal static Effect WaterEffect
 		{
 			get
@@ -59,7 +45,7 @@ namespace Nursia
 					return _waterEffect;
 				}
 
-				_waterEffect = EffectsRepository.Get(Nrs.GraphicsDevice, "WaterEffect");
+				_waterEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb");
 				return _waterEffect;
 			}
 		}
@@ -73,7 +59,7 @@ namespace Nursia
 					return _skyboxEffect;
 				}
 
-				_skyboxEffect = EffectsRepository.Get(Nrs.GraphicsDevice, "SkyboxEffect");
+				_skyboxEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "SkyboxEffect.efb");
 				return _skyboxEffect;
 			}
 		}
@@ -149,9 +135,9 @@ namespace Nursia
 				defines["BONES"] = bones.ToString();
 			}
 
-			var result = EffectsRepository.Get(Nrs.GraphicsDevice, "DefaultEffect", defines);
-
+			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "DefaultEffect.efb", defines);
 			_defaultEffects[key] = result;
+
 			return result;
 		}
 	}

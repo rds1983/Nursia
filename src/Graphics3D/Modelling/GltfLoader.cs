@@ -101,7 +101,7 @@ namespace Nursia.Graphics3D.Modelling
 		private T[] GetAccessorAs<T>(int accessorIndex)
 		{
 			var type = typeof(T);
-			if (type != typeof(float) && type != typeof(Vector3) && type != typeof(Vector4) && type != typeof(Quaternion))
+			if (type != typeof(float) && type != typeof(Vector3) && type != typeof(Vector4) && type != typeof(Quaternion) && type != typeof(Matrix))
 			{
 				throw new NotSupportedException("Only float/Vector3/Vector4 types are supported");
 			}
@@ -120,6 +120,11 @@ namespace Nursia.Graphics3D.Modelling
 			if (accessor.Type == Accessor.TypeEnum.VEC4 && type != typeof(Vector4) && type != typeof(Quaternion))
 			{
 				throw new NotSupportedException("VEC4 type could be converted only to Vector4 or Quaternion");
+			}
+
+			if (accessor.Type == Accessor.TypeEnum.MAT4 && type != typeof(Matrix))
+			{
+				throw new NotSupportedException("MAT4 type could be converted only to Matrix");
 			}
 
 			var bytes = GetAccessorData(accessorIndex);
@@ -211,22 +216,6 @@ namespace Nursia.Graphics3D.Modelling
 			return CreateTransform(translation, scale, quaternion);
 		}
 
-		private static ModelNode ToModelNode(Node gltfNode)
-		{
-			var result = new ModelNode
-			{
-				Id = gltfNode.Name
-			};
-
-			var scale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One;
-			var translation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero;
-			var rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : new Quaternion();
-
-			result.Transform = CreateTransform(translation, scale, rotation);
-
-			return result;
-		}
-
 		private static Transform EnsureTransform(IDictionary<float, Transform> timeline, float time)
 		{
 			if (!timeline.TryGetValue(time, out Transform result))
@@ -243,19 +232,16 @@ namespace Nursia.Graphics3D.Modelling
 			_path = path;
 			_gltf = Interface.LoadModel(path);
 
-			var meshes = new List<MeshNode>();
+			var meshes = new List<List<MeshPart>>();
 			foreach (var gltfMesh in _gltf.Meshes)
 			{
-				var meshNode = new MeshNode
-				{
-					Id = gltfMesh.Name
-				};
-
+				var meshParts = new List<MeshPart>();
 				foreach (var primitive in gltfMesh.Primitives)
 				{
 					// Read vertex declaration
 					var vertexInfos = new List<VertexElementInfo>();
 					int? vertexCount = null;
+					var hasSkin = false;
 					foreach (var pair in primitive.Attributes)
 					{
 						var accessor = _gltf.Accessors[pair.Value];
@@ -283,9 +269,11 @@ namespace Nursia.Graphics3D.Modelling
 								element.Usage = VertexElementUsage.Tangent;
 								break;
 							case "JOINTS_0":
+								hasSkin = true;
 								element.Usage = VertexElementUsage.BlendIndices;
 								break;
 							case "WEIGHTS_0":
+								hasSkin = true;
 								element.Usage = VertexElementUsage.BlendWeight;
 								break;
 							default:
@@ -385,18 +373,56 @@ namespace Nursia.Graphics3D.Modelling
 						Material = material
 					};
 
-					meshNode.Parts.Add(meshPart);
+					if (hasSkin)
+					{
+//						meshPart.BonesPerMesh = BonesPerMesh.Four;
+					}
+
+					meshParts.Add(meshPart);
 				}
 
-				meshes.Add(meshNode);
+				meshes.Add(meshParts);
 			}
+
+			var result = new NursiaModel();
 
 			// Load all nodes
 			var allNodes = new List<ModelNode>();
-			for(var i = 0; i < _gltf.Nodes.Length; ++i)
+			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
-				allNodes.Add(ToModelNode(gltfNode));
+
+				var modelNode = new ModelNode
+				{
+					Id = gltfNode.Name
+				};
+
+				var scale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One;
+				var translation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero;
+				var rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : new Quaternion();
+
+				modelNode.DefaultTransform = modelNode.Transform = CreateTransform(translation, scale, rotation);
+
+				if (gltfNode.Mesh != null)
+				{
+					modelNode.Parts.AddRange(meshes[gltfNode.Mesh.Value]);
+					result.Meshes.Add(modelNode);
+				}
+
+				if (gltfNode.Skin  != null)
+				{
+					var gltfSkin = _gltf.Skins[gltfNode.Skin.Value];
+					var skin = new Skin();
+					foreach(var jointIndex in gltfSkin.Joints)
+					{
+						skin.Joints.Add(allNodes[jointIndex]);
+					}
+
+					skin.Transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
+					modelNode.Skin = skin;
+				}
+
+				allNodes.Add(modelNode);
 			}
 
 			// Set children
@@ -407,23 +433,16 @@ namespace Nursia.Graphics3D.Modelling
 
 				if (gltfNode.Children != null)
 				{
-					foreach(var childIndex  in gltfNode.Children)
+					foreach (var childIndex in gltfNode.Children)
 					{
+						allNodes[childIndex].Parent = modelNode;
 						modelNode.Children.Add(allNodes[childIndex]);
 					}
 				}
 			}
 
 			var rootNodexIndex = _gltf.Scenes[_gltf.Scene.Value].Nodes[0];
-			var result = new NursiaModel
-			{
-				RootNode = allNodes[rootNodexIndex]
-			};
-
-			foreach (var meshNode in meshes)
-			{
-				result.Meshes.Add(meshNode);
-			}
+			result.RootNode = allNodes[rootNodexIndex];
 
 			if (_gltf.Animations != null)
 			{

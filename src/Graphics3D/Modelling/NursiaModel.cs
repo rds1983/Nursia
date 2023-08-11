@@ -6,42 +6,18 @@ namespace Nursia.Graphics3D.Modelling
 {
 	public partial class NursiaModel
 	{
-		private readonly List<MeshNode> _meshes = new List<MeshNode>();
-		private readonly List<Material> _materials = new List<Material>();
-		private readonly Dictionary<string, ModelAnimation> _animations = new Dictionary<string, ModelAnimation>();
 		private ModelAnimation _currentAnimation = null;
 		private DateTime? _lastAnimationUpdate;
 
 		public Matrix Transform = Matrix.Identity;
 
-		public List<MeshNode> Meshes
-		{
-			get
-			{
-				return _meshes;
-			}
-		}
+		public List<ModelNode> Meshes { get; } = new List<ModelNode>();
 
-		public List<Material> Materials
-		{
-			get
-			{
-				return _materials;
-			}
-		}
+		public List<Material> Materials { get; } = new List<Material>();
 
-		public Dictionary<string, ModelAnimation> Animations
-		{
-			get
-			{
-				return _animations;
-			}
-		}
+		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
 
-		public ModelNode RootNode
-		{
-			get; set;
-		}
+		public ModelNode RootNode { get; set; }
 
 		public ModelAnimation CurrentAnimation
 		{
@@ -71,25 +47,6 @@ namespace Nursia.Graphics3D.Modelling
 		public ModelNode FindNodeById(string id)
 		{
 			return RootNode.FindNodeById(id);
-		}
-
-		public Bone FindBoneById(string id)
-		{
-			foreach(var mesh in _meshes)
-			{
-				foreach(var part in mesh.Parts)
-				{
-					foreach(var bone in part.Bones)
-					{
-						if (bone.NodeId == id)
-						{
-							return bone;
-						}
-					}
-				}
-			}
-
-			return null;
 		}
 
 		private static void TraverseNodes(ModelNode root, Action<ModelNode> action)
@@ -142,7 +99,7 @@ namespace Nursia.Graphics3D.Modelling
 			}
 
 			var allFound = true;
-			foreach(var bone in _currentAnimation.BoneAnimations)
+			foreach (var bone in _currentAnimation.BoneAnimations)
 			{
 				if (bone.Frames.Count == 0)
 				{
@@ -158,7 +115,7 @@ namespace Nursia.Graphics3D.Modelling
 
 				var found = false;
 
-				foreach(var frame in bone.Frames)
+				foreach (var frame in bone.Frames)
 				{
 					if (bone.Frames.Count == 1 ||
 						passed < frame.Time)

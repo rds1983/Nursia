@@ -3,9 +3,22 @@ using System.Collections.Generic;
 
 namespace Nursia.Graphics3D.Modelling
 {
-	public class ModelNode: ItemWithId
+	public class ModelNode : ItemWithId
 	{
 		private readonly List<ModelNode> _children = new List<ModelNode>();
+		private readonly List<MeshPart> _parts = new List<MeshPart>();
+
+		public List<MeshPart> Parts
+		{
+			get
+			{
+				return _parts;
+			}
+		}
+
+		public Skin Skin { get; set; }
+
+		public BoundingSphere BoundingSphere { get; set; }
 
 		public ModelNode Parent { get; set; }
 

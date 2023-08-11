@@ -6,7 +6,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	partial class ForwardRenderer
 	{
-		internal void DrawMeshPart(MeshPart part)
+		internal void DrawMeshPart(Effect effect, MeshPart part)
 		{
 			if (part.Mesh == null ||
 				part.Mesh.VertexBuffer == null ||
@@ -20,19 +20,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			var lights = _context.Lights;
 
-			// Apply the effect and render items
-			var effect = Assets.GetDefaultEffect(
-				_context.ClipPlane != null,
-				lights.Count > 0,
-				(int)part.BonesPerMesh);
-
 			var worldViewProj = part.Transform * _context.World * _context.ViewProjection;
-
-			if (part.BonesPerMesh != BonesPerMesh.None)
-			{
-				var boneTransforms = part.CalculateBoneTransforms();
-				effect.Parameters["_bones"].SetValue(boneTransforms);
-			}
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(part.Material.DiffuseColor.ToVector4());

@@ -83,24 +83,31 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_context.Statistics.Reset();
 		}
 
-		private void DrawMeshNode(MeshNode meshNode)
+		private void DrawMeshNode(ModelNode meshNode)
 		{
-			foreach (var part in meshNode.Parts)
-			{
-				var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
-				if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
-				{
-					continue;
-				}
+			// Apply the effect and render items
+			var effect = Assets.GetDefaultEffect(
+				_context.ClipPlane != null,
+				_context.Lights.Count > 0,
+				meshNode.Skin != null ? 4 : 0);
 
-				// If part has bones, then parent node transform had been already
-				// applied to bones transform
-				// Thus to avoid applying parent transform twice, we use
-				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				using (var scope = new TransformScope(_context,
-					part.Bones.Count > 0 ? Matrix.Identity : meshNode.AbsoluteTransform))
+			if (meshNode.Skin != null)
+			{
+				var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+				effect.Parameters["_bones"].SetValue(boneTransforms);
+			}
+
+			using (var scope = new TransformScope(_context, meshNode.AbsoluteTransform))
+			{
+				foreach (var part in meshNode.Parts)
 				{
-					DrawMeshPart(part);
+					var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
+					if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+					{
+						continue;
+					}
+
+					DrawMeshPart(effect, part);
 				}
 			}
 		}
@@ -126,7 +133,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				for(var x = 0; x < scene.Terrain.TilesPerX; ++x)
+				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
 					for (var z = 0; z < scene.Terrain.TilesPerZ; ++z)
 					{
@@ -136,7 +143,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 							continue;
 						}
 
-						DrawMeshPart(terrainTile.MeshPart);
+//						DrawMeshPart(terrainTile.MeshPart);
 					}
 				}
 			}

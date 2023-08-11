@@ -204,7 +204,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					device.SetRenderTarget(waterRenderer.TargetRefraction);
 					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
-					_context.ClipPlane = Geometry.CreatePlane(
+					_context.ClipPlane = Mathematics.CreatePlane(
 						waterTile.Height + 1.5f,
 						-Vector3.Up,
 						_context.ViewProjection,
@@ -223,7 +223,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					camera.PitchAngle = -camera.PitchAngle;
 					_context.View = camera.View;
 
-					_context.ClipPlane = Geometry.CreatePlane(
+					_context.ClipPlane = Mathematics.CreatePlane(
 						waterTile.Height - 0.5f,
 						-Vector3.Up,
 						_context.ViewProjection,

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -16,8 +17,6 @@ namespace Nursia.Graphics3D.Modelling
 		public List<Material> Materials { get; } = new List<Material>();
 
 		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
-
-		public ModelNode RootNode { get; set; }
 
 		public ModelAnimation CurrentAnimation
 		{
@@ -44,11 +43,6 @@ namespace Nursia.Graphics3D.Modelling
 			}
 		}
 
-		public ModelNode FindNodeById(string id)
-		{
-			return RootNode.FindNodeById(id);
-		}
-
 		private static void TraverseNodes(ModelNode root, Action<ModelNode> action)
 		{
 			if (root == null)
@@ -66,17 +60,18 @@ namespace Nursia.Graphics3D.Modelling
 
 		internal void TraverseNodes(Action<ModelNode> action)
 		{
-			TraverseNodes(RootNode, action);
+			foreach (var node in Meshes)
+			{
+				TraverseNodes(node, action);
+			}
 		}
 
 		internal void UpdateNodesAbsoluteTransforms()
 		{
-			if (RootNode == null)
+			foreach (var child in Meshes)
 			{
-				return;
+				child.UpdateAbsoluteTransforms(Matrix.Identity);
 			}
-
-			RootNode.UpdateAbsoluteTransforms(Matrix.Identity);
 		}
 
 		internal void ResetTransforms()
@@ -91,38 +86,52 @@ namespace Nursia.Graphics3D.Modelling
 				return;
 			}
 
-			TimeSpan? passed = null;
 			var now = DateTime.Now;
-			if (_lastAnimationUpdate != null)
+			if (_lastAnimationUpdate == null)
 			{
-				passed = now - _lastAnimationUpdate.Value;
+				_lastAnimationUpdate = now;
+				return;
 			}
 
 			var allFound = true;
-			foreach (var bone in _currentAnimation.BoneAnimations)
-			{
-				if (bone.Frames.Count == 0)
-				{
-					continue;
-				}
+			var passed = now - _lastAnimationUpdate.Value;
 
-				if (passed == null)
+			foreach (var boneAnimation in _currentAnimation.BoneAnimations)
+			{
+				if (boneAnimation.Frames.Count == 0)
 				{
-					// Use first frame
-					bone.Node.Transform = bone.Frames[0].Transform;
 					continue;
 				}
 
 				var found = false;
 
-				foreach (var frame in bone.Frames)
+				var translation = Vector3.Zero;
+				var rotation = Quaternion.Identity;
+				var scale = Vector3.One;
+
+				foreach (var frame in boneAnimation.Frames)
 				{
-					if (bone.Frames.Count == 1 ||
-						passed < frame.Time)
+					if (frame.Translation != null)
+					{
+						translation = frame.Translation.Value;
+					}
+
+					if (frame.Rotation != null)
+					{
+						rotation = frame.Rotation.Value;
+					}
+
+					if (frame.Scale != null)
+					{
+						scale = frame.Scale.Value;
+					}
+
+					if (boneAnimation.Frames.Count == 1 || passed < frame.Time)
 					{
 						// Use this frame
 						found = true;
-						bone.Node.Transform = frame.Transform;
+
+						boneAnimation.Node.Transform = Mathematics.CreateTransform(translation, scale, rotation);
 						break;
 					}
 				}
@@ -133,7 +142,7 @@ namespace Nursia.Graphics3D.Modelling
 				}
 			}
 
-			if (_lastAnimationUpdate == null || !allFound)
+			if (!allFound)
 			{
 				_lastAnimationUpdate = now;
 			}

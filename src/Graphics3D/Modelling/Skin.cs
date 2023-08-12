@@ -12,8 +12,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		internal Matrix[] CalculateBoneTransforms()
 		{
-			if (_boneTransforms == null ||
-			_boneTransforms.Length != Joints.Count)
+			if (_boneTransforms == null || _boneTransforms.Length != Joints.Count)
 			{
 				_boneTransforms = new Matrix[Joints.Count];
 			}
@@ -21,7 +20,8 @@ namespace Nursia.Graphics3D.Modelling
 			for (var i = 0; i < Joints.Count; ++i)
 			{
 				var joint = Joints[i];
-				_boneTransforms[i] = Transforms[i] * Joints[i].AbsoluteTransform;
+
+				_boneTransforms[i] = Transforms[i] * joint.AbsoluteTransform;
 			}
 
 			return _boneTransforms;

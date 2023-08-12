@@ -52,18 +52,9 @@ namespace Nursia.Graphics3D.Modelling
 
 		class Transform
 		{
-			public Vector3 Translation;
-			public Quaternion Rotation;
-			public Vector3 Scale;
-
-			public Transform()
-			{
-				Translation = Vector3.Zero;
-				Rotation = Quaternion.Identity;
-				Scale = Vector3.One;
-			}
-
-			public Matrix ToMatrix() => CreateTransform(Translation, Scale, Rotation);
+			public Vector3? Translation;
+			public Quaternion? Rotation;
+			public Vector3? Scale;
 		}
 
 		private string _path;
@@ -375,7 +366,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					if (hasSkin)
 					{
-//						meshPart.BonesPerMesh = BonesPerMesh.Four;
+						//						meshPart.BonesPerMesh = BonesPerMesh.Four;
 					}
 
 					meshParts.Add(meshPart);
@@ -399,21 +390,20 @@ namespace Nursia.Graphics3D.Modelling
 
 				var scale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One;
 				var translation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero;
-				var rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : new Quaternion();
+				var rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity;
 
 				modelNode.DefaultTransform = modelNode.Transform = CreateTransform(translation, scale, rotation);
 
 				if (gltfNode.Mesh != null)
 				{
 					modelNode.Parts.AddRange(meshes[gltfNode.Mesh.Value]);
-					result.Meshes.Add(modelNode);
 				}
 
-				if (gltfNode.Skin  != null)
+				if (gltfNode.Skin != null)
 				{
 					var gltfSkin = _gltf.Skins[gltfNode.Skin.Value];
 					var skin = new Skin();
-					foreach(var jointIndex in gltfSkin.Joints)
+					foreach (var jointIndex in gltfSkin.Joints)
 					{
 						skin.Joints.Add(allNodes[jointIndex]);
 					}
@@ -441,8 +431,11 @@ namespace Nursia.Graphics3D.Modelling
 				}
 			}
 
-			var rootNodexIndex = _gltf.Scenes[_gltf.Scene.Value].Nodes[0];
-			result.RootNode = allNodes[rootNodexIndex];
+			var scene = _gltf.Scenes[_gltf.Scene.Value];
+			foreach (var node in scene.Nodes)
+			{
+				result.Meshes.Add(allNodes[node]);
+			}
 
 			if (_gltf.Animations != null)
 			{
@@ -529,7 +522,9 @@ namespace Nursia.Graphics3D.Modelling
 							nodeAnimation.Frames.Add(new AnimationKeyframe
 							{
 								Time = TimeSpan.FromSeconds(pair2.Key),
-								Transform = pair2.Value.ToMatrix()
+								Translation = pair2.Value.Translation,
+								Scale = pair2.Value.Scale,
+								Rotation = pair2.Value.Rotation
 							});
 						}
 

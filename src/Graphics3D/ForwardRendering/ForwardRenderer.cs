@@ -85,30 +85,44 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		private void DrawMeshNode(ModelNode meshNode)
 		{
-			// Apply the effect and render items
-			var effect = Assets.GetDefaultEffect(
-				_context.ClipPlane != null,
-				_context.Lights.Count > 0,
-				meshNode.Skin != null ? 4 : 0);
-
-			if (meshNode.Skin != null)
+			if (meshNode.Parts.Count > 0)
 			{
-				var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
-				effect.Parameters["_bones"].SetValue(boneTransforms);
-			}
 
-			using (var scope = new TransformScope(_context, meshNode.AbsoluteTransform))
-			{
-				foreach (var part in meshNode.Parts)
+				// If part has bones, then parent node transform had been already
+				// applied to bones transform
+				// Thus to avoid applying parent transform twice, we use
+				// ordinary Transform(not AbsoluteTransform) for parts with bones
+				using (var scope = new TransformScope(_context,
+					meshNode.Skin != null ? Matrix.Identity : meshNode.AbsoluteTransform))
 				{
-					var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
-					if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+					// Apply the effect and render items
+					var effect = Assets.GetDefaultEffect(
+					_context.ClipPlane != null,
+					_context.Lights.Count > 0,
+					meshNode.Skin != null ? 4 : 0);
+
+					if (meshNode.Skin != null)
 					{
-						continue;
+						var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+						effect.Parameters["_bones"].SetValue(boneTransforms);
 					}
 
-					DrawMeshPart(effect, part);
+					foreach (var part in meshNode.Parts)
+					{
+						var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
+						if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+						{
+							//						continue;
+						}
+
+						DrawMeshPart(effect, part);
+					}
 				}
+			}
+
+			foreach(var child in meshNode.Children)
+			{
+				DrawMeshNode(child);
 			}
 		}
 
@@ -118,7 +132,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				throw new Exception("Begin wasnt called");
 			}
-
+				
 			model.UpdateNodesAbsoluteTransforms();
 			using (var transformScope = new TransformScope(_context, model.Transform))
 			{

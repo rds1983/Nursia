@@ -6,6 +6,8 @@ namespace Nursia.Graphics3D.Modelling
 	public class AnimationKeyframe
 	{
 		public TimeSpan Time { get; set; }
-		public Matrix Transform { get; set; }
+		public Vector3? Translation { get; set; }
+		public Vector3? Scale { get; set; }
+		public Quaternion? Rotation { get; set; }
 	}
 }

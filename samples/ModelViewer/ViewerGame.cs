@@ -67,6 +67,8 @@ namespace ModelViewer
 				IsFixedTimeStep = false;
 				_graphics.SynchronizeWithVerticalRetrace = false;
 			}
+
+			_scene.Lights.AddRange(_defaultLights);
 		}
 
 		private void LoadModel(string file)
@@ -90,6 +92,8 @@ namespace ModelViewer
 				_scene.Models.Add(_model);
 			}
 
+			_mainPanel._textPath.Text = file;
+
 			// Reset camera
 			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 		}
@@ -104,11 +108,7 @@ namespace ModelViewer
 			_mainPanel._comboAnimations.Items.Clear();
 			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
 
-			_mainPanel._buttonChange.Click += OnChangeFolder;
-
-			_mainPanel._listFiles.SelectedIndexChanged += _listFiles_SelectedIndexChanged;
-
-			_mainPanel._checkLightning.PressedChanged += _checkLightning_PressedChanged;
+			_mainPanel._buttonChange.Click += _buttonChange_Click;
 
 			_desktop = new Desktop
 			{
@@ -119,84 +119,34 @@ namespace ModelViewer
 			Nrs.Game = this;
 			LoadModel(string.Empty);
 
-			var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			folder = @"D:\Temp\Sinbad";
-			SetFolder(folder);
-
 			_controller = new CameraInputController(_scene.Camera);
 		}
 
-		private void _checkLightning_PressedChanged(object sender, EventArgs e)
+		private void _buttonChange_Click(object sender, EventArgs e)
 		{
-			_scene.Lights.Clear();
-			if (_mainPanel._checkLightning.IsPressed)
+			FileDialog dialog = new FileDialog(FileDialogMode.OpenFile)
 			{
-				_scene.Lights.AddRange(_defaultLights);
-			}
-		}
+				Filter = "*.gltf|*.glb"
+			};
 
-		private void _listFiles_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_mainPanel._listFiles.SelectedItem == null)
+			if (!string.IsNullOrEmpty(_mainPanel._textPath.Text))
 			{
-				LoadModel(null);
-			} else
-			{
-				LoadModel(_mainPanel._listFiles.SelectedItem.Id);
-			}
-		}
-
-		private void SetFolder(string folder)
-		{
-			_mainPanel._listFiles.Items.Clear();
-			var files = Directory.EnumerateFiles(folder, "*.glb");
-			foreach (var f in files)
-			{
-				var fileInfo = new FileInfo(f);
-				if (fileInfo.Attributes.HasFlag(FileAttributes.Hidden))
-				{
-					continue;
-				}
-
-				_mainPanel._listFiles.Items.Add(new ListItem(fileInfo.Name)
-				{
-					Id = fileInfo.FullName
-				});
+				dialog.Folder = Path.GetDirectoryName(_mainPanel._textPath.Text);
 			}
 
-			_mainPanel._textPath.Text = folder;
-		}
-
-		private void OnChangeFolder(object sender, EventArgs e)
-		{
-;			var dlg = new FileDialog(FileDialogMode.ChooseFolder);
-
-			try
+			dialog.Closed += (s, a) =>
 			{
-				if (!string.IsNullOrEmpty(_mainPanel._textPath.Text))
+				if (!dialog.Result)
 				{
-					dlg.Folder = _mainPanel._textPath.Text;
-				} else
-				{
-					var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-					dlg.Folder = folder;
-				}
-			}
-			catch (Exception)
-			{
-			}
-
-			dlg.Closed += (s, a) =>
-			{
-				if (!dlg.Result)
-				{
+					// "Cancel" or Escape
 					return;
 				}
 
-				SetFolder(dlg.FilePath);
+				// "Ok" or Enter
+				LoadModel(dialog.FilePath);
 			};
 
-			dlg.ShowModal(_desktop);
+			dialog.ShowModal(_desktop);
 		}
 
 		private void _comboAnimations_SelectedIndexChanged(object sender, System.EventArgs e)

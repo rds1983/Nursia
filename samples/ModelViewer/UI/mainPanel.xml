@@ -1,23 +1,17 @@
 <Project>
-  <Project.ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\src\ModelViewer\UI" />
+  <Project.ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\samples\ModelViewer\UI" />
   <Panel>
-    <Grid ColumnSpacing="8" RowSpacing="8">
-      <Grid.DefaultColumnProportion Type="Auto" />
-      <Grid.DefaultRowProportion Type="Auto" />
-      <TextBox Text="" Readonly="True" Id="_textPath" Width="300" />
-      <TextButton Text="Change..." Id="_buttonChange" GridColumn="1" />
-      <ListBox Id="_listFiles" Height="200" HorizontalAlignment="Stretch" GridRow="1">
-        <ListItem Text="model1.g3dj" />
-        <ListItem Text="another_model.g3db" />
-        <ListItem Text="tree.g3dj" />
-      </ListBox>
-      <ComboBox Id="_comboAnimations" HorizontalAlignment="Stretch" GridRow="2">
+    <VerticalStackPanel Spacing="8">
+      <HorizontalStackPanel Spacing="8">
+        <TextBox Readonly="True" Width="300" Id="_textPath" />
+        <TextButton Text="Change..." Id="_buttonChange" />
+      </HorizontalStackPanel>
+      <ComboBox Id="_comboAnimations">
         <ListItem />
         <ListItem Text="Move" />
         <ListItem Text="Attack" />
       </ComboBox>
-      <CheckBox Text="Lightning On" Id="_checkLightning" GridRow="3" />
-    </Grid>
+    </VerticalStackPanel>
     <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <Label Text="FPS: 60.0" Id="_labelFps" />
       <Label Text="Meshes: 15" Id="_labelMeshes" />

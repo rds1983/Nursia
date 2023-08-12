@@ -353,7 +353,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					var material = new Material
 					{
-						DiffuseColor = Color.GreenYellow,
+						DiffuseColor = Color.White,
 						Texture = Assets.White
 					};
 

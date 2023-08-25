@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ModelViewer.UI;
@@ -75,7 +76,8 @@ namespace ModelViewer
 		{
 			if (!string.IsNullOrEmpty(file))
 			{
-				_model = NursiaModel.LoadFromGltf(file);
+				var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
+				_model = manager.LoadGltf(Path.GetFileName(file));
 
 				_mainPanel._comboAnimations.Items.Clear();
 				_mainPanel._comboAnimations.Items.Add(new ListItem(null));

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
+using AssetManagementBase;
 using glTFLoader;
 using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
@@ -57,7 +59,8 @@ namespace Nursia.Graphics3D.Modelling
 			public Vector3? Scale;
 		}
 
-		private string _path;
+		private AssetManager _assetManager;
+		private string _assetName;
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 
@@ -69,7 +72,18 @@ namespace Nursia.Graphics3D.Modelling
 				return result;
 			}
 
-			result = _gltf.LoadBinaryBuffer(index, _path);
+			result = _gltf.LoadBinaryBuffer(index, path =>
+			{
+				if (string.IsNullOrEmpty(path))
+				{
+					path = _assetName;
+				}
+
+				using (var stream = _assetManager.OpenAssetStream(path))
+				{
+					return Interface.LoadBinaryBuffer(stream);
+				}
+			});
 			_bufferCache[index] = result;
 
 			return result;
@@ -218,10 +232,14 @@ namespace Nursia.Graphics3D.Modelling
 			return result;
 		}
 
-		public NursiaModel Load(string path)
+		public NursiaModel Load(AssetManager manager, string assetName)
 		{
-			_path = path;
-			_gltf = Interface.LoadModel(path);
+			_assetManager = manager;
+			_assetName = assetName;
+			using (var stream = manager.OpenAssetStream(assetName))
+			{
+				_gltf = Interface.LoadModel(stream);
+			}
 
 			var meshes = new List<List<MeshPart>>();
 			foreach (var gltfMesh in _gltf.Meshes)

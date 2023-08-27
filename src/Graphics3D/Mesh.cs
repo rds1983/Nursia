@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 
 namespace Nursia.Graphics3D
@@ -8,14 +9,7 @@ namespace Nursia.Graphics3D
 		public int VertexCount => VertexBuffer.VertexCount;
 		public VertexBuffer VertexBuffer { get; set; }
 		public IndexBuffer IndexBuffer { get; set; }
-
-		public int PrimitiveCount
-		{
-			get
-			{
-				return IndexBuffer.IndexCount / 3;
-			}
-		}
+		public int PrimitiveCount => IndexBuffer.IndexCount / 3;
 
 		public Mesh()
 		{

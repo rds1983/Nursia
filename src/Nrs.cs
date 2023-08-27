@@ -1,7 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Nursia
@@ -45,6 +44,8 @@ namespace Nursia
 				return Game.GraphicsDevice;
 			}
 		}
+
+		public static bool DrawBoundingBoxes { get; set; } = true;
 
 		public static Action<string> InfoLogHandler = Console.WriteLine;
 		public static Action<string> WarnLogHandler = Console.WriteLine;

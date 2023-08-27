@@ -7,7 +7,50 @@ namespace Nursia.Graphics3D.Modelling
 	public abstract class AnimationTransforms<T>
 	{
 		public List<AnimationTransformKeyframe<T>> Values { get; } = new List<AnimationTransformKeyframe<T>>();
+
 		public InterpolationEnum Interpolation { get; set; }
+
+		/// <summary>
+		/// Lower bound implementation taken from here: https://stackoverflow.com/a/39100135
+		/// </summary>
+		/// <param name="passed"></param>
+		/// <returns></returns>
+		public int FindIndexByTime(float passed)
+		{
+			if (Values.Count <= 1)
+			{
+				return 0;
+			}
+
+			if (Values.Count == 2)
+			{
+				return 1;
+			}
+
+			if (passed >= Values[Values.Count - 1].Time)
+			{
+				// Beyond last frame
+				return Values.Count - 1;
+			}
+
+			int start = 0;
+			int end = Values.Count;
+
+			while (start < end)
+			{
+				var middle = start + ((end - start) >> 1);
+				if (passed < Values[middle].Time)
+				{
+					end = middle;
+				}
+				else
+				{
+					start = middle + 1;
+				}
+			}
+
+			return start;
+		}
 
 		public abstract T CalculateInterpolatedValue(float passed, int frameIndex);
 	}

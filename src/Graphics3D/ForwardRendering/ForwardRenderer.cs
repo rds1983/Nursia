@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Utilities;
 using System;
-using System.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -92,15 +91,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				using (var scope = new TransformScope(_context,
-					meshNode.Skin != null ? Matrix.Identity : meshNode.AbsoluteTransform))
+				using (var scope = new TransformScope(_context, meshNode.Skin == null? meshNode.AbsoluteTransform:Matrix.Identity))
 				{
 					// Apply the effect and render items
-					var effect = Assets.GetDefaultEffect(
-					_context.ClipPlane != null,
-					_context.Lights.Count > 0,
-					meshNode.Skin != null ? 4 : 0);
-
+					var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, meshNode.Skin != null ? 4 : 0);
 					if (meshNode.Skin != null)
 					{
 						var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
@@ -109,8 +103,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 					foreach (var part in meshNode.Parts)
 					{
-						var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
-						if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
+						var m = meshNode.AbsoluteTransform * _context.World;
+						var boundingBox = part.BoundingBox.Transform(ref m);
+
+						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
@@ -147,17 +143,22 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
+				var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, 0);
+
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
 					for (var z = 0; z < scene.Terrain.TilesPerZ; ++z)
 					{
 						var terrainTile = scene.Terrain[x, z];
-						if (_context.Frustrum.Contains(terrainTile.MeshPart.BoundingSphere) == ContainmentType.Disjoint)
+
+						var m = _context.View * _context.World;
+						var boundingBox = terrainTile.MeshPart.BoundingBox.Transform(ref m);
+						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
 
-						//						DrawMeshPart(terrainTile.MeshPart);
+						DrawMeshPart(effect, terrainTile.MeshPart);
 					}
 				}
 			}

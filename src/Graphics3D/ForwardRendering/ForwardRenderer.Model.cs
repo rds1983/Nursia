@@ -69,6 +69,21 @@ namespace Nursia.Graphics3D.ForwardRendering
 				device.DrawIndexedPrimitives(effect, part.Mesh, part.VertexCount, part.StartIndex, part.PrimitiveCount);
 			}
 
+			if (Nrs.DrawBoundingBoxes)
+			{
+				device.RasterizerState = RasterizerState.CullNone;
+				device.RasterizerState.FillMode = FillMode.WireFrame;
+				var colorEffect = Assets.ColorEffect;
+
+				colorEffect.Parameters["_transform"].SetValue(worldViewProj);
+				colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
+
+				device.Apply(part.BoundingBoxMesh);
+				device.DrawIndexedPrimitives(colorEffect, part.BoundingBoxMesh);
+
+				device.RasterizerState = RasterizerState;
+			}
+
 			++_context.Statistics.MeshesDrawn;
 		}
 	}

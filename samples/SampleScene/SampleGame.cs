@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra;
@@ -48,7 +49,8 @@ namespace SampleScene
 
 		private NursiaModel LoadModel(string file)
 		{
-			var result = NursiaModel.LoadFromGltf(file);
+			var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
+			var result = manager.LoadGltf(Path.GetFileName(file));
 
 			_scene.Models.Add(result);
 
@@ -210,7 +212,7 @@ namespace SampleScene
 		{
 			foreach(var model in _scene.Models)
 			{
-				model.UpdateCurrentAnimation();
+//				model.UpdateCurrentAnimation();
 			}
 
 			_renderer.Begin();

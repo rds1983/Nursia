@@ -11,7 +11,7 @@ namespace Nursia.Graphics3D.Landscape
 		private readonly int _tileX, _tileZ;
 		private Mesh _mesh = null;
 		private MeshPart _meshPart = null;
-		private BoundingSphere _boundingSphere;
+		private BoundingBox _boundingBox;
 
 		public Texture2D Texture;
 
@@ -39,7 +39,7 @@ namespace Nursia.Graphics3D.Landscape
 				_meshPart = new MeshPart
 				{
 					Mesh = _mesh,
-					BoundingSphere = _boundingSphere.Transform(transform),
+					BoundingBox = _boundingBox,
 					Material = material,
 					Transform = transform
 				};
@@ -147,7 +147,7 @@ namespace Nursia.Graphics3D.Landscape
 				0, 1, 2, 3, 4, 5
 			};
 
-			_boundingSphere = BoundingSphere.CreateFromPoints(from v in vertices select v.Position);
+			_boundingBox = BoundingBox.CreateFromPoints(from v in vertices select v.Position);
 
 			_mesh = Mesh.Create(vertices, indices);
 		}
@@ -189,7 +189,7 @@ namespace Nursia.Graphics3D.Landscape
 				}
 			}
 
-			_boundingSphere = BoundingSphere.CreateFromPoints(from v in vertices select v.Position);
+			_boundingBox = BoundingBox.CreateFromPoints(from v in vertices select v.Position);
 
 			idx = 0;
 			for(var z = 0; z < size - 1; ++z)

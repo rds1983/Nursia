@@ -376,7 +376,7 @@ namespace Nursia.Graphics3D.Modelling
 					var mesh = new Mesh
 					{
 						VertexBuffer = vertexBuffer,
-						IndexBuffer = indexBuffer,
+						IndexBuffer = indexBuffer,						
 					};
 
 					var material = new Material
@@ -388,7 +388,7 @@ namespace Nursia.Graphics3D.Modelling
 					var meshPart = new MeshPart
 					{
 						Mesh = mesh,
-						BoundingSphere = boundingSphere,
+						BoundingBox = BoundingBox.CreateFromPoints(partPositions),
 						Material = material
 					};
 

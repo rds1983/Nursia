@@ -85,36 +85,22 @@ namespace Nursia.Graphics3D.Modelling
 				return defaultValue;
 			}
 
-			var lastFrame = transformFrames.Values[transformFrames.Values.Count - 1];
-			if (passed >= lastFrame.Time)
+			var i = transformFrames.FindIndexByTime(passed);
+			T result;
+			if (i > 0)
 			{
-				return lastFrame.Value;
-			}
-
-			var result = defaultValue;
-			for (var i = 0; i < transformFrames.Values.Count; i++)
-			{
-				var frame = transformFrames.Values[i];
-				if (passed < frame.Time)
+				if (transformFrames.Interpolation == InterpolationEnum.STEP)
 				{
-					if (i > 0)
-					{
-						if (transformFrames.Interpolation == InterpolationEnum.STEP)
-						{
-							result = transformFrames.Values[i - 1].Value;
-						}
-						else
-						{
-							result = transformFrames.CalculateInterpolatedValue(passed, i);
-						}
-					}
-					else
-					{
-						result = transformFrames.Values[i].Value;
-					}
-
-					break;
+					result = transformFrames.Values[i - 1].Value;
 				}
+				else
+				{
+					result = transformFrames.CalculateInterpolatedValue(passed, i);
+				}
+			}
+			else
+			{
+				result = transformFrames.Values[i].Value;
 			}
 
 			return result;

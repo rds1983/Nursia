@@ -10,7 +10,7 @@ namespace Nursia
 	public static class Assets
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
-		private static Effect _waterEffect, _skyboxEffect;
+		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[32];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
@@ -33,6 +33,20 @@ namespace Nursia
 				}
 
 				return _white;
+			}
+		}
+
+		internal static Effect ColorEffect
+		{
+			get
+			{
+				if (_colorEffect != null)
+				{
+					return _colorEffect;
+				}
+
+				_colorEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "ColorEffect.efb");
+				return _colorEffect;
 			}
 		}
 

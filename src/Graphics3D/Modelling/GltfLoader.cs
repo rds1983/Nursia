@@ -68,13 +68,13 @@ namespace Nursia.Graphics3D.Modelling
 			{
 				if (string.IsNullOrEmpty(path))
 				{
-					path = _assetName;
+					using (var stream = _assetManager.OpenAssetStream(_assetName))
+					{
+						return Interface.LoadBinaryBuffer(stream);
+					}
 				}
 
-				using (var stream = _assetManager.OpenAssetStream(path))
-				{
-					return Interface.LoadBinaryBuffer(stream);
-				}
+				return _assetManager.ReadAssetAsByteArray(path);
 			});
 			_bufferCache[index] = result;
 
@@ -247,7 +247,7 @@ namespace Nursia.Graphics3D.Modelling
 					// Read vertex declaration
 					var vertexInfos = new List<VertexElementInfo>();
 					int? vertexCount = null;
-					var hasSkin = false;
+					bool hasPosition = false, hasNormal = false, hasTexture = false;
 					foreach (var pair in primitive.Attributes)
 					{
 						var accessor = _gltf.Accessors[pair.Value];
@@ -264,24 +264,32 @@ namespace Nursia.Graphics3D.Modelling
 						{
 							case "POSITION":
 								element.Usage = VertexElementUsage.Position;
+								hasPosition = true;
 								break;
 							case "NORMAL":
 								element.Usage = VertexElementUsage.Normal;
+								hasNormal = true;
 								break;
 							case "TEXCOORD_0":
 								element.Usage = VertexElementUsage.TextureCoordinate;
+								hasTexture = true;
 								break;
 							case "TANGENT":
 								element.Usage = VertexElementUsage.Tangent;
 								break;
 							case "JOINTS_0":
-								hasSkin = true;
 								element.Usage = VertexElementUsage.BlendIndices;
 								break;
 							case "WEIGHTS_0":
-								hasSkin = true;
 								element.Usage = VertexElementUsage.BlendWeight;
 								break;
+							case "TEXCOORD_1":
+							case "TEXCOORD_2":
+							case "TEXCOORD_3":
+							case "TEXCOORD_4":
+							case "TEXCOORD_5":
+							case "TEXCOORD_6":
+								continue;
 							default:
 								throw new NotSupportedException($"Attribute {pair.Key} isn't supported");
 						}
@@ -290,6 +298,11 @@ namespace Nursia.Graphics3D.Modelling
 						element.AccessorIndex = pair.Value;
 
 						vertexInfos.Add(element);
+					}
+
+					if (!hasPosition || !hasNormal || !hasTexture)
+					{
+						continue;
 					}
 
 					if (vertexCount == null)
@@ -378,11 +391,6 @@ namespace Nursia.Graphics3D.Modelling
 						BoundingSphere = boundingSphere,
 						Material = material
 					};
-
-					if (hasSkin)
-					{
-						//						meshPart.BonesPerMesh = BonesPerMesh.Four;
-					}
 
 					meshParts.Add(meshPart);
 				}

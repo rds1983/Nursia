@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Utilities;
 using System;
+using System.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -87,7 +88,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (meshNode.Parts.Count > 0)
 			{
-
 				// If part has bones, then parent node transform had been already
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
@@ -112,7 +112,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						var boundingSphere = part.BoundingSphere.Transform(meshNode.AbsoluteTransform * _context.World);
 						if (_context.Frustrum.Contains(boundingSphere) == ContainmentType.Disjoint)
 						{
-							//						continue;
+							continue;
 						}
 
 						DrawMeshPart(effect, part);
@@ -120,7 +120,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				}
 			}
 
-			foreach(var child in meshNode.Children)
+			foreach (var child in meshNode.Children)
 			{
 				DrawMeshNode(child);
 			}
@@ -132,7 +132,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				throw new Exception("Begin wasnt called");
 			}
-				
+
 			model.UpdateNodesAbsoluteTransforms();
 			using (var transformScope = new TransformScope(_context, model.Transform))
 			{
@@ -157,7 +157,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 							continue;
 						}
 
-//						DrawMeshPart(terrainTile.MeshPart);
+						//						DrawMeshPart(terrainTile.MeshPart);
 					}
 				}
 			}

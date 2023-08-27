@@ -11,6 +11,11 @@
         <ListItem Text="Move" />
         <ListItem Text="Attack" />
       </ComboBox>
+      <HorizontalStackPanel Spacing="8">
+        <TextButton Text="Play" Width="100" VerticalAlignment="Stretch" Id="_buttonPlayStop" />
+        <HorizontalSlider Width="300" Id="_sliderTime" />
+        <Label Text="0.0" Id="_labelTime" />
+      </HorizontalStackPanel>
     </VerticalStackPanel>
     <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <Label Text="FPS: 60.0" Id="_labelFps" />

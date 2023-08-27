@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using AssetManagementBase;
 using glTFLoader;
@@ -50,13 +49,6 @@ namespace Nursia.Graphics3D.Modelling
 				Sampler = sampler;
 				Path = path;
 			}
-		}
-
-		class Transform
-		{
-			public Vector3? Translation;
-			public Quaternion? Rotation;
-			public Vector3? Scale;
 		}
 
 		private AssetManager _assetManager;
@@ -221,15 +213,20 @@ namespace Nursia.Graphics3D.Modelling
 			return CreateTransform(translation, scale, quaternion);
 		}
 
-		private static Transform EnsureTransform(IDictionary<float, Transform> timeline, float time)
+		private void LoadAnimationTransforms<T>(AnimationTransforms<T> animationTransforms, float[] times, AnimationSampler sampler)
 		{
-			if (!timeline.TryGetValue(time, out Transform result))
+			var translations = GetAccessorAs<T>(sampler.Output);
+			if (times.Length != translations.Length)
 			{
-				result = new Transform();
-				timeline[time] = result;
+				throw new NotSupportedException("Translation length is different from times length");
 			}
 
-			return result;
+			for (var i = 0; i < times.Length; ++i)
+			{
+				animationTransforms.Values.Add(new AnimationTransformKeyframe<T>(times[i], translations[i]));
+			}
+
+			animationTransforms.Interpolation = sampler.Interpolation;
 		}
 
 		public NursiaModel Load(AssetManager manager, string assetName)
@@ -403,14 +400,11 @@ namespace Nursia.Graphics3D.Modelling
 
 				var modelNode = new ModelNode
 				{
-					Id = gltfNode.Name
+					Id = gltfNode.Name,
+					DefaultTranslation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
+					DefaultScale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One,
+					DefaultRotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
 				};
-
-				var scale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One;
-				var translation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero;
-				var rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity;
-
-				modelNode.DefaultTransform = modelNode.Transform = CreateTransform(translation, scale, rotation);
 
 				if (gltfNode.Mesh != null)
 				{
@@ -478,12 +472,8 @@ namespace Nursia.Graphics3D.Modelling
 
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new NodeAnimation
-						{
-							Node = allNodes[pair.Key]
-						};
+						var nodeAnimation = new NodeAnimation(allNodes[pair.Key]);
 
-						var timeline = new SortedDictionary<float, Transform>();
 						foreach (var pathInfo in pair.Value)
 						{
 							var sampler = gltfAnimation.Samplers[pathInfo.Sampler];
@@ -492,66 +482,28 @@ namespace Nursia.Graphics3D.Modelling
 							switch (pathInfo.Path)
 							{
 								case PathEnum.translation:
-									var translations = GetAccessorAs<Vector3>(sampler.Output);
-									if (times.Length != translations.Length)
-									{
-										throw new NotSupportedException("Translation length is different from times length");
-									}
-
-									for (var i = 0; i < times.Length; ++i)
-									{
-										EnsureTransform(timeline, times[i]).Translation = translations[i];
-									}
-
+									LoadAnimationTransforms(nodeAnimation.Translations, times, sampler);
 									break;
 								case PathEnum.rotation:
-									var rotations = GetAccessorAs<Quaternion>(sampler.Output);
-									if (times.Length != rotations.Length)
-									{
-										throw new NotSupportedException("Rotations length is different from times length");
-									}
-
-									for (var i = 0; i < times.Length; ++i)
-									{
-										EnsureTransform(timeline, times[i]).Rotation = rotations[i];
-									}
-
+									LoadAnimationTransforms(nodeAnimation.Rotations, times, sampler);
 									break;
 								case PathEnum.scale:
-									var scales = GetAccessorAs<Vector3>(sampler.Output);
-									if (times.Length != scales.Length)
-									{
-										throw new NotSupportedException("Scales length is different from times length");
-									}
-
-									for (var i = 0; i < times.Length; ++i)
-									{
-										EnsureTransform(timeline, times[i]).Scale = scales[i];
-									}
-
+									LoadAnimationTransforms(nodeAnimation.Scales, times, sampler);
 									break;
 								case PathEnum.weights:
 									break;
 							}
 						}
 
-						foreach (var pair2 in timeline)
-						{
-							nodeAnimation.Frames.Add(new AnimationKeyframe
-							{
-								Time = TimeSpan.FromSeconds(pair2.Key),
-								Translation = pair2.Value.Translation,
-								Scale = pair2.Value.Scale,
-								Rotation = pair2.Value.Rotation
-							});
-						}
-
 						animation.BoneAnimations.Add(nodeAnimation);
 					}
 
+					animation.UpdateStartEnd();
 					result.Animations[animation.Id] = animation;
 				}
 			}
+
+			result.ResetTransforms();
 
 			return result;
 		}

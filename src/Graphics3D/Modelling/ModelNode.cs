@@ -22,7 +22,9 @@ namespace Nursia.Graphics3D.Modelling
 
 		public ModelNode Parent { get; set; }
 
-		public Matrix DefaultTransform { get; set; } = Matrix.Identity;
+		public Vector3 DefaultTranslation { get; set; } = Vector3.Zero;
+		public Vector3 DefaultScale { get; set; } = Vector3.One;
+		public Quaternion DefaultRotation { get; set; } = Quaternion.Identity;
 
 		public Matrix Transform { get; set; } = Matrix.Identity;
 

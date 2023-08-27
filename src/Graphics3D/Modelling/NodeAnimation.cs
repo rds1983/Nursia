@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace Nursia.Graphics3D.Modelling
 {
 	public class NodeAnimation
 	{
-		private readonly List<AnimationKeyframe> _frames = new List<AnimationKeyframe>();
+		public ModelNode Node { get; }
+		public AnimationTransforms<Vector3> Translations { get; } = new AnimationTransformsVector3();
+		public AnimationTransforms<Vector3> Scales { get; } = new AnimationTransformsVector3();
+		public AnimationTransforms<Quaternion> Rotations { get; } = new AnimationTransformsQuaternion();
 
-		public ModelNode Node { get; set; }
-		public List<AnimationKeyframe> Frames
+		public NodeAnimation(ModelNode node)
 		{
-			get
-			{
-				return _frames;
-			}
+			Node = node ?? throw new Exception(nameof(node));
 		}
 	}
 }

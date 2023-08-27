@@ -2,13 +2,13 @@
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
+using static glTFLoader.Schema.AnimationSampler;
 
 namespace Nursia.Graphics3D.Modelling
 {
 	public partial class NursiaModel
 	{
 		private ModelAnimation _currentAnimation = null;
-		private DateTime? _lastAnimationUpdate;
 
 		public Matrix Transform = Matrix.Identity;
 
@@ -38,7 +38,6 @@ namespace Nursia.Graphics3D.Modelling
 				}
 
 				_currentAnimation = value;
-				_lastAnimationUpdate = null;
 				ResetTransforms();
 			}
 		}
@@ -74,77 +73,69 @@ namespace Nursia.Graphics3D.Modelling
 			}
 		}
 
-		internal void ResetTransforms()
+		public void ResetTransforms()
 		{
-			TraverseNodes(n => n.Transform = n.DefaultTransform);
+			TraverseNodes(n => n.Transform = Mathematics.CreateTransform(n.DefaultTranslation, n.DefaultScale, n.DefaultRotation));
 		}
 
-		public void UpdateCurrentAnimation()
+		private static T GetAnimationTransform<T>(AnimationTransforms<T> transformFrames, float passed, T defaultValue)
+		{
+			if (transformFrames.Values.Count == 0)
+			{
+				return defaultValue;
+			}
+
+			var lastFrame = transformFrames.Values[transformFrames.Values.Count - 1];
+			if (passed >= lastFrame.Time)
+			{
+				return lastFrame.Value;
+			}
+
+			var result = defaultValue;
+			for (var i = 0; i < transformFrames.Values.Count; i++)
+			{
+				var frame = transformFrames.Values[i];
+				if (passed < frame.Time)
+				{
+					if (i > 0)
+					{
+						if (transformFrames.Interpolation == InterpolationEnum.STEP)
+						{
+							result = transformFrames.Values[i - 1].Value;
+						}
+						else
+						{
+							result = transformFrames.CalculateInterpolatedValue(passed, i);
+						}
+					}
+					else
+					{
+						result = transformFrames.Values[i].Value;
+					}
+
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		public void UpdateCurrentAnimation(float passed)
 		{
 			if (_currentAnimation == null)
 			{
 				return;
 			}
 
-			var now = DateTime.Now;
-			if (_lastAnimationUpdate == null)
-			{
-				_lastAnimationUpdate = now;
-				return;
-			}
-
-			var allFound = true;
-			var passed = now - _lastAnimationUpdate.Value;
-
 			foreach (var boneAnimation in _currentAnimation.BoneAnimations)
 			{
-				if (boneAnimation.Frames.Count == 0)
-				{
-					continue;
-				}
+				var node = boneAnimation.Node;
 
-				var found = false;
+				var translation = GetAnimationTransform(boneAnimation.Translations, passed, node.DefaultTranslation);
+				var scale = GetAnimationTransform(boneAnimation.Scales, passed, node.DefaultScale);
+				var rotation = GetAnimationTransform(boneAnimation.Rotations, passed, node.DefaultRotation);
 
-				var translation = Vector3.Zero;
-				var rotation = Quaternion.Identity;
-				var scale = Vector3.One;
-
-				foreach (var frame in boneAnimation.Frames)
-				{
-					if (frame.Translation != null)
-					{
-						translation = frame.Translation.Value;
-					}
-
-					if (frame.Rotation != null)
-					{
-						rotation = frame.Rotation.Value;
-					}
-
-					if (frame.Scale != null)
-					{
-						scale = frame.Scale.Value;
-					}
-
-					if (boneAnimation.Frames.Count == 1 || passed < frame.Time)
-					{
-						// Use this frame
-						found = true;
-
-						boneAnimation.Node.Transform = Mathematics.CreateTransform(translation, scale, rotation);
-						break;
-					}
-				}
-
-				if (!found)
-				{
-					allFound = false;
-				}
-			}
-
-			if (!allFound)
-			{
-				_lastAnimationUpdate = now;
+				boneAnimation.Node.Transform = Mathematics.CreateTransform(translation, scale, rotation);
 			}
 		}
 	}

@@ -15,7 +15,6 @@ using Nursia.Graphics3D.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace ModelViewer
 {
@@ -30,6 +29,8 @@ namespace ModelViewer
 		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 		private readonly Scene _scene = new Scene();
 		private Desktop _desktop;
+		private bool _isAnimating;
+		private DateTime? _animationMoment;
 
 		static ViewerGame()
 		{
@@ -72,6 +73,12 @@ namespace ModelViewer
 			_scene.Lights.AddRange(_defaultLights);
 		}
 
+		private void ResetAnimation()
+		{
+			_mainPanel._sliderTime.Value = _mainPanel._sliderTime.Minimum;
+			_animationMoment = null;
+		}
+
 		private void LoadModel(string file)
 		{
 			if (!string.IsNullOrEmpty(file))
@@ -98,6 +105,7 @@ namespace ModelViewer
 
 			// Reset camera
 			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
+			ResetAnimation();
 		}
 
 		protected override void LoadContent()
@@ -112,6 +120,10 @@ namespace ModelViewer
 
 			_mainPanel._buttonChange.Click += _buttonChange_Click;
 
+			_mainPanel._sliderTime.ValueChanged += _sliderTime_ValueChanged;
+
+			_mainPanel._buttonPlayStop.Click += _buttonPlayStop_Click;
+
 			_desktop = new Desktop
 			{
 				Root = _mainPanel
@@ -122,6 +134,28 @@ namespace ModelViewer
 			LoadModel(string.Empty);
 
 			_controller = new CameraInputController(_scene.Camera);
+		}
+
+		private void _buttonPlayStop_Click(object sender, EventArgs e)
+		{
+			_isAnimating = !_isAnimating;
+			_mainPanel._buttonPlayStop.Text = _isAnimating ? "Stop" : "Play";
+			_animationMoment = null;
+		}
+
+		private void _sliderTime_ValueChanged(object sender, Myra.Utility.ValueChangedEventArgs<float> e)
+		{
+			if (_model == null || _model.CurrentAnimation == null)
+			{
+				return;
+			}
+
+			var k = (e.NewValue - _mainPanel._sliderTime.Minimum) / (_mainPanel._sliderTime.Maximum - _mainPanel._sliderTime.Minimum);
+
+			var passed = _model.CurrentAnimation.Time * k;
+
+			_mainPanel._labelTime.Text = passed.ToString();
+			_model.UpdateCurrentAnimation(passed);
 		}
 
 		private void _buttonChange_Click(object sender, EventArgs e)
@@ -161,6 +195,8 @@ namespace ModelViewer
 			{
 				_model.CurrentAnimation = (ModelAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
 			}
+
+			ResetAnimation();
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -179,13 +215,16 @@ namespace ModelViewer
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Up, keyboardState.IsKeyDown(Keys.Up));
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
 
-			var mouseState = Mouse.GetState();
-			_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
-			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
+			if (!_desktop.IsTouchOverGUI)
+			{
+				var mouseState = Mouse.GetState();
+				_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
+				_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 
-			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
+				_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 
-			_controller.Update();
+				_controller.Update();
+			}
 		}
 
 		private void DrawModel()
@@ -195,7 +234,26 @@ namespace ModelViewer
 				return;
 			}
 
-			_model.UpdateCurrentAnimation();
+			if (_isAnimating && _model.CurrentAnimation != null)
+			{
+				if (_animationMoment != null)
+				{
+					var slider = _mainPanel._sliderTime;
+					var sliderPart = (slider.Value - slider.Minimum) / (slider.Maximum - slider.Minimum);
+
+					var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
+					sliderPart += (passed / _model.CurrentAnimation.Time);
+
+					if (sliderPart >= 1.0f)
+					{
+						sliderPart = 0.0f;
+					}
+
+					slider.Value = slider.Minimum + (slider.Maximum - slider.Minimum) * sliderPart;
+				}
+
+				_animationMoment = DateTime.Now;
+			}
 
 			_renderer.Begin();
 			_renderer.DrawScene(_scene);

@@ -56,46 +56,11 @@ namespace Nursia.Utilities
 
 		public static BoundingBox Transform(this BoundingBox source, ref Matrix matrix)
 		{
-			// Transform corners
-			var corners = source.GetCorners();
+			Vector3.Transform(ref source.Min, ref matrix, out Vector3 v1);
+			Vector3.Transform(ref source.Max, ref matrix, out Vector3 v2);
 
-			var min = new Vector3(float.MaxValue);
-			var max = new Vector3(float.MinValue);
-			for (var i = 0; i < corners.Length; ++i)
-			{
-				var c = corners[i];
-				Vector3.Transform(ref c, ref matrix, out Vector3 v);
-
-				if (v.X < min.X)
-				{
-					min.X = v.X;
-				}
-
-				if (v.Y < min.Y)
-				{
-					min.Y = v.Y;
-				}
-
-				if (v.Z < min.Z)
-				{
-					min.Z = v.Z;
-				}
-
-				if (v.X > max.X)
-				{
-					max.X = v.X;
-				}
-
-				if (v.Y > max.Y)
-				{
-					max.Y = v.Y;
-				}
-
-				if (v.Z > max.Z)
-				{
-					max.Z = v.Z;
-				}
-			}
+			var min = new Vector3(Math.Min(v1.X, v2.X), Math.Min(v1.Y, v2.Y), Math.Min(v1.Z, v2.Z));
+			var max = new Vector3(Math.Max(v1.X, v2.X), Math.Max(v1.Y, v2.Y), Math.Max(v1.Z, v2.Z));
 
 			return new BoundingBox(min, max);
 		}

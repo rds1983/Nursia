@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace Nursia.Graphics3D.Modelling
 {
-	public class Skin
+	public class Skin: ItemWithId
 	{
 		private Matrix[] _boneTransforms = null;
 

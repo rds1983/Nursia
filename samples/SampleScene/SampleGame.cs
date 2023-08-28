@@ -13,6 +13,7 @@ using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using SampleScene.UI;
 using StbImageSharp;
+using System;
 using System.IO;
 
 namespace SampleScene
@@ -28,6 +29,8 @@ namespace SampleScene
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
 		private readonly Scene _scene = new Scene();
 		private Desktop _desktop;
+		private float _passed;
+		private DateTime? _animationMoment;
 
 		public SampleGame()
 		{
@@ -104,6 +107,7 @@ namespace SampleScene
 			// Model
 			_model = LoadModel(@"D:\Temp\Sinbad\Sinbad.glb");
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
+			_model.CurrentAnimation = _model.Animations["Dance"];
 
 			// Terrain
 			var grassy = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"));
@@ -210,10 +214,26 @@ namespace SampleScene
 
 		private void DrawModel()
 		{
-			foreach(var model in _scene.Models)
+			if (_animationMoment != null)
 			{
-//				model.UpdateCurrentAnimation();
+				foreach (var model in _scene.Models)
+				{
+					if (_animationMoment != null)
+					{
+						var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
+
+						_passed += passed;
+
+						if (_passed > model.CurrentAnimation.Time)
+						{
+							_passed = 0;
+						}
+
+						model.UpdateCurrentAnimation(_passed);
+					}
+				}
 			}
+			_animationMoment = DateTime.Now;
 
 			_renderer.Begin();
 			_renderer.DrawScene(_scene);

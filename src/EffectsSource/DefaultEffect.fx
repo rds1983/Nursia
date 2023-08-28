@@ -7,7 +7,7 @@
 
 #include "Macros.fxh"
 
-#define MAX_BONES   72
+#define MAX_BONES   96
 
 DECLARE_TEXTURE(_texture, 0);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AssetManagementBase;
 using glTFLoader;
@@ -30,7 +31,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		[Serializable]
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
-		struct VertexPositionNormalTextureSkin
+		private struct VertexPositionNormalTextureSkin
 		{
 			public Vector3 Position;
 			public Vector3 Normal;
@@ -39,7 +40,7 @@ namespace Nursia.Graphics3D.Modelling
 			public float w1, w2, w3, w4;
 		}
 
-		struct PathInfo
+		private struct PathInfo
 		{
 			public int Sampler;
 			public PathEnum Path;
@@ -55,6 +56,9 @@ namespace Nursia.Graphics3D.Modelling
 		private string _assetName;
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
+		private readonly List<List<MeshPart>> _meshes = new List<List<MeshPart>>();
+		private readonly List<ModelNode> _nodes = new List<ModelNode>();
+		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
 		private byte[] GetBuffer(int index)
 		{
@@ -229,16 +233,8 @@ namespace Nursia.Graphics3D.Modelling
 			animationTransforms.Interpolation = sampler.Interpolation;
 		}
 
-		public NursiaModel Load(AssetManager manager, string assetName)
+		private void LoadMeshes()
 		{
-			_assetManager = manager;
-			_assetName = assetName;
-			using (var stream = manager.OpenAssetStream(assetName))
-			{
-				_gltf = Interface.LoadModel(stream);
-			}
-
-			var meshes = new List<List<MeshPart>>();
 			foreach (var gltfMesh in _gltf.Meshes)
 			{
 				var meshParts = new List<MeshPart>();
@@ -376,7 +372,7 @@ namespace Nursia.Graphics3D.Modelling
 					var mesh = new Mesh
 					{
 						VertexBuffer = vertexBuffer,
-						IndexBuffer = indexBuffer,						
+						IndexBuffer = indexBuffer,
 					};
 
 					var material = new Material
@@ -395,13 +391,41 @@ namespace Nursia.Graphics3D.Modelling
 					meshParts.Add(meshPart);
 				}
 
-				meshes.Add(meshParts);
+				_meshes.Add(meshParts);
+			}
+		}
+
+		private Skin LoadSkin(int skinId)
+		{
+			Skin result;
+			if (_skinCache.TryGetValue(skinId, out result))
+			{
+				return result;
 			}
 
-			var result = new NursiaModel();
+			var gltfSkin = _gltf.Skins[skinId];
+			if (gltfSkin.Joints.Length > Constants.MaximumBones)
+			{
+				throw new Exception($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} bones which exceeds maximum {Constants.MaximumBones}");
+			}
 
-			// Load all nodes
-			var allNodes = new List<ModelNode>();
+			result = new Skin();
+			foreach (var jointIndex in gltfSkin.Joints)
+			{
+				result.Joints.Add(_nodes[jointIndex]);
+			}
+
+			result.Transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
+			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints and {result.Transforms.Length} transforms");
+
+			_skinCache[skinId] = result;
+
+			return result;
+		}
+
+		private void LoadAllNodes()
+		{
+			// First run - load all nodes
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
@@ -416,45 +440,56 @@ namespace Nursia.Graphics3D.Modelling
 
 				if (gltfNode.Mesh != null)
 				{
-					modelNode.Parts.AddRange(meshes[gltfNode.Mesh.Value]);
+					modelNode.Parts.AddRange(_meshes[gltfNode.Mesh.Value]);
 				}
 
-				if (gltfNode.Skin != null)
-				{
-					var gltfSkin = _gltf.Skins[gltfNode.Skin.Value];
-					var skin = new Skin();
-					foreach (var jointIndex in gltfSkin.Joints)
-					{
-						skin.Joints.Add(allNodes[jointIndex]);
-					}
-
-					skin.Transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
-					modelNode.Skin = skin;
-				}
-
-				allNodes.Add(modelNode);
+				_nodes.Add(modelNode);
 			}
 
-			// Set children
+			// Second run - set children and skins
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
-				var modelNode = allNodes[i];
+				var modelNode = _nodes[i];
+
+				if (gltfNode.Skin != null)
+				{
+					modelNode.Skin = LoadSkin(gltfNode.Skin.Value);
+				}
 
 				if (gltfNode.Children != null)
 				{
 					foreach (var childIndex in gltfNode.Children)
 					{
-						allNodes[childIndex].Parent = modelNode;
-						modelNode.Children.Add(allNodes[childIndex]);
+						_nodes[childIndex].Parent = modelNode;
+						modelNode.Children.Add(_nodes[childIndex]);
 					}
 				}
 			}
+		}
+
+		public NursiaModel Load(AssetManager manager, string assetName)
+		{
+			_meshes.Clear();
+			_nodes.Clear();
+			_skinCache.Clear();
+
+			_assetManager = manager;
+			_assetName = assetName;
+			using (var stream = manager.OpenAssetStream(assetName))
+			{
+				_gltf = Interface.LoadModel(stream);
+			}
+
+			LoadMeshes();
+			LoadAllNodes();
+
+			var result = new NursiaModel();
 
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
 			foreach (var node in scene.Nodes)
 			{
-				result.Meshes.Add(allNodes[node]);
+				result.Meshes.Add(_nodes[node]);
 			}
 
 			if (_gltf.Animations != null)
@@ -480,7 +515,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new NodeAnimation(allNodes[pair.Key]);
+						var nodeAnimation = new NodeAnimation(_nodes[pair.Key]);
 
 						foreach (var pathInfo in pair.Value)
 						{

@@ -85,38 +85,41 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		private void DrawMeshNode(ModelNode meshNode)
 		{
-			// If part has bones, then parent node transform had been already
-			// applied to bones transform
-			// Thus to avoid applying parent transform twice, we use
-			// ordinary Transform(not AbsoluteTransform) for parts with bones
-			var m = meshNode.Skin == null ? meshNode.AbsoluteTransform : Matrix.Identity;
-			using (var scope = new TransformScope(_context, m))
+			if (meshNode.Parts.Count > 0)
 			{
-				// Apply the effect and render items
-				var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, meshNode.Skin != null ? 4 : 0);
-				if (meshNode.Skin != null)
+				// If part has bones, then parent node transform had been already
+				// applied to bones transform
+				// Thus to avoid applying parent transform twice, we use
+				// ordinary Transform(not AbsoluteTransform) for parts with bones
+				var m = meshNode.Skin == null ? meshNode.AbsoluteTransform : Matrix.Identity;
+				using (var scope = new TransformScope(_context, m))
 				{
-					var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
-					effect.Parameters["_bones"].SetValue(boneTransforms);
-				}
-
-				m = _context.World;
-				foreach (var part in meshNode.Parts)
-				{
-					var boundingBox = part.BoundingBox.Transform(ref m);
-					if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
+					// Apply the effect and render items
+					var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, meshNode.Skin != null ? 4 : 0);
+					if (meshNode.Skin != null)
 					{
-						continue;
+						var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+						effect.Parameters["_bones"].SetValue(boneTransforms);
 					}
 
-					DrawMeshPart(effect, part);
-				}
-				foreach (var child in meshNode.Children)
-				{
-					DrawMeshNode(child);
+					m = _context.World;
+					foreach (var part in meshNode.Parts)
+					{
+						var boundingBox = part.BoundingBox.Transform(ref m);
+						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
+						{
+							continue;
+						}
+
+						DrawMeshPart(effect, part);
+					}
 				}
 			}
 
+			foreach (var child in meshNode.Children)
+			{
+				DrawMeshNode(child);
+			}
 		}
 
 		private void DrawModel(NursiaModel model)

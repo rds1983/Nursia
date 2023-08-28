@@ -18,6 +18,8 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
 
+		public BoundingBox BoundingBox { get; internal set; }
+
 		public ModelAnimation CurrentAnimation
 		{
 			get

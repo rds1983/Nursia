@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using AssetManagementBase;
 using glTFLoader;
 using glTFLoader.Schema;
@@ -486,11 +487,22 @@ namespace Nursia.Graphics3D.Modelling
 
 			var result = new NursiaModel();
 
+			var boundingBox = new BoundingBox();
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
 			foreach (var node in scene.Nodes)
 			{
 				result.Meshes.Add(_nodes[node]);
 			}
+
+			foreach(var mesh in _meshes)
+			{
+				foreach (var part in mesh)
+				{
+					boundingBox = BoundingBox.CreateMerged(boundingBox, part.BoundingBox);
+				}
+			}
+
+			result.BoundingBox = boundingBox;
 
 			if (_gltf.Animations != null)
 			{

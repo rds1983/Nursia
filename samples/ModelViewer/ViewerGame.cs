@@ -81,31 +81,56 @@ namespace ModelViewer
 
 		private void LoadModel(string file)
 		{
-			if (!string.IsNullOrEmpty(file))
+			try
 			{
-				var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
-				_model = manager.LoadGltf(Path.GetFileName(file));
-
-				_mainPanel._comboAnimations.Items.Clear();
-				_mainPanel._comboAnimations.Items.Add(new ListItem(null));
-				foreach (var pair in _model.Animations)
+				if (!string.IsNullOrEmpty(file))
 				{
-					_mainPanel._comboAnimations.Items.Add(
-						new ListItem(pair.Key)
-						{
-							Tag = pair.Value
-						});
+					var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
+					_model = manager.LoadGltf(Path.GetFileName(file));
+
+					_mainPanel._comboAnimations.Items.Clear();
+					_mainPanel._comboAnimations.Items.Add(new ListItem(null));
+					foreach (var pair in _model.Animations)
+					{
+						_mainPanel._comboAnimations.Items.Add(
+							new ListItem(pair.Key)
+							{
+								Tag = pair.Value
+							});
+					}
+
+					_scene.Models.Clear();
+					_scene.Models.Add(_model);
 				}
 
-				_scene.Models.Clear();
-				_scene.Models.Add(_model);
+				_mainPanel._textPath.Text = file;
+
+				// Reset camera
+				if (_model != null)
+				{
+					var min = _model.BoundingBox.Min;
+					var max = _model.BoundingBox.Max;
+					var center = (min + max) / 2;
+					var cameraPosition = (max - center) * 3.0f + center;
+					_scene.Camera.SetLookAt(cameraPosition, center);
+
+					var size = Math.Max(max.X - min.X, max.Y - min.Y);
+					size = Math.Max(size, max.Z - min.Z);
+
+					_renderer.NearPlaneDistance = size / 1000.0f;
+					_renderer.FarPlaneDistance = size * 10.0f;
+				} else
+				{
+					_scene.Camera.SetLookAt(Vector3.One, Vector3.Zero);
+				}
+
+				ResetAnimation();
 			}
-
-			_mainPanel._textPath.Text = file;
-
-			// Reset camera
-			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
-			ResetAnimation();
+			catch(Exception ex)
+			{
+				var messageBox = Dialog.CreateMessageBox("Error", ex.Message);
+				messageBox.ShowModal(_desktop);
+			}
 		}
 
 		protected override void LoadContent()

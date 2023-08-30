@@ -1,14 +1,6 @@
-<Defines>
-	<Define/>
-	<Define Value="TEXTURE"/>
-	<Define Value="LIGHTNING"/>
-	<Define Value="LIGHTNING;TEXTURE"/>
-	<Define Value="CLIP_PLANE;LIGHTNING"/>
-	<Define Value="CLIP_PLANE;LIGHTNING;TEXTURE"/>
-	<Define Value="BONES=4"/>
-	<Define Value="CLIP_PLANE;TEXTURE"/>
-	<Define Value="BONES=4;LIGHTNING"/>
-	<Define Value="BONES=4;LIGHTNING;TEXTURE"/>
-	<Define Value="BONES=4;CLIP_PLANE;LIGHTNING"/>
-	<Define Value="BONES=4;CLIP_PLANE;LIGHTNING;TEXTURE"/>
-</Defines>
+<Root>
+	<MultiCompile>TEXTURE;_</MultiCompile>
+	<MultiCompile>LIGHTNING;_</MultiCompile>
+	<MultiCompile>CLIP_PLANE;_</MultiCompile>
+	<MultiCompile>SKINNING;_</MultiCompile>
+</Root>

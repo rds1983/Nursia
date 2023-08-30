@@ -11,7 +11,7 @@ namespace Nursia
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
-		private static Effect[] _defaultEffects = new Effect[2048];
+		private static Effect[] _defaultEffects = new Effect[16];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
 		private static Assembly Assembly
@@ -110,27 +110,27 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect GetDefaultEffect(bool clipPlane, bool texture, bool lightning, int bones)
+		internal static Effect GetDefaultEffect(bool texture, bool lightning, bool skinning, bool clipPlane)
 		{
 			var key = 0;
-			if (clipPlane)
+			if (texture)
 			{
 				key |= 1;
 			}
 
-			if (texture)
+			if (lightning)
 			{
 				key |= 2;
 			}
 
-			if (lightning)
+			if (skinning)
 			{
 				key |= 4;
 			}
 
-			if (bones > 0)
+			if (clipPlane)
 			{
-				key |= bones << 8;
+				key |= 8;
 			}
 
 			if (_defaultEffects[key] != null)
@@ -139,11 +139,6 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (clipPlane)
-			{
-				defines["CLIP_PLANE"] = "1";
-			}
-
 			if (texture)
 			{
 				defines["TEXTURE"] = "1";
@@ -154,9 +149,14 @@ namespace Nursia
 				defines["LIGHTNING"] = "1";
 			}
 
-			if (bones > 0)
+			if (skinning)
 			{
-				defines["BONES"] = bones.ToString();
+				defines["SKINNING"] = "1";
+			}
+
+			if (clipPlane)
+			{
+				defines["CLIP_PLANE"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "DefaultEffect.efb", defines);

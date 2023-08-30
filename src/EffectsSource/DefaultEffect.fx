@@ -25,7 +25,9 @@ MATRIX_CONSTANTS
 
 float3x3 _worldInverseTranspose;
 
+#ifdef SKINNING
 float4x3 _bones[MAX_BONES];
+#endif
 
 float4x4 _worldViewProj;
 
@@ -40,7 +42,7 @@ struct VSInput
     float2 TexCoord : TEXCOORD0;
 #endif
 
-#ifdef BONES
+#ifdef SKINNING
     int4   Indices  : BLENDINDICES0;
     float4 Weights  : BLENDWEIGHT0;
 #endif
@@ -66,25 +68,21 @@ VSOutput VertexShaderFunction(VSInput input)
 {
     VSOutput output = (VSOutput)0;
     
-#ifdef BONES
+#ifdef SKINNING
     float4x3 skinning = 0;
     skinning += _bones[(int)input.Indices[0]] * input.Weights[0];
-    
-#if BONES>1
     skinning += _bones[(int)input.Indices[1]] * input.Weights[1];
-#endif
-#if BONES>2
     skinning += _bones[(int)input.Indices[2]] * input.Weights[2];
     skinning += _bones[(int)input.Indices[3]] * input.Weights[3];
-#endif    
     input.Position.xyz = mul(input.Position, skinning);
+	
 #ifdef LIGHTNING
     input.Normal = mul(input.Normal, (float3x3)skinning);    
 #endif
 #endif
 
     output.Position = mul(input.Position, _worldViewProj);
-	
+
 #ifdef TEXTURE
     output.TexCoord = input.TexCoord;
 #endif

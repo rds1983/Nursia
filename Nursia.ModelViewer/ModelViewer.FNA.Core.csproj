@@ -6,7 +6,7 @@
     <DefineConstants>$(DefineConstants);FNA;</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
-    <ProjectReference Include="..\..\src\Nursia.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
+    <ProjectReference Include="..\Nursia\Nursia.FNA.Core.csproj" />
   </ItemGroup>
 </Project>

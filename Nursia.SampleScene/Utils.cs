@@ -1,15 +1,19 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace SampleScene
 {
 	public static class Utils
 	{
-		public static void Fill<T>(this T[] array, T value)
+		public static string ExecutingAssemblyDirectory
 		{
-			for (var i = 0; i < array.Length; ++i)
+			get
 			{
-				array[i] = value;
+				string codeBase = Assembly.GetExecutingAssembly().Location;
+				UriBuilder uri = new UriBuilder(codeBase);
+				string path = Uri.UnescapeDataString(uri.Path);
+				return Path.GetDirectoryName(path);
 			}
 		}
 

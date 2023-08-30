@@ -50,40 +50,15 @@ namespace SampleScene
 			}
 		}
 
-		private NursiaModel LoadModel(string file)
+		private byte[] LoadSkyboxImage(AssetManager assetManager, string name)
 		{
-			var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
-			var result = manager.LoadGltf(Path.GetFileName(file));
-
-			_scene.Models.Add(result);
-
-			// Reset camera
-			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
-
-			return result;
-		}
-
-		private Texture2D LoadTexture(string path)
-		{
-			using (var stream = File.OpenRead(path))
+			ImageResult image;
+			using (var stream = assetManager.OpenAssetStream("skybox/" + name))
 			{
-				return Texture2D.FromStream(GraphicsDevice, stream);
+				image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 			}
-		}
 
-		private ImageResult LoadImage(string path)
-		{
-			using (var stream = File.OpenRead(path))
-			{
-				return ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-			}
-		}
-
-		private void LoadColors(string path, out byte[] data)
-		{
-			var image = LoadImage(path);
-
-			data = image.Data;
+			return image.Data;
 		}
 
 		protected override void LoadContent()
@@ -102,15 +77,16 @@ namespace SampleScene
 			// Nursia
 			Nrs.Game = this;
 
-			var folder = @"D:\Projects\Nursia\sampleContent";
+			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(Utils.ExecutingAssemblyDirectory, "Content"));
 
 			// Model
-			_model = LoadModel(@"D:\Temp\Sinbad\Sinbad.glb");
+			_model = assetManager.LoadGltf("models/Sinbad.glb");
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
 			_model.CurrentAnimation = _model.Animations["Dance"];
+			_scene.Models.Add(_model);
 
 			// Terrain
-			var grassy = LoadTexture(Path.Combine(folder, @"terrain\grassy2.png"));
+			var grassy = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png");
 			_scene.Terrain = new Terrain(400);
 
 			// Generate height
@@ -144,9 +120,9 @@ namespace SampleScene
 
 				return result;
 
-/*				int r = (int)(x / 100) + (int)(z / 100);
+				/*				int r = (int)(x / 100) + (int)(z / 100);
 
-				return r % 2 == 0 ? -10 : 10;*/
+								return r % 2 == 0 ? -10 : 10;*/
 			};
 
 			_scene.Terrain.SetTexture(grassy);
@@ -155,21 +131,19 @@ namespace SampleScene
 			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, _scene.Terrain.Size));
 
 			// Skybox
-			var skyboxFolder = Path.Combine(folder, "skybox");
-			var texture = new TextureCube(GraphicsDevice, 1024,
-				false, SurfaceFormat.Color);
-			byte[] data = null;
-			LoadColors(Path.Combine(skyboxFolder,  @"negX.png"), out data);
+			var texture = new TextureCube(GraphicsDevice, 1024, false, SurfaceFormat.Color);
+
+			var data = LoadSkyboxImage(assetManager, @"negX.png");
 			texture.SetData(CubeMapFace.NegativeX, data);
-			LoadColors(Path.Combine(skyboxFolder, @"negY.png"), out data);
+			data = LoadSkyboxImage(assetManager, @"negY.png");
 			texture.SetData(CubeMapFace.NegativeY, data);
-			LoadColors(Path.Combine(skyboxFolder, @"negZ.png"), out data);
+			data = LoadSkyboxImage(assetManager, @"negZ.png");
 			texture.SetData(CubeMapFace.NegativeZ, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posX.png"), out data);
+			data = LoadSkyboxImage(assetManager, @"posX.png");
 			texture.SetData(CubeMapFace.PositiveX, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posY.png"), out data);
+			data = LoadSkyboxImage(assetManager, @"posY.png");
 			texture.SetData(CubeMapFace.PositiveY, data);
-			LoadColors(Path.Combine(skyboxFolder, @"posZ.png"), out data);
+			data = LoadSkyboxImage(assetManager, @"posZ.png");
 			texture.SetData(CubeMapFace.PositiveZ, data);
 
 			_scene.Skybox = new Skybox(100)
@@ -183,6 +157,10 @@ namespace SampleScene
 				Position = new Vector3(10000, 10000, -10000),
 				Direction = new Vector3(0, -1, 0)
 			});
+
+			// Reset camera
+			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
+
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -254,13 +232,13 @@ namespace SampleScene
 
 			_desktop.Render();
 
-/*			_spriteBatch.Begin();
+			/*			_spriteBatch.Begin();
 
-			_spriteBatch.Draw(_renderer.WaterReflection, 
-				new Rectangle(0, 500, 600, 300), 
-				Color.White);
+						_spriteBatch.Draw(_renderer.WaterReflection, 
+							new Rectangle(0, 500, 600, 300), 
+							Color.White);
 
-			_spriteBatch.End();*/
+						_spriteBatch.End();*/
 
 			_fpsCounter.Draw(gameTime);
 		}

@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelViewer.FNA.Core", "Nur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleScene.FNA.Core", "Nursia.SampleScene\SampleScene.FNA.Core.csproj", "{5F54D694-400B-4EB6-84E1-DC92FC41E602}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NursiaStudio.FNA.Core", "Nursia.SceneEditor\NursiaStudio.FNA.Core.csproj", "{FD9EBF89-A907-4340-B0BC-7E3B5174934C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,14 @@ Global
 		{5F54D694-400B-4EB6-84E1-DC92FC41E602}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F54D694-400B-4EB6-84E1-DC92FC41E602}.Release|x64.ActiveCfg = Release|Any CPU
 		{5F54D694-400B-4EB6-84E1-DC92FC41E602}.Release|x64.Build.0 = Release|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Debug|x64.Build.0 = Debug|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Release|x64.ActiveCfg = Release|Any CPU
+		{FD9EBF89-A907-4340-B0BC-7E3B5174934C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

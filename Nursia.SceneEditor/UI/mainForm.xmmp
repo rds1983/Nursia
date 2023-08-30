@@ -1,0 +1,54 @@
+<Project>
+  <ExportOptions Namespace="NursiaStudio.UI" Class="MainForm" OutputPath="D:\Projects\NursiaStudio\src\NursiaStudio\UI" />
+  <Grid>
+    <ColumnsProportions />
+    <RowsProportions>
+      <Proportion />
+      <Proportion Type="Fill" />
+    </RowsProportions>
+    <HorizontalMenu>
+      <MenuItem Id="" Text="&amp;File">
+        <MenuItem Id="_menuItemQuit" Text="&amp;Quit" />
+      </MenuItem>
+      <MenuItem Id="" Text="&amp;Items">
+        <MenuItem Id="_menuItemAddModel" Text="&amp;Model" />
+        <MenuItem Id="_menuItemAddSkybox" Text="&amp;Skybox" />
+        <MenuItem Id="_menuItemAddTerrain" Text="&amp;Terrain" />
+        <MenuItem Id="_menuItemAddWater" Text="&amp;Water" />
+      </MenuItem>
+     <MenuItem Id="" Text="&amp;Options">
+        <MenuItem Id="_menuItemShowGrid" Text="&amp;Grid" />
+        <MenuItem Id="_menuItemLockFps" Text="&amp;Lock FPS at 60" />
+      </MenuItem>      
+      <MenuItem Id="" Text="&amp;Help">
+        <MenuItem Id="_menuItemAbout" Text="&amp;About" />
+      </MenuItem>
+    </HorizontalMenu>
+    <Panel GridRow="1">
+      <HorizontalSplitPane Id="_topSplitPane">
+        <ListBox Id="_listExplorer" HorizontalAlignment="Stretch">
+          <ListItem Id="" Text="Directional Light (#_sun)" />
+          <ListItem Text="Camera (#_mainCamera)" />
+          <ListItem Text="Terrain (#_terrain)" />
+          <ListItem Text="Water (#_water)" />
+        </ListBox>
+        <Panel Id="_panelScene" GridColumn="2" />
+        <Panel Id="_panelProperties" GridColumn="4" />
+      </HorizontalSplitPane>
+      <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <ColumnsProportions>
+          <Proportion />
+          <Proportion />
+        </ColumnsProportions>
+        <RowsProportions>
+          <Proportion />
+          <Proportion />
+          <Proportion />
+        </RowsProportions>
+        <TextBlock Text="FPS: 60.0" Id="_labelFps" />
+        <TextBlock Text="Meshes: 15" Id="_labelMeshes" GridRow="1" />
+        <TextBlock Text="Camera: 0/50/0;270;0" Id="_labelCamera" GridRow="2" />
+      </Grid>
+    </Panel>
+  </Grid>
+</Project>

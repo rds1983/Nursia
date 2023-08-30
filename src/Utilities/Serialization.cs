@@ -1,14 +1,35 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
+using static glTFLoader.Schema.Accessor;
 
 namespace Nursia.Utilities
 {
 	internal static class Serialization
 	{
+		private static readonly int[] ComponentsCount = new[]
+		{
+			1,
+			2,
+			3,
+			4,
+			4,
+			9,
+			16
+		};
+
+		private static readonly int[] ComponentSizes = new[]
+		{
+			sizeof(sbyte),
+			sizeof(byte),
+			sizeof(short),
+			sizeof(ushort),
+			0,	// There's no such component
+			sizeof(uint),
+			sizeof(float)
+		};
+
 		public static float ToFloat(this JToken data)
 		{
 			return Convert.ToSingle(data, CultureInfo.InvariantCulture);
@@ -33,7 +54,8 @@ namespace Nursia.Utilities
 			if (floats.Count > 3)
 			{
 				result.W = floats[3].ToFloat();
-			} else
+			}
+			else
 			{
 				result.W = defW;
 			}
@@ -76,5 +98,8 @@ namespace Nursia.Utilities
 		{
 			return (T)Enum.Parse(typeof(T), data.ToString());
 		}
+
+		public static int GetComponentCount(this TypeEnum type) => ComponentsCount[(int)type];
+		public static int GetComponentSize(this ComponentTypeEnum type) => ComponentSizes[(int)type - 5120];
 	}
 }

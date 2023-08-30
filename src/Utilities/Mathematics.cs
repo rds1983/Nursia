@@ -47,6 +47,12 @@ namespace Nursia.Utilities
 		public static Vector4 ToVector4(this float[] array) => new Vector4(array[0], array[1], array[2], array[3]);
 		public static Quaternion ToQuaternion(this float[] array) => new Quaternion(array[0], array[1], array[2], array[3]);
 
+		public static Matrix ToMatrix(this float[] array) =>
+			new Matrix(array[0], array[1], array[2], array[3],
+				array[4], array[5], array[6], array[7],
+				array[8], array[9], array[10], array[11],
+				array[12], array[13], array[14], array[15]);
+
 		public static Matrix CreateTransform(Vector3 translation, Vector3 scale, Quaternion rotation)
 		{
 			return Matrix.CreateFromQuaternion(rotation) *

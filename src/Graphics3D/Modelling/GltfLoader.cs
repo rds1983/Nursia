@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
 using AssetManagementBase;
 using glTFLoader;
 using glTFLoader.Schema;
@@ -10,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using Nursia.Utilities;
+using StbImageSharp;
 using static glTFLoader.Schema.AnimationChannelTarget;
 
 namespace Nursia.Graphics3D.Modelling
@@ -41,6 +41,14 @@ namespace Nursia.Graphics3D.Modelling
 			public float w1, w2, w3, w4;
 		}
 
+		[Serializable]
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		private struct VertexNormalPosition
+		{
+			public Vector3 Normal;
+			public Vector3 Position;
+		}
+
 		private struct PathInfo
 		{
 			public int Sampler;
@@ -61,6 +69,19 @@ namespace Nursia.Graphics3D.Modelling
 		private readonly List<ModelNode> _nodes = new List<ModelNode>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
+		private byte[] FileResolver(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				using (var stream = _assetManager.OpenAssetStream(_assetName))
+				{
+					return Interface.LoadBinaryBuffer(stream);
+				}
+			}
+
+			return _assetManager.ReadAssetAsByteArray(path);
+		}
+
 		private byte[] GetBuffer(int index)
 		{
 			byte[] result;
@@ -69,18 +90,7 @@ namespace Nursia.Graphics3D.Modelling
 				return result;
 			}
 
-			result = _gltf.LoadBinaryBuffer(index, path =>
-			{
-				if (string.IsNullOrEmpty(path))
-				{
-					using (var stream = _assetManager.OpenAssetStream(_assetName))
-					{
-						return Interface.LoadBinaryBuffer(stream);
-					}
-				}
-
-				return _assetManager.ReadAssetAsByteArray(path);
-			});
+			result = _gltf.LoadBinaryBuffer(index, path => FileResolver(path));
 			_bufferCache[index] = result;
 
 			return result;
@@ -97,7 +107,8 @@ namespace Nursia.Graphics3D.Modelling
 			var bufferView = _gltf.BufferViews[accessor.BufferView.Value];
 			var buffer = GetBuffer(bufferView.Buffer);
 
-			return new ArraySegment<byte>(buffer, bufferView.ByteOffset, bufferView.ByteLength);
+			var size = accessor.Type.GetComponentCount() * accessor.ComponentType.GetComponentSize();
+			return new ArraySegment<byte>(buffer, bufferView.ByteOffset + accessor.ByteOffset, accessor.Count * size);
 		}
 
 		private T[] GetAccessorAs<T>(int accessorIndex)
@@ -178,6 +189,10 @@ namespace Nursia.Graphics3D.Modelling
 					{
 						return VertexElementFormat.Byte4;
 					}
+					else if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
+					{
+						return VertexElementFormat.Short4;
+					}
 					break;
 			}
 
@@ -241,10 +256,14 @@ namespace Nursia.Graphics3D.Modelling
 				var meshParts = new List<MeshPart>();
 				foreach (var primitive in gltfMesh.Primitives)
 				{
+					if (primitive.Mode != MeshPrimitive.ModeEnum.TRIANGLES)
+					{
+						throw new NotSupportedException($"Primitive mode {primitive.Mode} isn't supported.");
+					}
+
 					// Read vertex declaration
 					var vertexInfos = new List<VertexElementInfo>();
 					int? vertexCount = null;
-					bool hasPosition = false, hasNormal = false, hasTexture = false;
 					foreach (var pair in primitive.Attributes)
 					{
 						var accessor = _gltf.Accessors[pair.Value];
@@ -261,15 +280,12 @@ namespace Nursia.Graphics3D.Modelling
 						{
 							case "POSITION":
 								element.Usage = VertexElementUsage.Position;
-								hasPosition = true;
 								break;
 							case "NORMAL":
 								element.Usage = VertexElementUsage.Normal;
-								hasNormal = true;
 								break;
 							case "TEXCOORD_0":
 								element.Usage = VertexElementUsage.TextureCoordinate;
-								hasTexture = true;
 								break;
 							case "TANGENT":
 								element.Usage = VertexElementUsage.Tangent;
@@ -297,11 +313,6 @@ namespace Nursia.Graphics3D.Modelling
 						vertexInfos.Add(element);
 					}
 
-					if (!hasPosition || !hasNormal || !hasTexture)
-					{
-						continue;
-					}
-
 					if (vertexCount == null)
 					{
 						throw new NotSupportedException("Vertex count is not set");
@@ -326,6 +337,7 @@ namespace Nursia.Graphics3D.Modelling
 					{
 						var sz = vertexInfos[i].Format.GetSize();
 						var data = GetAccessorData(vertexInfos[i].AccessorIndex);
+
 						for (var j = 0; j < vertexCount.Value; ++j)
 						{
 							Array.Copy(data.Array, data.Offset + j * sz, vertexData, j * vd.VertexStride + offset, sz);
@@ -347,10 +359,6 @@ namespace Nursia.Graphics3D.Modelling
 					}
 
 					vertexBuffer.SetData(vertexData);
-					var boundingSphere = BoundingSphere.CreateFromPoints(partPositions);
-
-					/* var vertices = new VertexPositionNormalTexture[vertexCount.Value];
-					vertexBuffer.GetData(vertices); */
 
 					if (primitive.Indices == null)
 					{
@@ -358,17 +366,25 @@ namespace Nursia.Graphics3D.Modelling
 					}
 
 					var indexAccessor = _gltf.Accessors[primitive.Indices.Value];
-					if (indexAccessor.Type != Accessor.TypeEnum.SCALAR || indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
+					if (indexAccessor.Type != Accessor.TypeEnum.SCALAR)
 					{
-						throw new NotSupportedException("Only scalar/unsigned short index buffer are supported");
+						throw new NotSupportedException("Only scalar index buffer are supported");
+					}
+
+					if (indexAccessor.ComponentType != Accessor.ComponentTypeEnum.SHORT &&
+						indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_SHORT &&
+						indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_INT)
+					{
+						throw new NotSupportedException($"Index of type {indexAccessor.ComponentType} isn't supported");
 					}
 
 					var indexData = GetAccessorData(primitive.Indices.Value);
-					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, IndexElementSize.SixteenBits, indexAccessor.Count, BufferUsage.None);
-					indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
 
-					/*					var indices = new ushort[indexAccessor.Count];
-										indexBuffer.GetData(indices);*/
+					var elementSize = (indexAccessor.ComponentType == Accessor.ComponentTypeEnum.SHORT ||
+						indexAccessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT) ?
+						IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
+					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, elementSize, indexAccessor.Count, BufferUsage.None);
+					indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
 
 					var mesh = new Mesh
 					{
@@ -379,8 +395,32 @@ namespace Nursia.Graphics3D.Modelling
 					var material = new Material
 					{
 						DiffuseColor = Color.White,
-						Texture = Assets.White
 					};
+
+					if (primitive.Material != null)
+					{
+						var gltfMaterial = _gltf.Materials[primitive.Material.Value];
+						if (gltfMaterial.PbrMetallicRoughness != null)
+						{
+							material.DiffuseColor = new Color(gltfMaterial.PbrMetallicRoughness.BaseColorFactor.ToVector4());
+
+							if (gltfMaterial.PbrMetallicRoughness.BaseColorTexture != null)
+							{
+								var gltfTexture = _gltf.Textures[gltfMaterial.PbrMetallicRoughness.BaseColorTexture.Index];
+								if (gltfTexture.Source != null)
+								{
+									using (var stream = _gltf.OpenImageFile(gltfTexture.Source.Value, path => FileResolver(path)))
+									{
+										var imageResult = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+										var texture = new Texture2D(Nrs.GraphicsDevice, imageResult.Width, imageResult.Height);
+										texture.SetData(imageResult.Data);
+
+										material.Texture = texture;
+									}
+								}
+							}
+						}
+					}
 
 					var meshPart = new MeshPart
 					{
@@ -439,6 +479,23 @@ namespace Nursia.Graphics3D.Modelling
 					DefaultRotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
 				};
 
+				if (gltfNode.Matrix != null)
+				{
+					var matrix = gltfNode.Matrix.ToMatrix();
+
+					if (matrix != Matrix.Identity)
+					{
+						Vector3 translation, scale;
+						Quaternion rotation;
+
+						matrix.Decompose(out scale, out rotation, out translation);
+
+						modelNode.DefaultTranslation = translation;
+						modelNode.DefaultScale = scale;
+						modelNode.DefaultRotation = rotation;
+					}
+				}
+
 				if (gltfNode.Mesh != null)
 				{
 					modelNode.Parts.AddRange(_meshes[gltfNode.Mesh.Value]);
@@ -494,7 +551,7 @@ namespace Nursia.Graphics3D.Modelling
 				result.Meshes.Add(_nodes[node]);
 			}
 
-			foreach(var mesh in _meshes)
+			foreach (var mesh in _meshes)
 			{
 				foreach (var part in mesh)
 				{
@@ -554,7 +611,9 @@ namespace Nursia.Graphics3D.Modelling
 					}
 
 					animation.UpdateStartEnd();
-					result.Animations[animation.Id] = animation;
+
+					var id = animation.Id != null? animation.Id : string.Empty;
+					result.Animations[id] = animation;
 				}
 			}
 

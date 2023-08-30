@@ -94,17 +94,25 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var m = meshNode.Skin == null ? meshNode.AbsoluteTransform : Matrix.Identity;
 				using (var scope = new TransformScope(_context, m))
 				{
+					Matrix[] boneTransforms = null;
 					// Apply the effect and render items
-					var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, meshNode.Skin != null ? 4 : 0);
 					if (meshNode.Skin != null)
 					{
-						var boneTransforms = meshNode.Skin.CalculateBoneTransforms();
-						effect.Parameters["_bones"].SetValue(boneTransforms);
+						boneTransforms = meshNode.Skin.CalculateBoneTransforms();
 					}
 
 					m = _context.World;
 					foreach (var part in meshNode.Parts)
 					{
+						var effect = Assets.GetDefaultEffect(_context.ClipPlane != null,
+							part.Material.Texture != null,
+							_context.Lights.Count > 0 && part.Mesh.HasNormals,
+							meshNode.Skin != null ? 4 : 0);
+						if (meshNode.Skin != null)
+						{
+							effect.Parameters["_bones"].SetValue(boneTransforms);
+						}
+
 						var boundingBox = part.BoundingBox.Transform(ref m);
 						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
@@ -143,7 +151,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, _context.Lights.Count > 0, 0);
+				var effect = Assets.GetDefaultEffect(_context.ClipPlane != null, true, _context.Lights.Count > 0, 0);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{

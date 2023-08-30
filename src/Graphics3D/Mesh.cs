@@ -1,15 +1,37 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Linq;
 
 namespace Nursia.Graphics3D
 {
 	public class Mesh : IDisposable
 	{
+		private VertexBuffer _vertexBuffer;
+		private bool _hasNormals;
+
 		public int VertexCount => VertexBuffer.VertexCount;
-		public VertexBuffer VertexBuffer { get; set; }
+		public VertexBuffer VertexBuffer
+		{
+			get => _vertexBuffer;
+
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException(nameof(value));
+				}
+
+				_vertexBuffer = value;
+				_hasNormals = (from el in _vertexBuffer.VertexDeclaration.GetVertexElements() where el.VertexElementUsage == VertexElementUsage.Normal select el).Count() > 0;
+			}
+		}
+		
 		public IndexBuffer IndexBuffer { get; set; }
 		public int PrimitiveCount => IndexBuffer.IndexCount / 3;
+
+		public bool HasNormals => _hasNormals;
+
 
 		public Mesh()
 		{

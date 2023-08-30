@@ -1,10 +1,3 @@
-//-----------------------------------------------------------------------------
-// BasicEffect.fx
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-
 #include "Macros.fxh"
 
 #define MAX_BONES   96
@@ -40,9 +33,12 @@ END_CONSTANTS
 
 struct VSInput
 {
-    float4 Position : SV_POSITION;
     float3 Normal   : NORMAL;
+    float4 Position : SV_POSITION;
+	
+#ifdef TEXTURE
     float2 TexCoord : TEXCOORD0;
+#endif
 
 #ifdef BONES
     int4   Indices  : BLENDINDICES0;
@@ -53,7 +49,9 @@ struct VSInput
 struct VSOutput
 {
     float4 Position: SV_POSITION;
+#ifdef TEXTURE
     float2 TexCoord: TEXCOORD0;
+#endif	
 
 #ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD1;
@@ -86,7 +84,10 @@ VSOutput VertexShaderFunction(VSInput input)
 #endif
 
     output.Position = mul(input.Position, _worldViewProj);
+	
+#ifdef TEXTURE
     output.TexCoord = input.TexCoord;
+#endif
 
 #ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
@@ -114,7 +115,11 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
     clip(input.ClipDistances); 
 #endif
 
+#if TEXTURE
     float4 color = SAMPLE_TEXTURE(_texture, input.TexCoord);
+#else
+    float4 color = float4(1.0, 1.0, 1.0, 1.0);
+#endif
 
 #ifdef LIGHTNING
 	float3 result = float3(0, 0, 0);

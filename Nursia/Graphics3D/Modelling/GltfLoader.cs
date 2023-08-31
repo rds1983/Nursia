@@ -296,15 +296,6 @@ namespace Nursia.Graphics3D.Modelling
 							case "WEIGHTS_0":
 								element.Usage = VertexElementUsage.BlendWeight;
 								break;
-							case "TEXCOORD_1":
-							case "TEXCOORD_2":
-							case "TEXCOORD_3":
-							case "TEXCOORD_4":
-							case "TEXCOORD_5":
-							case "TEXCOORD_6":
-								continue;
-							default:
-								throw new NotSupportedException($"Attribute {pair.Key} isn't supported");
 						}
 
 						element.Format = GetAccessorFormat(pair.Value);

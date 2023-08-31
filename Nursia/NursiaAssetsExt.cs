@@ -5,7 +5,7 @@ namespace Nursia
 {
 	public static class NursiaAssetsExt
 	{
-		private readonly static AssetLoader<NursiaModel> _gltfLoader = (manager, assetName, settings) =>
+		private readonly static AssetLoader<NursiaModel> _gltfLoader = (manager, assetName, settings, tag) =>
 		{
 			var loader = new GltfLoader();
 

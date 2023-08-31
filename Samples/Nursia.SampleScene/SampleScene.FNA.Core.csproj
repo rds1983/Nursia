@@ -5,15 +5,14 @@
     <OutputPath>bin\FNA.Core\$(Configuration)</OutputPath>
     <DefineConstants>$(DefineConstants);FNA;</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\Nursia\Nursia.FNA.Core.csproj" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Update="Content\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>  
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
-    <ProjectReference Include="..\Nursia\Nursia.FNA.Core.csproj" />
   </ItemGroup>
 </Project>

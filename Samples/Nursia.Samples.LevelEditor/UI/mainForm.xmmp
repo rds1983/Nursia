@@ -1,0 +1,46 @@
+<Project>
+  <Project.ExportOptions Namespace="NursiaStudio.UI" Class="MainForm" OutputPath="D:\Projects\NursiaStudio\src\NursiaStudio\UI" />
+  <VerticalStackPanel>
+    <VerticalStackPanel.Proportions>
+      <Proportion Type="Auto" />
+      <Proportion Type="Fill" />
+    </VerticalStackPanel.Proportions>
+    <HorizontalMenu>
+      <MenuItem Text="&amp;File">
+        <MenuItem Text="&amp;Quit" Id="_menuItemQuit" />
+      </MenuItem>
+      <MenuItem Text="&amp;Items">
+        <MenuItem Text="&amp;Model" Id="_menuItemAddModel" />
+        <MenuItem Text="&amp;Skybox" Id="_menuItemAddSkybox" />
+        <MenuItem Text="&amp;Terrain" Id="_menuItemAddTerrain" />
+        <MenuItem Text="&amp;Water" Id="_menuItemAddWater" />
+      </MenuItem>
+      <MenuItem Text="&amp;Options">
+        <MenuItem Text="&amp;Grid" Id="_menuItemShowGrid" />
+        <MenuItem Text="&amp;Lock FPS at 60" Id="_menuItemLockFps" />
+      </MenuItem>
+      <MenuItem Text="&amp;Help">
+        <MenuItem Text="&amp;About" Id="_menuItemAbout" />
+      </MenuItem>
+    </HorizontalMenu>
+    <Panel>
+      <HorizontalSplitPane Id="_topSplitPane">
+        <Panel Id="_panelScene" />
+        <VerticalSplitPane>
+          <ListBox HorizontalAlignment="Stretch" Id="_listExplorer">
+            <ListItem Text="Directional Light (#_sun)" />
+            <ListItem Text="Camera (#_mainCamera)" />
+            <ListItem Text="Terrain (#_terrain)" />
+            <ListItem Text="Water (#_water)" />
+          </ListBox>
+          <Panel Id="_panelProperties" />
+        </VerticalSplitPane>
+      </HorizontalSplitPane>
+      <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Label Text="FPS: 60.0" Id="_labelFps" />
+        <Label Text="Meshes: 15" Id="_labelMeshes" />
+        <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
+      </VerticalStackPanel>
+    </Panel>
+  </VerticalStackPanel>
+</Project>

@@ -1,78 +1,122 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Nursia.Utilities;
 using System;
 
 namespace Nursia.Graphics3D.Landscape
 {
 	public class Terrain
 	{
-		private readonly TerrainTile[,] _tiles;
+		private float _tileSizeX = 100.0f, _tileSizeZ = 100.0f;
+		private int _tilesPerX = 10, _tilesPerZ = 10;
+		private TerrainTile[,] _tiles;
+		private bool _dirty = true;
 
-		public float Size { get; set; } = 400;
-
-		public float TileSize { get; set; } = 100;
-
-		public float Resolution { get; private set; } = 2.56f;
-
-		internal int TileResolution
+		public float TileSizeX
 		{
-			get
+			get => _tileSizeX;
+			set
 			{
-				return (int)(TileSize * Resolution);
+				if (_tileSizeX.EpsilonEquals(value))
+				{
+					return;
+				}
+
+				_tileSizeX = value;
+				SetDirty();
+			}
+		}
+
+		public float TileSizeZ
+		{
+			get => _tileSizeZ;
+			set
+			{
+				if (_tileSizeZ.EpsilonEquals(value))
+				{
+					return;
+				}
+
+				_tileSizeZ = value;
+				SetDirty();
 			}
 		}
 
 		public int TilesPerX
 		{
-			get
+			get => _tilesPerX;
+			set
 			{
-				return (int)(Size / TileSize);
+				if (value == _tilesPerX)
+				{
+					return;
+				}
+
+				_tilesPerX = value;
+				SetDirty();
 			}
 		}
 
 		public int TilesPerZ
 		{
-			get
+			get => _tilesPerZ;
+			set
 			{
-				return (int)(Size / TileSize);
+				if (value == _tilesPerZ)
+				{
+					return;
+				}
+
+				_tilesPerZ = value;
+				SetDirty();
 			}
 		}
+
 
 		public TerrainTile this[int x, int z]
 		{
 			get
 			{
+				Update();
 				return _tiles[x, z];
 			}
 		}
 
+		public Texture2D Texture;
+
+		public float TileResolution = 2.0f;
+
 		public Func<float, float, float> HeightFunc;
-
-		public Terrain(float size)
-		{
-			Size = size;
-
-			int tilesPerX = (int)(Size / TileSize);
-			int tilesPerZ = (int)(Size / TileSize);
-
-			_tiles = new TerrainTile[tilesPerX, tilesPerZ];
-			for(var x = 0; x < tilesPerX; ++x)
-			{
-				for(var z = 0; z < tilesPerZ; ++z)
-				{
-					_tiles[x, z] = new TerrainTile(this, x, z);
-				}
-			}
-		}
 
 		public void SetTexture(Texture2D texture)
 		{
-			for(var x = 0; x < _tiles.GetLength(0); ++x)
+			for (var x = 0; x < _tiles.GetLength(0); ++x)
 			{
-				for(var z = 0; z < _tiles.GetLength(1); ++z)
+				for (var z = 0; z < _tiles.GetLength(1); ++z)
 				{
 					_tiles[x, z].Texture = texture;
 				}
 			}
+		}
+
+		private void SetDirty()
+		{
+			_dirty = true;
+		}
+
+		private void Update()
+		{
+			if (!_dirty) return;
+
+			_tiles = new TerrainTile[_tilesPerX, _tilesPerZ];
+			for (var x = 0; x < _tilesPerX; ++x)
+			{
+				for (var z = 0; z < _tilesPerZ; ++z)
+				{
+					_tiles[x, z] = new TerrainTile(this, x, z);
+				}
+			}
+
+			_dirty = false;
 		}
 	}
 }

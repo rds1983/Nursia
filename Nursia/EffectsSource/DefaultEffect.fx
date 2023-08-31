@@ -2,7 +2,9 @@
 
 #define MAX_BONES   96
 
+#ifdef TEXTURE
 DECLARE_TEXTURE(_texture, 0);
+#endif
 
 BEGIN_CONSTANTS
 
@@ -23,7 +25,9 @@ float4 _diffuseColor;
 
 MATRIX_CONSTANTS
 
+#ifdef LIGHTNING
 float3x3 _worldInverseTranspose;
+#endif
 
 #ifdef SKINNING
 float4x3 _bones[MAX_BONES];
@@ -35,9 +39,12 @@ END_CONSTANTS
 
 struct VSInput
 {
-    float3 Normal   : NORMAL;
     float4 Position : SV_POSITION;
-	
+
+#ifdef LIGHTNING
+    float3 Normal   : NORMAL;
+#endif
+
 #ifdef TEXTURE
     float2 TexCoord : TEXCOORD0;
 #endif
@@ -51,9 +58,10 @@ struct VSInput
 struct VSOutput
 {
     float4 Position: SV_POSITION;
+
 #ifdef TEXTURE
     float2 TexCoord: TEXCOORD0;
-#endif	
+#endif
 
 #ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD1;
@@ -99,6 +107,7 @@ VSOutput VertexShaderFunction(VSInput input)
     return output;
 }
 
+#ifdef LIGHTNING
 float3 ComputeLighting(float3 normalVector, float3 lightDirection, float3 lightColor, float attenuation)
 {
     float diffuse = max(dot(normalVector, lightDirection), 0.0);
@@ -106,6 +115,7 @@ float3 ComputeLighting(float3 normalVector, float3 lightDirection, float3 lightC
 
     return diffuseColor;
 }
+#endif
 
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {

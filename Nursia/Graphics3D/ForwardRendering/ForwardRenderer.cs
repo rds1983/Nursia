@@ -12,6 +12,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		private RasterizerState _oldRasterizerState;
 		private BlendState _oldBlendState;
 		private SamplerState _oldSamplerState;
+		private RenderTargetUsage _oldRenderTargetUsage;
 		private bool _beginCalled;
 		private readonly RenderContext _context = new RenderContext();
 		private WaterRenderer _waterRenderer;
@@ -21,13 +22,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
 		public SamplerState SamplerState { get; set; } = SamplerState.LinearWrap;
 
-		public RenderStatistics Statistics
-		{
-			get
-			{
-				return _context.Statistics;
-			}
-		}
+		public RenderStatistics Statistics => _context.Statistics;
 
 		private WaterRenderer WaterRenderer
 		{
@@ -42,21 +37,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 		}
 
-		public RenderTarget2D WaterReflection
-		{
-			get
-			{
-				return WaterRenderer.TargetReflection;
-			}
-		}
+		public RenderTarget2D WaterReflection => WaterRenderer.TargetReflection;
 
-		public RenderTarget2D WaterRefraction
-		{
-			get
-			{
-				return WaterRenderer.TargetRefraction;
-			}
-		}
+		public RenderTarget2D WaterRefraction => WaterRenderer.TargetRefraction;
 
 		public float NearPlaneDistance = 0.1f;
 		public float FarPlaneDistance = 1000.0f;
@@ -72,11 +55,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_oldRasterizerState = device.RasterizerState;
 			_oldBlendState = device.BlendState;
 			_oldSamplerState = device.SamplerStates[0];
+			_oldRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
 
 			device.BlendState = BlendState;
 			device.DepthStencilState = DepthStencilState;
 			device.RasterizerState = RasterizerState;
 			device.SamplerStates[0] = SamplerState;
+			device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
 
 			_beginCalled = true;
 
@@ -152,7 +137,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				var effect = Assets.GetDefaultEffect(true, _context.Lights.Count > 0, false, _context.ClipPlane != null);
+				var effect = Assets.GetDefaultEffect(scene.Terrain.Texture != null, _context.Lights.Count > 0, false, _context.ClipPlane != null);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
@@ -211,7 +196,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		public void DrawScene(Scene scene)
 		{
-			if (Nrs.GraphicsDevice.Viewport.Height == 0)
+			if (Nrs.GraphicsDevice.Viewport.Width == 0 || Nrs.GraphicsDevice.Viewport.Height == 0)
 			{
 				return;
 			}
@@ -300,6 +285,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_oldBlendState = null;
 			device.SamplerStates[0] = _oldSamplerState;
 			_oldSamplerState = null;
+			device.PresentationParameters.RenderTargetUsage = _oldRenderTargetUsage;
+
 
 			_beginCalled = false;
 		}

@@ -12,40 +12,16 @@ namespace Nursia.Graphics3D
 		private readonly List<NursiaModel> _models = new List<NursiaModel>();
 		private readonly List<WaterTile> _waterTiles = new List<WaterTile>();
 
-		public List<DirectLight> Lights
-		{
-			get
-			{
-				return _lights;
-			}
-		}
+		public List<DirectLight> Lights => _lights;
 
 		public Skybox Skybox;
 
-		public List<NursiaModel> Models
-		{
-			get
-			{
-				return _models;
-			}
-		}
+		public List<NursiaModel> Models => _models;
 
-		public List<WaterTile> WaterTiles
-		{
-			get
-			{
-				return _waterTiles;
-			}
-		}
+		public List<WaterTile> WaterTiles => _waterTiles;
 
-		public Terrain Terrain;
+		public Terrain Terrain { get; } = new Terrain();
 
-		public Camera Camera
-		{
-			get
-			{
-				return _camera;
-			}
-		}
+		public Camera Camera => _camera;
 	}
 }

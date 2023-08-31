@@ -1,5 +1,5 @@
 <Project>
-  <Project.ExportOptions Namespace="NursiaStudio.UI" Class="MainForm" OutputPath="D:\Projects\NursiaStudio\src\NursiaStudio\UI" />
+  <Project.ExportOptions Namespace="Nursia.Samples.LevelEditor.UI" Class="MainForm" OutputPath="D:\Projects\Nursia\Samples\Nursia.Samples.LevelEditor\UI" />
   <VerticalStackPanel>
     <VerticalStackPanel.Proportions>
       <Proportion Type="Auto" />
@@ -25,7 +25,13 @@
     </HorizontalMenu>
     <Panel>
       <HorizontalSplitPane Id="_topSplitPane">
-        <Panel Id="_panelScene" />
+        <Panel Id="_panelScene">
+          <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Label Text="FPS: 60.0" Id="_labelFps" />
+            <Label Text="Meshes: 15" Id="_labelMeshes" />
+            <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
+          </VerticalStackPanel>
+        </Panel>
         <VerticalSplitPane>
           <ListBox HorizontalAlignment="Stretch" Id="_listExplorer">
             <ListItem Text="Directional Light (#_sun)" />
@@ -36,11 +42,6 @@
           <Panel Id="_panelProperties" />
         </VerticalSplitPane>
       </HorizontalSplitPane>
-      <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
-        <Label Text="FPS: 60.0" Id="_labelFps" />
-        <Label Text="Meshes: 15" Id="_labelMeshes" />
-        <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
-      </VerticalStackPanel>
     </Panel>
   </VerticalStackPanel>
 </Project>

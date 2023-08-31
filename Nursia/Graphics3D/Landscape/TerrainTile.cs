@@ -8,12 +8,9 @@ namespace Nursia.Graphics3D.Landscape
 	public class TerrainTile
 	{
 		private readonly Terrain _terrain;
-		private readonly int _tileX, _tileZ;
 		private Mesh _mesh = null;
 		private MeshPart _meshPart = null;
 		private BoundingBox _boundingBox;
-
-		public Texture2D Texture;
 
 		public MeshPart MeshPart
 		{
@@ -29,12 +26,10 @@ namespace Nursia.Graphics3D.Landscape
 				var material = new Material
 				{
 					DiffuseColor = Color.White,
-					Texture = Texture
+					Texture = _terrain.Texture
 				};
 
-				var transform = Matrix.CreateTranslation(new Vector3(TileX * Size - _terrain.Size / 2,
-					0,
-					TileZ * Size - _terrain.Size / 2));
+				var transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ));
 
 				_meshPart = new MeshPart
 				{
@@ -48,35 +43,19 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		private float Size
-		{
-			get
-			{
-				return _terrain.TileSize;
-			}
-		}
+		private float SizeX => _terrain.TileSizeX;
+		private float SizeZ => _terrain.TileSizeZ;
 
-		public int TileX
-		{
-			get
-			{
-				return _tileX;
-			}
-		}
+		public int TileX { get; }
+		public int TileZ { get; }
 
-		public int TileZ
-		{
-			get
-			{
-				return _tileZ;
-			}
-		}
+		internal Texture2D Texture { set => _meshPart.Material.Texture = value; }
 
 		internal TerrainTile(Terrain terrain, int tileX, int tileZ)
 		{
 			_terrain = terrain;
-			_tileX = tileX;
-			_tileZ = tileZ;
+			TileX = tileX;
+			TileZ = tileZ;
 		}
 
 		public void InvalidateMesh()
@@ -90,28 +69,8 @@ namespace Nursia.Graphics3D.Landscape
 
 		private float GetHeight(float x, float z)
 		{
-			x += _tileX * _terrain.TileSize;
-			z += _tileZ * _terrain.TileSize;
-
-/*			if (x < 0)
-			{
-				x = 0;
-			}
-
-			if (x > _terrain.Size)
-			{
-				x = _terrain.Size;
-			}
-
-			if (z < 0)
-			{
-				z = 0;
-			}
-
-			if (z > _terrain.Size)
-			{
-				z = _terrain.Size;
-			}*/
+			x += TileX * SizeX;
+			z += TileZ * SizeZ;
 
 			return _terrain.HeightFunc(x, z);
 		}
@@ -131,15 +90,14 @@ namespace Nursia.Graphics3D.Landscape
 
 		private void CreateFlatTile()
 		{
-			var size = Size;
 			var vertices = new VertexPositionNormalTexture[]
 			{
 				new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up,  Vector2.Zero),
-				new VertexPositionNormalTexture(new Vector3(0, 0, size), Vector3.Up, new Vector2(0, 1)),
-				new VertexPositionNormalTexture(new Vector3(size, 0, 0), Vector3.Up, new Vector2(1, 0)),
-				new VertexPositionNormalTexture(new Vector3(size, 0, 0), Vector3.Up, new Vector2(1, 0)),
-				new VertexPositionNormalTexture(new Vector3(0, 0, size), Vector3.Up, new Vector2(0, 1)),
-				new VertexPositionNormalTexture(new Vector3(size, 0, size), Vector3.Up, new Vector2(1, 1))
+				new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
+				new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
+				new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
+				new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
+				new VertexPositionNormalTexture(new Vector3(SizeX, 0, SizeZ), Vector3.Up, new Vector2(1, 1))
 			};
 
 			var indices = new short[]
@@ -165,24 +123,24 @@ namespace Nursia.Graphics3D.Landscape
 				return _mesh;
 			}
 
-			var size = _terrain.TileResolution;
-			var vertices = new VertexPositionNormalTexture[size * size];
-			var indices = new short[6 * (size - 1) * size];
+			var sizeX = (int)(SizeX * _terrain.TileResolution);
+			var sizeZ = (int)(SizeZ * _terrain.TileResolution);
 
 			var idx = 0;
-			for(var z = 0; z < size; ++z)
+			var vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
+			for (var z = 0; z < sizeZ; ++z)
 			{
-				for(var x = 0; x < size; ++x)
+				for (var x = 0; x < sizeX; ++x)
 				{
-					var vx = x * Size / (size - 1);
-					var vz = z * Size / (size - 1);
+					var vx = x * SizeX / (sizeX - 1);
+					var vz = z * SizeZ / (sizeZ - 1);
 					float height = GetHeight(vx, vz);
 
 					var position = new Vector3(vx, height, vz);
 					vertices[idx] = new VertexPositionNormalTexture(
 						position,
 						CalculateNormal(vx, vz),
-						new Vector2((float)x / (size - 1), (float)z / (size - 1))
+						new Vector2((float)x / (sizeX - 1), (float)z / (sizeZ - 1))
 					);
 
 					++idx;
@@ -192,13 +150,14 @@ namespace Nursia.Graphics3D.Landscape
 			_boundingBox = BoundingBox.CreateFromPoints(from v in vertices select v.Position);
 
 			idx = 0;
-			for(var z = 0; z < size - 1; ++z)
+			var indices = new short[6 * (sizeX - 1) * (sizeZ - 1)];
+			for (var z = 0; z < sizeZ - 1; ++z)
 			{
-				for (var x = 0; x < size - 1; ++x)
+				for (var x = 0; x < sizeX - 1; ++x)
 				{
-					short topLeft = (short)((z * size) + x);
+					short topLeft = (short)((z * sizeX) + x);
 					short topRight = (short)(topLeft + 1);
-					short bottomLeft = (short)(((z + 1) * size) + x);
+					short bottomLeft = (short)(((z + 1) * sizeX) + x);
 					short bottomRight = (short)(bottomLeft + 1);
 
 					indices[idx++] = topLeft;

@@ -5,16 +5,7 @@ namespace Nursia.Graphics3D.Modelling
 {
 	public class ModelNode : ItemWithId
 	{
-		private readonly List<ModelNode> _children = new List<ModelNode>();
-		private readonly List<MeshPart> _parts = new List<MeshPart>();
-
-		public List<MeshPart> Parts
-		{
-			get
-			{
-				return _parts;
-			}
-		}
+		public List<Mesh> Meshes { get; } = new List<Mesh>();
 
 		public Skin Skin { get; set; }
 
@@ -28,15 +19,10 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Matrix Transform { get; set; } = Matrix.Identity;
 
+		internal Matrix DefaultAbsoluteTransform { get; set; }
 		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;
 
-		public List<ModelNode> Children
-		{
-			get
-			{
-				return _children;
-			}
-		}
+		public List<ModelNode> Children { get; } = new List<ModelNode>();
 
 		internal ModelNode FindNodeById(string id)
 		{

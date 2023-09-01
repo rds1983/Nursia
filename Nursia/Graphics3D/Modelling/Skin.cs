@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Nursia.Utilities;
 
 namespace Nursia.Graphics3D.Modelling
 {
@@ -20,7 +21,6 @@ namespace Nursia.Graphics3D.Modelling
 			for (var i = 0; i < Joints.Count; ++i)
 			{
 				var joint = Joints[i];
-
 				_boneTransforms[i] = Transforms[i] * joint.AbsoluteTransform;
 			}
 

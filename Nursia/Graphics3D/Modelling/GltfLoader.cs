@@ -65,7 +65,7 @@ namespace Nursia.Graphics3D.Modelling
 		private string _assetName;
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
-		private readonly List<List<MeshPart>> _meshes = new List<List<MeshPart>>();
+		private readonly List<List<Mesh>> _meshes = new List<List<Mesh>>();
 		private readonly List<ModelNode> _nodes = new List<ModelNode>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
@@ -253,7 +253,7 @@ namespace Nursia.Graphics3D.Modelling
 		{
 			foreach (var gltfMesh in _gltf.Meshes)
 			{
-				var meshParts = new List<MeshPart>();
+				var meshes = new List<Mesh>();
 				foreach (var primitive in gltfMesh.Primitives)
 				{
 					if (primitive.Mode != MeshPrimitive.ModeEnum.TRIANGLES)
@@ -322,7 +322,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					// Set vertex data
 					var vertexData = new byte[vertexCount.Value * vd.VertexStride];
-					var partPositions = new List<Vector3>();
+					var positions = new List<Vector3>();
 					offset = 0;
 					for (var i = 0; i < vertexInfos.Count; ++i)
 					{
@@ -340,7 +340,7 @@ namespace Nursia.Graphics3D.Modelling
 									fixed (byte* bptr = &data.Array[data.Offset + j * sz])
 									{
 										Vector3* vptr = (Vector3*)bptr;
-										partPositions.Add(*vptr);
+										positions.Add(*vptr);
 									}
 								}
 							}
@@ -377,16 +377,8 @@ namespace Nursia.Graphics3D.Modelling
 					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, elementSize, indexAccessor.Count, BufferUsage.None);
 					indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
 
-					var mesh = new Mesh
-					{
-						VertexBuffer = vertexBuffer,
-						IndexBuffer = indexBuffer,
-					};
-
-					var material = new Material
-					{
-						DiffuseColor = Color.White,
-					};
+					var mesh = new Mesh(vertexBuffer, indexBuffer, positions, new Material(Color.White));
+					var material = mesh.Material;
 
 					if (primitive.Material != null)
 					{
@@ -413,17 +405,11 @@ namespace Nursia.Graphics3D.Modelling
 						}
 					}
 
-					var meshPart = new MeshPart
-					{
-						Mesh = mesh,
-						BoundingBox = BoundingBox.CreateFromPoints(partPositions),
-						Material = material
-					};
-
-					meshParts.Add(meshPart);
+					mesh.Material = material;
+					meshes.Add(mesh);
 				}
 
-				_meshes.Add(meshParts);
+				_meshes.Add(meshes);
 			}
 		}
 
@@ -476,10 +462,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					if (matrix != Matrix.Identity)
 					{
-						Vector3 translation, scale;
-						Quaternion rotation;
-
-						matrix.Decompose(out scale, out rotation, out translation);
+						matrix.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation);
 
 						modelNode.DefaultTranslation = translation;
 						modelNode.DefaultScale = scale;
@@ -489,7 +472,7 @@ namespace Nursia.Graphics3D.Modelling
 
 				if (gltfNode.Mesh != null)
 				{
-					modelNode.Parts.AddRange(_meshes[gltfNode.Mesh.Value]);
+					modelNode.Meshes.AddRange(_meshes[gltfNode.Mesh.Value]);
 				}
 
 				_nodes.Add(modelNode);
@@ -603,7 +586,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					animation.UpdateStartEnd();
 
-					var id = animation.Id != null? animation.Id : string.Empty;
+					var id = animation.Id ?? "(default)";
 					result.Animations[id] = animation;
 				}
 			}

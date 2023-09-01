@@ -77,7 +77,7 @@ namespace SampleScene
 			// Nursia
 			Nrs.Game = this;
 
-			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(Utils.ExecutingAssemblyDirectory, "Content"));
+			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets"));
 
 			// Model
 			_model = assetManager.LoadGltf("models/Sinbad.glb");
@@ -87,11 +87,11 @@ namespace SampleScene
 
 			// Terrain
 			var grassy = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png");
-			_scene.Terrain = new Terrain(400);
+			_scene.Terrain = new Terrain();
 
 			// Generate height
 			var generator = new HeightMapGenerator();
-			GenerationConfig.Instance.WorldSize = (int)_scene.Terrain.Size;
+			GenerationConfig.Instance.WorldSize = (int)(_scene.Terrain.TileSizeX * _scene.Terrain.TilesPerX);
 			var heightMap = generator.Generate();
 
 			_scene.Terrain.HeightFunc = (x, z) =>
@@ -125,10 +125,10 @@ namespace SampleScene
 								return r % 2 == 0 ? -10 : 10;*/
 			};
 
-			_scene.Terrain.SetTexture(grassy);
+			_scene.Terrain.Texture = grassy;
 
 			// Water
-			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, _scene.Terrain.Size));
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, 1000));
 
 			// Skybox
 			var texture = new TextureCube(GraphicsDevice, 1024, false, SurfaceFormat.Color);

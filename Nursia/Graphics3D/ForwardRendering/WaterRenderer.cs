@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -10,7 +11,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		private readonly Point TargetReflectionSize = new Point(640, 360);
 		private const float WaveSpeed = 0.03f;
 
-		private readonly Mesh _waterMesh;
+		private readonly MeshData _waterMesh;
 		private readonly RenderTarget2D _targetRefraction;
 		private readonly RenderTarget2D _targetReflection;
 		private DateTime? _lastRenderTime;
@@ -34,25 +35,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		public WaterRenderer()
 		{
-			// Create water tile
-			// Water effect ignores y
-			// So it's always set to zero
-			var vertices = new VertexPositionTexture[]
-			{
-				new VertexPositionTexture(new Vector3(-1, 0, -1), Vector2.Zero),
-				new VertexPositionTexture(new Vector3(-1, 0, 1), Vector2.Zero),
-				new VertexPositionTexture(new Vector3(1, 0, -1), Vector2.Zero),
-				new VertexPositionTexture(new Vector3(1, 0, -1), Vector2.Zero),
-				new VertexPositionTexture(new Vector3(-1, 0, 1), Vector2.Zero),
-				new VertexPositionTexture(new Vector3(1, 0, 1), Vector2.Zero)
-			};
-
-			var indices = new short[]
-			{
-				0, 1, 2, 3, 4, 5
-			};
-
-			_waterMesh = Mesh.Create(vertices, indices);
+			_waterMesh = PrimitiveMeshes.SquarePosition;
 
 			_targetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
 				TargetRefractionSize.X,

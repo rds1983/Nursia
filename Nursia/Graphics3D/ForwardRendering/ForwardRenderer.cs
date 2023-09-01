@@ -70,9 +70,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		private void DrawMeshNode(ModelNode meshNode)
 		{
-			if (meshNode.Parts.Count > 0)
+			if (meshNode.Meshes.Count > 0)
 			{
-				// If part has bones, then parent node transform had been already
+				// If mesh has bones, then parent node transform had been already
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
@@ -87,11 +87,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 					}
 
 					m = _context.World;
-					foreach (var part in meshNode.Parts)
+					foreach (var mesh in meshNode.Meshes)
 					{
 						var effect = Assets.GetDefaultEffect(
-							part.Material.Texture != null,
-							_context.Lights.Count > 0 && part.Mesh.HasNormals,
+							mesh.Material.Texture != null,
+							_context.Lights.Count > 0 && mesh.HasNormals,
 							meshNode.Skin != null,
 							_context.ClipPlane != null);
 						if (meshNode.Skin != null)
@@ -99,13 +99,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 							effect.Parameters["_bones"].SetValue(boneTransforms);
 						}
 
-						var boundingBox = part.BoundingBox.Transform(ref m);
+						var boundingBox = mesh.BoundingBox.Transform(ref m);
 						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
 
-						DrawMeshPart(effect, part);
+						DrawMesh(effect, mesh);
 					}
 				}
 			}
@@ -145,14 +145,14 @@ namespace Nursia.Graphics3D.ForwardRendering
 					{
 						var terrainTile = scene.Terrain[x, z];
 
-						var m = terrainTile.MeshPart.Transform;
-						var boundingBox = terrainTile.MeshPart.BoundingBox.Transform(ref m);
+						var m = terrainTile.Mesh.Transform;
+						var boundingBox = terrainTile.Mesh.BoundingBox.Transform(ref m);
 						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
 
-						DrawMeshPart(effect, terrainTile.MeshPart);
+						DrawMesh(effect, terrainTile.Mesh);
 					}
 				}
 			}
@@ -177,13 +177,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 				view.Translation = Vector3.Zero;
 				var transform = view * _context.Projection;
 
-				effect.Parameters["_transform"].SetValue(transform);
+				effect.Parameters["_transform"].SetValue(skybox.Transform * transform);
 				effect.Parameters["_texture"].SetValue(skybox.Texture);
 
-				device.Apply(skybox.Mesh);
+				device.Apply(skybox.MeshData);
 
 				device.SamplerStates[0] = SamplerState.LinearClamp;
-				device.DrawIndexedPrimitives(effect, skybox.Mesh);
+				device.DrawIndexedPrimitives(effect, skybox.MeshData);
 				device.SamplerStates[0] = SamplerState;
 
 				++_context.Statistics.MeshesDrawn;
@@ -264,7 +264,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			if (scene.WaterTiles.Count > 0)
 			{
-				var waterRenderer = WaterRenderer;
 				WaterRenderer.DrawWater(_context);
 			}
 		}

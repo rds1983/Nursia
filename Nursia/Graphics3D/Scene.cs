@@ -20,7 +20,7 @@ namespace Nursia.Graphics3D
 
 		public List<WaterTile> WaterTiles => _waterTiles;
 
-		public Terrain Terrain { get; } = new Terrain();
+		public Terrain Terrain { get; set; }
 
 		public Camera Camera => _camera;
 	}

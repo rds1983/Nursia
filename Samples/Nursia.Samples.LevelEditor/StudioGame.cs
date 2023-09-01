@@ -10,6 +10,7 @@ using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Utils;
 using Nursia.Samples.LevelEditor.UI;
+using Nursia.Graphics3D.Landscape;
 
 namespace Nursia.Samples.LevelEditor
 {
@@ -66,8 +67,13 @@ namespace Nursia.Samples.LevelEditor
 			_desktop.Widgets.Add(_mainForm);
 
 			// Light
-			var scene = new Scene();
-			scene.Terrain.Texture = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png");
+			var scene = new Scene
+			{
+				Terrain = new Terrain
+				{
+					Texture = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png")
+				}
+			};
 			scene.Lights.Add(new DirectLight
 			{
 				Color = Color.White,

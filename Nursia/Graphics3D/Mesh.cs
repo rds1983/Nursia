@@ -1,77 +1,67 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Nursia.Vertices;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace Nursia.Graphics3D
 {
 	public class Mesh : IDisposable
 	{
-		private VertexBuffer _vertexBuffer;
-		private bool _hasNormals;
+		private MeshData _meshData;
 
-		public int VertexCount => VertexBuffer.VertexCount;
-		public VertexBuffer VertexBuffer
+		public MeshData MeshData => _meshData;
+
+		public VertexBuffer VertexBuffer => _meshData.VertexBuffer;
+		public IndexBuffer IndexBuffer => _meshData.IndexBuffer;
+		public int PrimitiveCount => _meshData.PrimitiveCount;
+		public bool HasNormals => _meshData.HasNormals;
+		public BoundingBox BoundingBox => _meshData.BoundingBox;
+		public int VertexCount => _meshData.VertexCount;
+
+		public Material Material { get; set; }
+		public Matrix Transform = Matrix.Identity;
+
+		public Mesh(MeshData meshData, Material material)
 		{
-			get => _vertexBuffer;
-
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				_vertexBuffer = value;
-				_hasNormals = (from el in _vertexBuffer.VertexDeclaration.GetVertexElements() where el.VertexElementUsage == VertexElementUsage.Normal select el).Count() > 0;
-			}
+			_meshData = meshData ?? throw new ArgumentNullException(nameof(meshData));
+			Material = material ?? throw new ArgumentNullException(nameof(material));
 		}
 
-		public IndexBuffer IndexBuffer { get; set; }
-		public int PrimitiveCount => IndexBuffer.IndexCount / 3;
-		public bool HasNormals => _hasNormals;
-
-
-		public Mesh()
+		public Mesh(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, IEnumerable<Vector3> positions, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(new MeshData(vertexBuffer, indexBuffer, positions, primitiveType), material)
 		{
 		}
 
-		~Mesh()
+		public Mesh(VertexPositionNormalTexture[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(new MeshData(vertices, indices, primitiveType), material)
 		{
-			Dispose(true);
+		}
+
+		public Mesh(VertexPositionTexture[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(new MeshData(vertices, indices, primitiveType), material)
+		{
+		}
+
+		public Mesh(VertexPositionNormal[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(new MeshData(vertices, indices, primitiveType), material)
+		{
+		}
+
+		public Mesh(VertexPosition[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(new MeshData(vertices, indices, primitiveType), material)
+		{
 		}
 
 		public void Dispose()
 		{
-			Dispose(false);
-		}
-
-		private void Dispose(bool disposing)
-		{
-		}
-
-		public static Mesh Create<T>(T[] vertices,
-			short[] indices,
-			PrimitiveType primitiveType = PrimitiveType.TriangleList) where T : struct, IVertexType
-		{
-			var device = Nrs.GraphicsDevice;
-			var vertexBuffer = new VertexBuffer(device,
-				new T().VertexDeclaration,
-				vertices.Length,
-				BufferUsage.None);
-
-			vertexBuffer.SetData(vertices);
-
-			var indexBuffer = new IndexBuffer(device,
-				IndexElementSize.SixteenBits,
-				indices.Length,
-				BufferUsage.None);
-			indexBuffer.SetData(indices);
-
-			return new Mesh
+			if (_meshData == null)
 			{
-				VertexBuffer = vertexBuffer,
-				IndexBuffer = indexBuffer
-			};
+				return;
+			}
+
+			_meshData.Dispose();
+			_meshData = null;
 		}
 	}
 }

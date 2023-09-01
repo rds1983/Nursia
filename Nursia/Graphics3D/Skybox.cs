@@ -8,38 +8,22 @@ namespace Nursia.Graphics3D
 {
 	public class Skybox
 	{
-		private readonly Mesh _mesh;
+		private readonly MeshData _meshData;
 
 		[Browsable(false)]
 		[XmlIgnore]
-		public Mesh Mesh
-		{
-			get
-			{
-				return _mesh;
-			}
-		}
+		public MeshData MeshData => _meshData;
 
 		[Browsable(false)]
 		[XmlIgnore]
 		public TextureCube Texture;
 
+		public Matrix Transform;
+
 		public Skybox(int size = 500)
 		{
-			_mesh = Mesh.Create(GenerateCube(size), PrimitivesFactory.BoxIndices);
-		}
-
-		private static VertexPositionTexture[] GenerateCube(int size)
-		{
-			var vectors = PrimitivesFactory.CreateBox(new Vector3(-size, -size, -size), new Vector3(size, size, size));
-
-			var verticesList = new List<VertexPositionTexture>();
-			for (var i = 0; i < vectors.Length; ++i)
-			{
-				verticesList.Add(new VertexPositionTexture(vectors[i], Vector2.Zero));
-			}
-
-			return verticesList.ToArray();
+			_meshData = PrimitiveMeshes.CubePosition;
+			Transform = Matrix.CreateScale(size);
 		}
 	}
 }

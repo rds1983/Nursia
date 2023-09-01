@@ -8,13 +8,15 @@ namespace Nursia.Graphics3D
 		public Color DiffuseColor;
 		public Texture2D Texture;
 
+		public Material(Color diffuseColor, Texture2D texture = null)
+		{
+			DiffuseColor = diffuseColor;
+			Texture = texture;
+		}
+
 		public Material Clone()
 		{
-			return new Material
-			{
-				DiffuseColor = DiffuseColor,
-				Texture = Texture
-			};
+			return new Material(DiffuseColor, Texture);
 		}
 	}
 }

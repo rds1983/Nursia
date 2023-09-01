@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Nursia.Vertices;
 
 namespace Nursia.Utilities
 {
-	public static class GraphicsExtension
+	internal static class GraphicsExtension
 	{
 		private class ColorInfo
 		{
@@ -18,19 +21,19 @@ namespace Nursia.Utilities
 
 		static GraphicsExtension()
 		{
-			var type = typeof (Color);
+			var type = typeof(Color);
 
 			var colors = type.GetRuntimeProperties();
 
 			foreach (var c in colors)
 			{
 				if (!c.GetMethod.IsStatic &&
-				    c.PropertyType != typeof (Color))
+					c.PropertyType != typeof(Color))
 				{
 					continue;
 				}
 
-				var value = (Color) c.GetValue(null, null);
+				var value = (Color)c.GetValue(null, null);
 				_colors[c.Name.ToLower()] = new ColorInfo
 				{
 					Color = value,
@@ -76,10 +79,10 @@ namespace Nursia.Utilities
 
 					unchecked
 					{
-						r = (byte) (u >> 24);
-						g = (byte) (u >> 16);
-						b = (byte) (u >> 8);
-						a = (byte) u;
+						r = (byte)(u >> 24);
+						g = (byte)(u >> 16);
+						b = (byte)(u >> 8);
+						a = (byte)u;
 					}
 
 					return new Color(r, g, b, a);
@@ -112,5 +115,33 @@ namespace Nursia.Utilities
 		{
 			return new Rectangle(r.X + p.X, r.Y + p.Y, r.Width, r.Height);
 		}
+
+		public static VertexBuffer CreateVertexBuffer<T>(this T[] vertices) where T : struct, IVertexType
+		{
+			var device = Nrs.GraphicsDevice;
+			var result = new VertexBuffer(device,
+				new T().VertexDeclaration,
+				vertices.Length,
+				BufferUsage.None);
+			result.SetData(vertices);
+
+			return result;
+		}
+
+		public static IndexBuffer CreateIndexBuffer(this short[] indices)
+		{
+			var device = Nrs.GraphicsDevice;
+			var result = new IndexBuffer(device,
+				IndexElementSize.SixteenBits,
+				indices.Length,
+				BufferUsage.None);
+			result.SetData(indices);
+			return result;
+		}
+
+		public static IEnumerable<Vector3> GetPositions(this VertexPositionNormalTexture[] vertices) => (from v in vertices select v.Position);
+		public static IEnumerable<Vector3> GetPositions(this VertexPositionTexture[] vertices) => (from v in vertices select v.Position);
+		public static IEnumerable<Vector3> GetPositions(this VertexPositionNormal[] vertices) => (from v in vertices select v.Position);
+		public static IEnumerable<Vector3> GetPositions(this VertexPosition[] vertices) => (from v in vertices select v.Position);
 	}
 }

@@ -45,7 +45,7 @@ namespace Nursia
 			}
 		}
 
-		public static bool DrawBoundingBoxes { get; set; } = false;
+		public static bool DrawBoundingBoxes { get; set; } = true;
 
 		public static Action<string> InfoLogHandler = Console.WriteLine;
 		public static Action<string> WarnLogHandler = Console.WriteLine;

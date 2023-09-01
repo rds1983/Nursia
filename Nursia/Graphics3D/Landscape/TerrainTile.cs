@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Graphics3D.Modelling;
 using System.Linq;
 
 namespace Nursia.Graphics3D.Landscape
@@ -9,37 +8,13 @@ namespace Nursia.Graphics3D.Landscape
 	{
 		private readonly Terrain _terrain;
 		private Mesh _mesh = null;
-		private MeshPart _meshPart = null;
-		private BoundingBox _boundingBox;
 
-		public MeshPart MeshPart
+		public Mesh Mesh
 		{
 			get
 			{
-				if (_meshPart != null)
-				{
-					return _meshPart;
-				}
-
-				_mesh = GetMesh();
-
-				var material = new Material
-				{
-					DiffuseColor = Color.White,
-					Texture = _terrain.Texture
-				};
-
-				var transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ));
-
-				_meshPart = new MeshPart
-				{
-					Mesh = _mesh,
-					BoundingBox = _boundingBox,
-					Material = material,
-					Transform = transform
-				};
-
-				return _meshPart;
+				Update();
+				return _mesh;
 			}
 		}
 
@@ -49,7 +24,13 @@ namespace Nursia.Graphics3D.Landscape
 		public int TileX { get; }
 		public int TileZ { get; }
 
-		internal Texture2D Texture { set => _meshPart.Material.Texture = value; }
+		internal Texture2D Texture
+		{
+			set
+			{
+				Update(); _mesh.Material.Texture = value;
+			}
+		}
 
 		internal TerrainTile(Terrain terrain, int tileX, int tileZ)
 		{
@@ -88,88 +69,120 @@ namespace Nursia.Graphics3D.Landscape
 			return result;
 		}
 
-		private void CreateFlatTile()
+		private bool CheckIfFlatTile()
 		{
-			var vertices = new VertexPositionNormalTexture[]
-			{
-				new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up,  Vector2.Zero),
-				new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
-				new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
-				new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
-				new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
-				new VertexPositionNormalTexture(new Vector3(SizeX, 0, SizeZ), Vector3.Up, new Vector2(1, 1))
-			};
-
-			var indices = new short[]
-			{
-				0, 1, 2, 3, 4, 5
-			};
-
-			_boundingBox = BoundingBox.CreateFromPoints(from v in vertices select v.Position);
-
-			_mesh = Mesh.Create(vertices, indices);
-		}
-
-		private Mesh GetMesh()
-		{
-			if (_mesh != null)
-			{
-				return _mesh;
-			}
-
 			if (_terrain.HeightFunc == null)
 			{
-				CreateFlatTile();
-				return _mesh;
+				return true;
 			}
 
+			var result = true;
+			float? height = null;
 			var sizeX = (int)(SizeX * _terrain.TileResolution);
 			var sizeZ = (int)(SizeZ * _terrain.TileResolution);
 
-			var idx = 0;
-			var vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
 			for (var z = 0; z < sizeZ; ++z)
 			{
 				for (var x = 0; x < sizeX; ++x)
 				{
 					var vx = x * SizeX / (sizeX - 1);
 					var vz = z * SizeZ / (sizeZ - 1);
-					float height = GetHeight(vx, vz);
 
-					var position = new Vector3(vx, height, vz);
-					vertices[idx] = new VertexPositionNormalTexture(
-						position,
-						CalculateNormal(vx, vz),
-						new Vector2((float)x / (sizeX - 1), (float)z / (sizeZ - 1))
-					);
-
-					++idx;
+					var h = GetHeight(vx, vz);
+					if (height == null)
+					{
+						height = h;
+					}
+					else if (height.Value != h)
+					{
+						result = false;
+						goto finish;
+					}
 				}
 			}
+		finish:;
 
-			_boundingBox = BoundingBox.CreateFromPoints(from v in vertices select v.Position);
+			return result;
+		}
 
-			idx = 0;
-			var indices = new short[6 * (sizeX - 1) * (sizeZ - 1)];
-			for (var z = 0; z < sizeZ - 1; ++z)
+		private void Update()
+		{
+			if (_mesh != null)
 			{
-				for (var x = 0; x < sizeX - 1; ++x)
-				{
-					short topLeft = (short)((z * sizeX) + x);
-					short topRight = (short)(topLeft + 1);
-					short bottomLeft = (short)(((z + 1) * sizeX) + x);
-					short bottomRight = (short)(bottomLeft + 1);
+				return;
+			}
 
-					indices[idx++] = topLeft;
-					indices[idx++] = bottomLeft;
-					indices[idx++] = topRight;
-					indices[idx++] = topRight;
-					indices[idx++] = bottomLeft;
-					indices[idx++] = bottomRight;
+			var isFlatTile = CheckIfFlatTile();
+			VertexPositionNormalTexture[] vertices;
+			short[] indices;
+			if (isFlatTile)
+			{
+				vertices = new VertexPositionNormalTexture[]
+				{
+					new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up,  Vector2.Zero),
+					new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
+					new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
+					new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
+					new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
+					new VertexPositionNormalTexture(new Vector3(SizeX, 0, SizeZ), Vector3.Up, new Vector2(1, 1))
+				};
+
+				indices = new short[]
+				{
+					0, 1, 2, 3, 4, 5
+				};
+			}
+			else
+			{
+
+				var sizeX = (int)(SizeX * _terrain.TileResolution);
+				var sizeZ = (int)(SizeZ * _terrain.TileResolution);
+				var idx = 0;
+				vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
+				for (var z = 0; z < sizeZ; ++z)
+				{
+					for (var x = 0; x < sizeX; ++x)
+					{
+						var vx = x * SizeX / (sizeX - 1);
+						var vz = z * SizeZ / (sizeZ - 1);
+						float height = GetHeight(vx, vz);
+
+						var position = new Vector3(vx, height, vz);
+						vertices[idx] = new VertexPositionNormalTexture(
+							position,
+							CalculateNormal(vx, vz),
+							new Vector2((float)x / (sizeX - 1), (float)z / (sizeZ - 1))
+						);
+
+						++idx;
+					}
+				}
+
+				idx = 0;
+				indices = new short[6 * (sizeX - 1) * (sizeZ - 1)];
+				for (var z = 0; z < sizeZ - 1; ++z)
+				{
+					for (var x = 0; x < sizeX - 1; ++x)
+					{
+						short topLeft = (short)((z * sizeX) + x);
+						short topRight = (short)(topLeft + 1);
+						short bottomLeft = (short)(((z + 1) * sizeX) + x);
+						short bottomRight = (short)(bottomLeft + 1);
+
+						indices[idx++] = topLeft;
+						indices[idx++] = bottomLeft;
+						indices[idx++] = topRight;
+						indices[idx++] = topRight;
+						indices[idx++] = bottomLeft;
+						indices[idx++] = bottomRight;
+					}
 				}
 			}
 
-			return Mesh.Create(vertices, indices);
+			_mesh = new Mesh(vertices, indices, new Material(Color.White, _terrain.Texture))
+			{
+				Transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ))
+			};
 		}
 	}
 }

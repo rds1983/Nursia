@@ -77,7 +77,16 @@ namespace Nursia.Graphics3D.Modelling
 
 		public void ResetTransforms()
 		{
-			TraverseNodes(n => n.Transform = Mathematics.CreateTransform(n.DefaultTranslation, n.DefaultScale, n.DefaultRotation));
+			TraverseNodes(n => {
+				n.Transform = Matrix.Transpose(Mathematics.CreateTransform(n.DefaultTranslation, n.DefaultScale, n.DefaultRotation));
+				if (n.Parent != null)
+				{
+					n.DefaultAbsoluteTransform = n.Transform * n.Parent.DefaultAbsoluteTransform;
+				} else
+				{
+					n.DefaultAbsoluteTransform = n.Transform;
+				}
+			});
 		}
 
 		private static T GetAnimationTransform<T>(AnimationTransforms<T> transformFrames, float passed, T defaultValue)

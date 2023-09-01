@@ -1,17 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Graphics3D.Modelling;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
 	partial class ForwardRenderer
 	{
-		internal void DrawMeshPart(Effect effect, MeshPart part)
+		internal void DrawMesh(Effect effect, Mesh mesh)
 		{
-			if (part.Mesh == null ||
-				part.Mesh.VertexBuffer == null ||
-				part.Mesh.IndexBuffer == null ||
-				part.Material == null)
+			if (mesh == null || mesh.VertexBuffer == null || mesh.IndexBuffer == null || mesh.Material == null)
 			{
 				return;
 			}
@@ -20,14 +16,14 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			var lights = _context.Lights;
 
-			var worldViewProj = part.Transform * _context.World * _context.ViewProjection;
+			var worldViewProj = mesh.Transform * _context.World * _context.ViewProjection;
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
-			effect.Parameters["_diffuseColor"].SetValue(part.Material.DiffuseColor.ToVector4());
+			effect.Parameters["_diffuseColor"].SetValue(mesh.Material.DiffuseColor.ToVector4());
 
-			if (part.Material.Texture != null)
+			if (mesh.Material.Texture != null)
 			{
-				effect.Parameters["_texture"].SetValue(part.Material.Texture);
+				effect.Parameters["_texture"].SetValue(mesh.Material.Texture);
 			}
 
 			if (_context.ClipPlane != null)
@@ -36,7 +32,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_clipPlane"].SetValue(new Vector4(v.Normal, v.D));
 			}
 
-			device.Apply(part.Mesh);
+			device.Apply(mesh.MeshData);
 
 			if (lights.Count > 0)
 			{
@@ -55,7 +51,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
 					effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
 
-					device.DrawIndexedPrimitives(effect, part.Mesh, part.VertexCount, part.StartIndex, part.PrimitiveCount);
+					device.DrawIndexedPrimitives(effect, mesh.MeshData);
 				}
 
 				if (lights.Count > 1)
@@ -66,7 +62,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 			else
 			{
-				device.DrawIndexedPrimitives(effect, part.Mesh, part.VertexCount, part.StartIndex, part.PrimitiveCount);
+				device.DrawIndexedPrimitives(effect, mesh.MeshData);
 			}
 
 			if (Nrs.DrawBoundingBoxes)
@@ -75,11 +71,17 @@ namespace Nursia.Graphics3D.ForwardRendering
 				device.RasterizerState.FillMode = FillMode.WireFrame;
 				var colorEffect = Assets.ColorEffect;
 
-				colorEffect.Parameters["_transform"].SetValue(worldViewProj);
+				var boundingBoxTransform = Matrix.CreateTranslation(Vector3.One) *
+					Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X) / 2.0f,
+					(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y) / 2.0f,
+					(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z) / 2.0f) *
+					Matrix.CreateTranslation(mesh.BoundingBox.Min);
+
+				colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * worldViewProj);
 				colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
 
-				device.Apply(part.BoundingBoxMesh);
-				device.DrawIndexedPrimitives(colorEffect, part.BoundingBoxMesh);
+				device.Apply(PrimitiveMeshes.CubePosition);
+				device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePosition);
 
 				device.RasterizerState = RasterizerState;
 			}

@@ -148,6 +148,7 @@ namespace ModelViewer
 			_mainPanel._sliderTime.ValueChanged += _sliderTime_ValueChanged;
 
 			_mainPanel._buttonPlayStop.Click += _buttonPlayStop_Click;
+			_mainPanel._checkBoxShowBoundingBoxes.PressedChanged += _checkBoxShowBoundingBoxes_PressedChanged;
 
 			_desktop = new Desktop
 			{
@@ -159,6 +160,11 @@ namespace ModelViewer
 			LoadModel(string.Empty);
 
 			_controller = new CameraInputController(_scene.Camera);
+		}
+
+		private void _checkBoxShowBoundingBoxes_PressedChanged(object sender, EventArgs e)
+		{
+			Nrs.DrawBoundingBoxes = _mainPanel._checkBoxShowBoundingBoxes.IsPressed;
 		}
 
 		private void _buttonPlayStop_Click(object sender, EventArgs e)

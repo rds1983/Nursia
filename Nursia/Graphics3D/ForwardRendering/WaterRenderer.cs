@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -84,9 +83,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
 
-					var world = Matrix.CreateScale(waterTile.Size) *
-					Matrix.CreateTranslation(waterTile.X, 
-						waterTile.Height, 
+				var world = Matrix.CreateScale(waterTile.Size) *
+					Matrix.CreateTranslation(waterTile.X,
+						waterTile.Height,
 						waterTile.Z);
 
 				effect.Parameters["_world"].SetValue(world);

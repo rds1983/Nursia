@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Nursia.Utilities;
 
 namespace Nursia.Graphics3D.Modelling
 {

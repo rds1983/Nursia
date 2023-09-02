@@ -19,8 +19,8 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Matrix Transform { get; set; } = Matrix.Identity;
 
-		internal Matrix DefaultAbsoluteTransform { get; set; }
 		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;
+		internal int Index;
 
 		public List<ModelNode> Children { get; } = new List<ModelNode>();
 
@@ -46,6 +46,7 @@ namespace Nursia.Graphics3D.Modelling
 		internal void UpdateAbsoluteTransforms(Matrix rootTransform)
 		{
 			AbsoluteTransform = Transform * rootTransform;
+
 			foreach (var child in Children)
 			{
 				child.UpdateAbsoluteTransforms(AbsoluteTransform);

@@ -68,7 +68,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_context.Statistics.Reset();
 		}
 
-		private void DrawMeshNode(ModelNode meshNode)
+		private void DrawMeshNode(ModelNode meshNode, ref Matrix rootTransform)
 		{
 			if (meshNode.Meshes.Count > 0)
 			{
@@ -76,43 +76,62 @@ namespace Nursia.Graphics3D.ForwardRendering
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				var m = meshNode.Skin == null ? meshNode.AbsoluteTransform : Matrix.Identity;
-				using (var scope = new TransformScope(_context, m))
+				Matrix meshTransform = meshNode.Skin == null ? meshNode.AbsoluteTransform * rootTransform : rootTransform;
+				Matrix[] boneTransforms = null;
+				// Apply the effect and render items
+				if (meshNode.Skin != null)
 				{
-					Matrix[] boneTransforms = null;
-					// Apply the effect and render items
+					boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+				}
+
+				foreach (var mesh in meshNode.Meshes)
+				{
+					var effect = Assets.GetDefaultEffect(
+						mesh.Material.Texture != null,
+						_context.Lights.Count > 0 && mesh.HasNormals,
+						meshNode.Skin != null,
+						_context.ClipPlane != null);
 					if (meshNode.Skin != null)
 					{
-						boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+						effect.Parameters["_bones"].SetValue(boneTransforms);
 					}
 
-					m = _context.World;
-					foreach (var mesh in meshNode.Meshes)
+					var m = mesh.Transform * meshNode.AbsoluteTransform;
+					var boundingBox = mesh.BoundingBox.Transform(ref m);
+					if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{
-						var effect = Assets.GetDefaultEffect(
-							mesh.Material.Texture != null,
-							_context.Lights.Count > 0 && mesh.HasNormals,
-							meshNode.Skin != null,
-							_context.ClipPlane != null);
-						if (meshNode.Skin != null)
-						{
-							effect.Parameters["_bones"].SetValue(boneTransforms);
-						}
+						continue;
+					}
 
-						var boundingBox = mesh.BoundingBox.Transform(ref m);
-						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
-						{
-							continue;
-						}
+					DrawMesh(effect, mesh, ref meshTransform);
 
-						DrawMesh(effect, mesh);
+					if (Nrs.DrawBoundingBoxes)
+					{
+						var device = Nrs.GraphicsDevice;
+						device.RasterizerState = RasterizerState.CullNone;
+						device.RasterizerState.FillMode = FillMode.WireFrame;
+						var colorEffect = Assets.ColorEffect;
+
+						var boundingBoxTransform = Matrix.CreateTranslation(Vector3.One) *
+							Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X) / 2.0f,
+							(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y) / 2.0f,
+							(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z) / 2.0f) *
+							Matrix.CreateTranslation(mesh.BoundingBox.Min);
+
+						colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * m * _context.ViewProjection);
+						colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
+
+						device.Apply(PrimitiveMeshes.CubePosition);
+						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePosition);
+
+						device.RasterizerState = RasterizerState;
 					}
 				}
 			}
 
 			foreach (var child in meshNode.Children)
 			{
-				DrawMeshNode(child);
+				DrawMeshNode(child, ref rootTransform);
 			}
 		}
 
@@ -124,12 +143,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 
 			model.UpdateNodesAbsoluteTransforms();
-			using (var transformScope = new TransformScope(_context, model.Transform))
+			foreach (var mesh in model.Nodes)
 			{
-				foreach (var mesh in model.Meshes)
-				{
-					DrawMeshNode(mesh);
-				}
+				DrawMeshNode(mesh, ref model.Transform);
 			}
 		}
 
@@ -137,6 +153,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
+				var identity = Matrix.Identity;
 				var effect = Assets.GetDefaultEffect(scene.Terrain.Texture != null, _context.Lights.Count > 0, false, _context.ClipPlane != null);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
@@ -145,14 +162,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 					{
 						var terrainTile = scene.Terrain[x, z];
 
-						var m = terrainTile.Mesh.Transform;
-						var boundingBox = terrainTile.Mesh.BoundingBox.Transform(ref m);
+						var boundingBox = terrainTile.Mesh.BoundingBox.Transform(ref terrainTile.Mesh.Transform);
 						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
 
-						DrawMesh(effect, terrainTile.Mesh);
+						DrawMesh(effect, terrainTile.Mesh, ref identity);
 					}
 				}
 			}

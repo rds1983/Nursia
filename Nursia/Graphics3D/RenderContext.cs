@@ -88,8 +88,6 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public Matrix World { get; set; }
-
 		public RenderStatistics Statistics
 		{
 			get
@@ -106,7 +104,6 @@ namespace Nursia.Graphics3D
 
 		public RenderContext()
 		{
-			World = Matrix.Identity;
 		}
 	}
 }

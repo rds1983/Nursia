@@ -12,7 +12,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Matrix Transform = Matrix.Identity;
 
-		public List<ModelNode> Meshes { get; } = new List<ModelNode>();
+		public List<ModelNode> Nodes { get; } = new List<ModelNode>();
 
 		public List<Material> Materials { get; } = new List<Material>();
 
@@ -61,7 +61,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		internal void TraverseNodes(Action<ModelNode> action)
 		{
-			foreach (var node in Meshes)
+			foreach (var node in Nodes)
 			{
 				TraverseNodes(node, action);
 			}
@@ -69,7 +69,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		internal void UpdateNodesAbsoluteTransforms()
 		{
-			foreach (var child in Meshes)
+			foreach (var child in Nodes)
 			{
 				child.UpdateAbsoluteTransforms(Matrix.Identity);
 			}
@@ -78,14 +78,7 @@ namespace Nursia.Graphics3D.Modelling
 		public void ResetTransforms()
 		{
 			TraverseNodes(n => {
-				n.Transform = Matrix.Transpose(Mathematics.CreateTransform(n.DefaultTranslation, n.DefaultScale, n.DefaultRotation));
-				if (n.Parent != null)
-				{
-					n.DefaultAbsoluteTransform = n.Transform * n.Parent.DefaultAbsoluteTransform;
-				} else
-				{
-					n.DefaultAbsoluteTransform = n.Transform;
-				}
+				n.Transform = Mathematics.CreateTransform(n.DefaultTranslation, n.DefaultScale, n.DefaultRotation);
 			});
 		}
 

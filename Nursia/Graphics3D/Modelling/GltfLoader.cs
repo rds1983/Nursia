@@ -415,8 +415,7 @@ namespace Nursia.Graphics3D.Modelling
 
 		private Skin LoadSkin(int skinId)
 		{
-			Skin result;
-			if (_skinCache.TryGetValue(skinId, out result))
+			if (_skinCache.TryGetValue(skinId, out Skin result))
 			{
 				return result;
 			}
@@ -451,6 +450,7 @@ namespace Nursia.Graphics3D.Modelling
 				var modelNode = new ModelNode
 				{
 					Id = gltfNode.Name,
+					Index = i,
 					DefaultTranslation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
 					DefaultScale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One,
 					DefaultRotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
@@ -518,22 +518,11 @@ namespace Nursia.Graphics3D.Modelling
 
 			var result = new NursiaModel();
 
-			var boundingBox = new BoundingBox();
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
 			foreach (var node in scene.Nodes)
 			{
-				result.Meshes.Add(_nodes[node]);
+				result.Nodes.Add(_nodes[node]);
 			}
-
-			foreach (var mesh in _meshes)
-			{
-				foreach (var part in mesh)
-				{
-					boundingBox = BoundingBox.CreateMerged(boundingBox, part.BoundingBox);
-				}
-			}
-
-			result.BoundingBox = boundingBox;
 
 			if (_gltf.Animations != null)
 			{
@@ -592,6 +581,20 @@ namespace Nursia.Graphics3D.Modelling
 			}
 
 			result.ResetTransforms();
+			result.UpdateNodesAbsoluteTransforms();
+
+			var boundingBox = new BoundingBox();
+			result.TraverseNodes(n =>
+			{
+				var m = n.AbsoluteTransform;
+				foreach(var mesh in n.Meshes)
+				{
+					var bb = mesh.BoundingBox.Transform(ref m);
+					boundingBox = BoundingBox.CreateMerged(boundingBox, bb);
+				}
+			});
+
+			result.BoundingBox = boundingBox;
 
 			return result;
 		}

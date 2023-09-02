@@ -5,7 +5,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	partial class ForwardRenderer
 	{
-		internal void DrawMesh(Effect effect, Mesh mesh)
+		internal void DrawMesh(Effect effect, Mesh mesh, ref Matrix worldTransform)
 		{
 			if (mesh == null || mesh.VertexBuffer == null || mesh.IndexBuffer == null || mesh.Material == null)
 			{
@@ -16,7 +16,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			var lights = _context.Lights;
 
-			var worldViewProj = mesh.Transform * _context.World * _context.ViewProjection;
+			var worldViewProj = mesh.Transform * worldTransform * _context.ViewProjection;
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(mesh.Material.DiffuseColor.ToVector4());
@@ -36,7 +36,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			if (lights.Count > 0)
 			{
-				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(_context.World));
+				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
 				for (var i = 0; i < lights.Count; ++i)
@@ -63,27 +63,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 			else
 			{
 				device.DrawIndexedPrimitives(effect, mesh.MeshData);
-			}
-
-			if (Nrs.DrawBoundingBoxes)
-			{
-				device.RasterizerState = RasterizerState.CullNone;
-				device.RasterizerState.FillMode = FillMode.WireFrame;
-				var colorEffect = Assets.ColorEffect;
-
-				var boundingBoxTransform = Matrix.CreateTranslation(Vector3.One) *
-					Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X) / 2.0f,
-					(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y) / 2.0f,
-					(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z) / 2.0f) *
-					Matrix.CreateTranslation(mesh.BoundingBox.Min);
-
-				colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * worldViewProj);
-				colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
-
-				device.Apply(PrimitiveMeshes.CubePosition);
-				device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePosition);
-
-				device.RasterizerState = RasterizerState;
 			}
 
 			++_context.Statistics.MeshesDrawn;

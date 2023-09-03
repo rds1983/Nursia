@@ -125,7 +125,7 @@ namespace SampleScene
 								return r % 2 == 0 ? -10 : 10;*/
 			};
 
-			_scene.Terrain.Texture = grassy;
+			_scene.Terrain.TextureBase = grassy;
 
 			// Water
 			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, 1000));

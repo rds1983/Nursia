@@ -2,10 +2,11 @@
 
 BEGIN_CONSTANTS
 
+float4 _color;
+
 MATRIX_CONSTANTS
 
 float4x4 _transform;
-float4 _color;
 
 END_CONSTANTS
 

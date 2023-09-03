@@ -2,27 +2,29 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace Nursia
 {
-	public static class Assets
+	internal static class Resources
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
+		private static Effect[] _terrainEffects = new Effect[20];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
 		private static Assembly Assembly
 		{
 			get
 			{
-				return typeof(Assets).Assembly;
+				return typeof(Resources).Assembly;
 			}
 		}
 
-		internal static Texture2D White
+		public static Texture2D White
 		{
 			get
 			{
@@ -36,7 +38,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect ColorEffect
+		public static Effect ColorEffect
 		{
 			get
 			{
@@ -50,7 +52,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect WaterEffect
+		public static Effect WaterEffect
 		{
 			get
 			{
@@ -64,7 +66,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect SkyboxEffect
+		public static Effect SkyboxEffect
 		{
 			get
 			{
@@ -78,7 +80,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Texture2D WaterDUDV
+		public static Texture2D WaterDUDV
 		{
 			get
 			{
@@ -94,7 +96,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Texture2D WaterNormals
+		public static Texture2D WaterNormals
 		{
 			get
 			{
@@ -110,7 +112,7 @@ namespace Nursia
 			}
 		}
 
-		internal static Effect GetDefaultEffect(bool texture, bool lightning, bool skinning, bool clipPlane)
+		public static Effect GetDefaultEffect(bool texture, bool lightning, bool skinning, bool clipPlane)
 		{
 			var key = 0;
 			if (texture)
@@ -161,6 +163,48 @@ namespace Nursia
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "DefaultEffect.efb", defines);
 			_defaultEffects[key] = result;
+
+			return result;
+		}
+
+		public static Effect GetTerrainEffect(int texturesCount, bool lightning, bool clipPlane)
+		{
+			if (texturesCount < 0 || texturesCount > 4)
+			{
+				throw new ArgumentOutOfRangeException(nameof(texturesCount));
+			}
+
+			var key = 0;
+			if (lightning)
+			{
+				key |= 1;
+			}
+
+			if (clipPlane)
+			{
+				key |= 2;
+			}
+
+			key |= (texturesCount << 2);
+
+			if (_terrainEffects[key] != null)
+			{
+				return _terrainEffects[key];
+			}
+
+			var defines = new Dictionary<string, string>();
+			if (lightning)
+			{
+				defines["LIGHTNING"] = "1";
+			}
+
+			if (clipPlane)
+			{
+				defines["CLIP_PLANE"] = "1";
+			}
+
+			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "TerrainEffect.efb", defines);
+			_terrainEffects[key] = result;
 
 			return result;
 		}

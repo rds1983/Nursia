@@ -1,4 +1,5 @@
 ﻿using glTFLoader.Schema;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
 using System;
@@ -11,7 +12,6 @@ namespace Nursia.Graphics3D.Landscape
 		private int _tilesPerX = 10, _tilesPerZ = 10;
 		private TerrainTile[,] _tiles;
 		private bool _dirty = true;
-		private Texture2D _texture;
 
 		public float TileSizeX
 		{
@@ -83,28 +83,9 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		public Texture2D Texture
-		{
-			get => _texture;
-			set
-			{
-				if (value == _texture)
-				{
-					return;
-				}
+		public Color DiffuseColor { get; set; } = Color.White;
 
-				Update();
-				for (var x = 0; x < _tiles.GetLength(0); ++x)
-				{
-					for (var z = 0; z < _tiles.GetLength(1); ++z)
-					{
-						_tiles[x, z].Texture = value;
-					}
-				}
-
-				_texture = value;
-			}
-		}
+		public Texture2D TextureBase { get; set; }
 
 		public float TileResolution = 2.0f;
 

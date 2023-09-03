@@ -54,7 +54,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public void DrawWater(RenderContext context)
 		{
 			var device = Nrs.GraphicsDevice;
-			var effect = Assets.WaterEffect;
+			var effect = Resources.WaterEffect;
 
 			// Update move factor
 			var now = DateTime.Now;
@@ -74,8 +74,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_lightPosition"].SetValue(context.Scene.Lights[0].Position);
 				effect.Parameters["_lightColor"].SetValue(context.Scene.Lights[0].Color.ToVector3());
 			}
-			effect.Parameters["_textureDUDV"].SetValue(Assets.WaterDUDV);
-			effect.Parameters["_textureNormals"].SetValue(Assets.WaterNormals);
+			effect.Parameters["_textureDUDV"].SetValue(Resources.WaterDUDV);
+			effect.Parameters["_textureNormals"].SetValue(Resources.WaterNormals);
 			effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
 			effect.Parameters["_textureReflection"].SetValue(TargetReflection);
 			var scene = context.Scene;

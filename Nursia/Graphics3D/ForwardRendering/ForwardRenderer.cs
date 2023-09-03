@@ -86,7 +86,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 				foreach (var mesh in meshNode.Meshes)
 				{
-					var effect = Assets.GetDefaultEffect(
+					var effect = Resources.GetDefaultEffect(
 						mesh.Material.Texture != null,
 						_context.Lights.Count > 0 && mesh.HasNormals,
 						meshNode.Skin != null,
@@ -110,7 +110,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						var device = Nrs.GraphicsDevice;
 						device.RasterizerState = RasterizerState.CullNone;
 						device.RasterizerState.FillMode = FillMode.WireFrame;
-						var colorEffect = Assets.ColorEffect;
+						var colorEffect = Resources.ColorEffect;
 
 						var boundingBoxTransform = Matrix.CreateTranslation(Vector3.One) *
 							Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X) / 2.0f,
@@ -154,7 +154,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (scene.Terrain != null)
 			{
 				var identity = Matrix.Identity;
-				var effect = Assets.GetDefaultEffect(scene.Terrain.Texture != null, _context.Lights.Count > 0, false, _context.ClipPlane != null);
+				var effect = Resources.GetTerrainEffect(0, _context.Lights.Count > 0, _context.ClipPlane != null);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
@@ -162,13 +162,14 @@ namespace Nursia.Graphics3D.ForwardRendering
 					{
 						var terrainTile = scene.Terrain[x, z];
 
-						var boundingBox = terrainTile.Mesh.BoundingBox.Transform(ref terrainTile.Mesh.Transform);
+						var m = terrainTile.Transform;
+						var boundingBox = terrainTile.MeshData.BoundingBox.Transform(ref m);
 						if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
 
-						DrawMesh(effect, terrainTile.Mesh, ref identity);
+						DrawTerrain(effect, terrainTile);
 					}
 				}
 			}
@@ -187,7 +188,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var device = Nrs.GraphicsDevice;
 
 				device.DepthStencilState = DepthStencilState.DepthRead;
-				var effect = Assets.SkyboxEffect;
+				var effect = Resources.SkyboxEffect;
 
 				var view = _context.View;
 				view.Translation = Vector3.Zero;

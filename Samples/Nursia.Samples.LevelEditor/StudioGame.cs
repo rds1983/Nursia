@@ -71,7 +71,7 @@ namespace Nursia.Samples.LevelEditor
 			{
 				Terrain = new Terrain
 				{
-					Texture = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png")
+					TextureBase = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png")
 				}
 			};
 			scene.Lights.Add(new DirectLight

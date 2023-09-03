@@ -5,45 +5,52 @@ namespace Nursia.Graphics3D.Landscape
 {
 	public class TerrainTile
 	{
-		private readonly Terrain _terrain;
-		private Mesh _mesh = null;
+		private MeshData _meshData = null;
+		private Matrix? _transform;
 
-		public Mesh Mesh
+		public Terrain Terrain { get; }
+
+		public MeshData MeshData
 		{
 			get
 			{
 				Update();
-				return _mesh;
+				return _meshData;
 			}
 		}
 
-		private float SizeX => _terrain.TileSizeX;
-		private float SizeZ => _terrain.TileSizeZ;
+		private float SizeX => Terrain.TileSizeX;
+		private float SizeZ => Terrain.TileSizeZ;
 
 		public int TileX { get; }
 		public int TileZ { get; }
 
-		internal Texture2D Texture
+		public Matrix Transform
 		{
-			set
+			get
 			{
-				Update(); _mesh.Material.Texture = value;
+				if (_transform == null)
+				{
+					_transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ));
+				}
+
+				return _transform.Value;
 			}
 		}
 
 		internal TerrainTile(Terrain terrain, int tileX, int tileZ)
 		{
-			_terrain = terrain;
+			Terrain = terrain;
 			TileX = tileX;
 			TileZ = tileZ;
 		}
 
 		public void InvalidateMesh()
 		{
-			if (_mesh != null)
+			if (_meshData != null)
 			{
-				_mesh.Dispose();
-				_mesh = null;
+				_meshData.Dispose();
+				_meshData = null;
 			}
 		}
 
@@ -52,7 +59,7 @@ namespace Nursia.Graphics3D.Landscape
 			x += TileX * SizeX;
 			z += TileZ * SizeZ;
 
-			return _terrain.HeightFunc(x, z);
+			return Terrain.HeightFunc(x, z);
 		}
 
 		private Vector3 CalculateNormal(float x, float z)
@@ -70,15 +77,15 @@ namespace Nursia.Graphics3D.Landscape
 
 		private bool CheckIfFlatTile()
 		{
-			if (_terrain.HeightFunc == null)
+			if (Terrain.HeightFunc == null)
 			{
 				return true;
 			}
 
 			var result = true;
 			float? height = null;
-			var sizeX = (int)(SizeX * _terrain.TileResolution);
-			var sizeZ = (int)(SizeZ * _terrain.TileResolution);
+			var sizeX = (int)(SizeX * Terrain.TileResolution);
+			var sizeZ = (int)(SizeZ * Terrain.TileResolution);
 
 			for (var z = 0; z < sizeZ; ++z)
 			{
@@ -106,7 +113,7 @@ namespace Nursia.Graphics3D.Landscape
 
 		private void Update()
 		{
-			if (_mesh != null)
+			if (_meshData != null)
 			{
 				return;
 			}
@@ -134,8 +141,8 @@ namespace Nursia.Graphics3D.Landscape
 			else
 			{
 
-				var sizeX = (int)(SizeX * _terrain.TileResolution);
-				var sizeZ = (int)(SizeZ * _terrain.TileResolution);
+				var sizeX = (int)(SizeX * Terrain.TileResolution);
+				var sizeZ = (int)(SizeZ * Terrain.TileResolution);
 				var idx = 0;
 				vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
 				for (var z = 0; z < sizeZ; ++z)
@@ -178,10 +185,7 @@ namespace Nursia.Graphics3D.Landscape
 				}
 			}
 
-			_mesh = new Mesh(vertices, indices, new Material(Color.White, _terrain.Texture))
-			{
-				Transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ))
-			};
+			_meshData = new MeshData(vertices, indices);
 		}
 	}
 }

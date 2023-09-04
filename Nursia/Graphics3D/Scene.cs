@@ -7,21 +7,19 @@ namespace Nursia.Graphics3D
 {
 	public class Scene
 	{
-		private readonly Camera _camera = new Camera();
-		private readonly List<NursiaModel> _models = new List<NursiaModel>();
-		private readonly List<WaterTile> _waterTiles = new List<WaterTile>();
-
 		public DirectLight DirectLight { get; set; }
 		public List<BaseLight> PointLights { get; } = new List<BaseLight>();
 
 		public Skybox Skybox;
 
-		public List<NursiaModel> Models => _models;
+		public List<NursiaModel> Models { get; } = new List<NursiaModel>();
 
-		public List<WaterTile> WaterTiles => _waterTiles;
+		public List<WaterTile> WaterTiles { get; } = new List<WaterTile>();
 
 		public Terrain Terrain { get; set; }
 
-		public Camera Camera => _camera;
+		public Camera Camera { get; } = new Camera();
+		public EditorMarker Marker { get; } = new EditorMarker();
+		public bool HasMarker => Marker.Position != null;
 	}
 }

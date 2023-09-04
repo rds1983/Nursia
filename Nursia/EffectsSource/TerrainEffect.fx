@@ -1,5 +1,7 @@
 #include "Macros.fxh"
 
+#define PI 3.1415926535897932384626433832795
+
 #ifdef DIRECT_LIGHT
 #include "Lightning.fxh"
 #endif
@@ -40,10 +42,22 @@ float4 _clipPlane;
 
 #endif
 
+#ifdef MARKER
+
+float3 _markerPosition;
+float _markerRadius;
+#define COLOR_BRUSH float4(0.4,0.4,0.4, 0.4);
+
+#endif
+
 MATRIX_CONSTANTS
 
 float4x4 _worldViewProjection;
 float3x3 _worldInverseTranspose;
+
+#ifdef MARKER
+float4x4 _world;
+#endif
 
 END_CONSTANTS
 
@@ -71,6 +85,10 @@ struct VSOutput
 #ifdef CLIP_PLANE
     float4 ClipDistances: TEXCOORD2;
 #endif
+
+#ifdef MARKER
+	float4 SourcePosition: POSITION1;
+#endif
 };
 
 VSOutput Vertex(VSInput input)
@@ -83,6 +101,10 @@ VSOutput Vertex(VSInput input)
 
 #ifdef DIRECT_LIGHT
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
+#endif
+
+#ifdef MARKER
+	output.SourcePosition = mul(input.Position, _world);
 #endif
 
 #ifdef CLIP_PLANE
@@ -132,6 +154,17 @@ float4 Pixel(VSOutput input) : COLOR
 #else
 	float4 c = float4(color, 1) * _diffuseColor;
 #endif
+	
+#ifdef MARKER
+	float dist = distance(_markerPosition, input.SourcePosition.xyz);
+	if(dist <= _markerRadius)
+	{
+		float gradient = (_markerRadius - dist + 0.01) / _markerRadius;
+		gradient = 1.0 - clamp(cos(gradient * PI), 0.0, 1.0);
+		c += float4(0.4 * gradient, 0.4 * gradient, 0.4 * gradient, 0.4 * gradient);
+	}
+#endif
+
     clip(c.a < 0.1?-1:1);
 
 	return c;

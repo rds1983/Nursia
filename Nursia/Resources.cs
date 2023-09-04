@@ -13,7 +13,7 @@ namespace Nursia
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[256];
-		private static Effect[] _terrainEffects = new Effect[20];
+		private static Effect[] _terrainEffects = new Effect[64];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
 		private static Assembly Assembly
@@ -175,7 +175,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool directLight)
+		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool directLight)
 		{
 			if (texturesCount < 0 || texturesCount > 4)
 			{
@@ -183,17 +183,23 @@ namespace Nursia
 			}
 
 			var key = 0;
+			key |= texturesCount;
+
 			if (directLight)
 			{
-				key |= 1;
+				key |= 8;
 			}
 
 			if (clipPlane)
 			{
-				key |= 2;
+				key |= 16;
 			}
 
-			key |= (texturesCount << 2);
+			if (marker)
+			{
+				key |= 32;
+			}
+
 
 			if (_terrainEffects[key] != null)
 			{
@@ -209,6 +215,11 @@ namespace Nursia
 			if (clipPlane)
 			{
 				defines["CLIP_PLANE"] = "1";
+			}
+
+			if (marker)
+			{
+				defines["MARKER"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "TerrainEffect.efb", defines);

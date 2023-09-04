@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Utilities;
 using System;
@@ -40,6 +41,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public RenderTarget2D WaterReflection => WaterRenderer.TargetReflection;
 
 		public RenderTarget2D WaterRefraction => WaterRenderer.TargetRefraction;
+
+		public Matrix Projection => _context.Projection;
+		public Matrix View => _context.View;
 
 		public float NearPlaneDistance = 0.1f;
 		public float FarPlaneDistance = 1000.0f;
@@ -154,8 +158,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				var identity = Matrix.Identity;
-				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, _context.DirectLight != null);
+				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, scene.HasMarker, _context.DirectLight != null);
+				if (scene.HasMarker)
+				{
+					var markerPosition = scene.Marker.Position.Value;
+					effect.Parameters["_markerPosition"].SetValue(markerPosition);
+					effect.Parameters["_markerRadius"].SetValue(scene.Marker.Radius);
+				}
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{
@@ -170,6 +179,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 							continue;
 						}
 
+						if (scene.HasMarker)
+						{
+							effect.Parameters["_world"].SetValue(terrainTile.Transform);
+						}
 						DrawTerrain(effect, terrainTile);
 					}
 				}

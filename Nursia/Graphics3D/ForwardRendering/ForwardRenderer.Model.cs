@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Landscape;
@@ -46,20 +45,17 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
 				}
 
-				if (_context.PointLights.Count > 0) {
+				if (_context.PointLights.Count > 0)
+				{
 					var pointLightColors = (from l in _context.PointLights select l.Color.ToVector3()).ToArray();
 					effect.Parameters["_pointLightColor"].SetValue(pointLightColors);
 
 					var pointLightPositions = (from l in _context.PointLights select l.Position).ToArray();
 					effect.Parameters["_pointLightPosition"].SetValue(pointLightPositions);
 				}
+			}
 
-				device.DrawIndexedPrimitives(effect, mesh.MeshData);
-			}
-			else
-			{
-				device.DrawIndexedPrimitives(effect, mesh.MeshData);
-			}
+			device.DrawIndexedPrimitives(effect, mesh.MeshData);
 
 			++_context.Statistics.MeshesDrawn;
 		}
@@ -92,13 +88,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_dirLightColor"].SetValue(_context.DirectLight.Color.ToVector3());
 					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
 				}
+			}
 
-				device.DrawIndexedPrimitives(effect, tile.MeshData);
-			}
-			else
-			{
-				device.DrawIndexedPrimitives(effect, tile.MeshData);
-			}
+			device.DrawIndexedPrimitives(effect, tile.MeshData);
 
 			++_context.Statistics.MeshesDrawn;
 		}

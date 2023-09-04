@@ -105,8 +105,7 @@ namespace Nursia.Samples.LevelEditor
 			_controller.SetControlKeyState(CameraInputController.ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
 
 			var mouseState = Mouse.GetState();
-			_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
-			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
+			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.MiddleButton == ButtonState.Pressed);
 
 			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 

@@ -2,5 +2,6 @@
 	<MultiCompile>MARKER;_</MultiCompile>
 	<MultiCompile>DIRECT_LIGHT;_</MultiCompile>
 	<MultiCompile>CLIP_PLANE;_</MultiCompile>
+	<MultiCompile>MARKER;_</MultiCompile>
 	<MultiCompile>TEXTURES=1;TEXTURES=2;TEXTURES=3;TEXTURES=4;_</MultiCompile>
 </Root>

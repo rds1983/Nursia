@@ -19,8 +19,8 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		private float SizeX => Terrain.TileSizeX;
-		private float SizeZ => Terrain.TileSizeZ;
+		private int SizeX => Terrain.TileSizeX;
+		private int SizeZ => Terrain.TileSizeZ;
 
 		public int TileX { get; }
 		public int TileZ { get; }
@@ -47,11 +47,13 @@ namespace Nursia.Graphics3D.Landscape
 
 		public void InvalidateMesh()
 		{
-			if (_meshData != null)
+			if (_meshData == null)
 			{
-				_meshData.Dispose();
-				_meshData = null;
+				return;
 			}
+
+			_meshData.Dispose();
+			_meshData = null;
 		}
 
 		private float GetHeight(float x, float z)
@@ -59,7 +61,7 @@ namespace Nursia.Graphics3D.Landscape
 			x += TileX * SizeX;
 			z += TileZ * SizeZ;
 
-			return Terrain.HeightFunc(x, z);
+			return Terrain.GetHeight(x, z);
 		}
 
 		private Vector3 CalculateNormal(float x, float z)
@@ -77,24 +79,14 @@ namespace Nursia.Graphics3D.Landscape
 
 		private bool CheckIfFlatTile()
 		{
-			if (Terrain.HeightFunc == null)
-			{
-				return true;
-			}
-
 			var result = true;
 			float? height = null;
-			var sizeX = (int)(SizeX * Terrain.TileResolution);
-			var sizeZ = (int)(SizeZ * Terrain.TileResolution);
 
-			for (var z = 0; z < sizeZ; ++z)
+			for (var x = 0; x < Terrain._heightMap.GetLength(0); ++x)
 			{
-				for (var x = 0; x < sizeX; ++x)
+				for (var z = 0; z < Terrain._heightMap.GetLength(1); ++z)
 				{
-					var vx = x * SizeX / (sizeX - 1);
-					var vz = z * SizeZ / (sizeZ - 1);
-
-					var h = GetHeight(vx, vz);
+					var h = Terrain._heightMap[x, z];
 					if (height == null)
 					{
 						height = h;
@@ -141,14 +133,14 @@ namespace Nursia.Graphics3D.Landscape
 			else
 			{
 
-				var sizeX = (int)(SizeX * Terrain.TileResolution);
-				var sizeZ = (int)(SizeZ * Terrain.TileResolution);
+				var sizeX = SizeX * Terrain.ResolutionX;
+				var sizeZ = SizeZ * Terrain.ResolutionZ;
 				var idx = 0;
 				vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
-				for (var z = 0; z < sizeZ; ++z)
+				for (var x = 0; x < sizeX; ++x)
 				{
-					for (var x = 0; x < sizeX; ++x)
-					{
+					for (var z = 0; z < sizeZ; ++z)
+				{
 						var vx = x * SizeX / (sizeX - 1);
 						var vz = z * SizeZ / (sizeZ - 1);
 						float height = GetHeight(vx, vz);

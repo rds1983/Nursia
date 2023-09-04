@@ -8,11 +8,11 @@ namespace Nursia.Graphics3D
 	public class Scene
 	{
 		private readonly Camera _camera = new Camera();
-		private readonly List<DirectLight> _lights = new List<DirectLight>();
 		private readonly List<NursiaModel> _models = new List<NursiaModel>();
 		private readonly List<WaterTile> _waterTiles = new List<WaterTile>();
 
-		public List<DirectLight> Lights => _lights;
+		public DirectLight DirectLight { get; set; }
+		public List<BaseLight> PointLights { get; } = new List<BaseLight>();
 
 		public Skybox Skybox;
 

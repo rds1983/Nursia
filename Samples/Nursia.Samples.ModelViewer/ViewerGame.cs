@@ -13,7 +13,6 @@ using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace ModelViewer
@@ -26,32 +25,10 @@ namespace ModelViewer
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private MainPanel _mainPanel;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
-		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
 		private readonly Scene _scene = new Scene();
 		private Desktop _desktop;
 		private bool _isAnimating;
 		private DateTime? _animationMoment;
-
-		static ViewerGame()
-		{
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
-				Color = new Color(1, 0.9607844f, 0.8078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
-				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
-				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
-			});
-		}
 
 		public ViewerGame()
 		{
@@ -69,8 +46,6 @@ namespace ModelViewer
 				IsFixedTimeStep = false;
 				_graphics.SynchronizeWithVerticalRetrace = false;
 			}
-
-			_scene.Lights.AddRange(_defaultLights);
 		}
 
 		private void ResetAnimation()
@@ -149,6 +124,9 @@ namespace ModelViewer
 
 			_mainPanel._buttonPlayStop.Click += _buttonPlayStop_Click;
 			_mainPanel._checkBoxShowBoundingBoxes.PressedChanged += _checkBoxShowBoundingBoxes_PressedChanged;
+			_mainPanel._checkBoxLight1.PressedChanged += _checkBoxLight1_PressedChanged;
+			_mainPanel._checkBoxLight2.PressedChanged += _checkBoxLight1_PressedChanged;
+			_mainPanel._checkBoxLight3.PressedChanged += _checkBoxLight1_PressedChanged;
 
 			_desktop = new Desktop
 			{
@@ -159,7 +137,42 @@ namespace ModelViewer
 			Nrs.Game = this;
 			LoadModel(string.Empty);
 
+			_scene.DirectLight = new DirectLight
+			{
+				Color = Color.White,
+				Position = new Vector3(10000, 10000, -10000),
+				Direction = new Vector3(1, -1, -1)
+			};
+
 			_controller = new CameraInputController(_scene.Camera);
+		}
+
+		private void UpdateLights()
+		{
+			_scene.PointLights.Clear();
+
+			if (_mainPanel._checkBoxLight1.IsChecked)
+			{
+				_scene.PointLights.Add(new BaseLight
+				{
+					Position = new Vector3(0, 0, 1),
+					Color = Color.Yellow
+				});
+			}
+
+			if (_mainPanel._checkBoxLight2.IsChecked)
+			{
+				_scene.PointLights.Add(new BaseLight
+				{
+					Position = new Vector3(-1, 1, 0),
+					Color = Color.Red
+				});
+			}
+		}
+
+		private void _checkBoxLight1_PressedChanged(object sender, EventArgs e)
+		{
+			UpdateLights();
 		}
 
 		private void _checkBoxShowBoundingBoxes_PressedChanged(object sender, EventArgs e)

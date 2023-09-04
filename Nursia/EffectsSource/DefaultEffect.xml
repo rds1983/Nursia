@@ -1,6 +1,7 @@
 <Root>
 	<MultiCompile>TEXTURE;_</MultiCompile>
-	<MultiCompile>LIGHTNING;_</MultiCompile>
 	<MultiCompile>CLIP_PLANE;_</MultiCompile>
 	<MultiCompile>SKINNING;_</MultiCompile>
+	<MultiCompile>DIR_LIGHT;_</MultiCompile>
+	<MultiCompile>POINT_LIGHTS=1;POINT_LIGHTS=2;POINT_LIGHTS=3;POINT_LIGHTS=4;POINT_LIGHTS=5;POINT_LIGHTS=6;POINT_LIGHTS=7;POINT_LIGHTS=8;_</MultiCompile>
 </Root>

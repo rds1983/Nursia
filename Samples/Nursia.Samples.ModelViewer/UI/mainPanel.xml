@@ -17,6 +17,9 @@
         <Label Text="0.0" Id="_labelTime" />
       </HorizontalStackPanel>
       <CheckBox Text="Show Bounding Boxes" Id="_checkBoxShowBoundingBoxes" />
+      <CheckBox Text="Show Light 1" Id="_checkBoxLight1" />
+      <CheckBox Text="Show Light 2" Id="_checkBoxLight2" />
+      <CheckBox Text="Show Light 3" Id="_checkBoxLight3" />
     </VerticalStackPanel>
     <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <Label Text="FPS: 60.0" Id="_labelFps" />

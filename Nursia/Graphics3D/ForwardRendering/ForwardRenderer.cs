@@ -88,9 +88,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				{
 					var effect = Resources.GetDefaultEffect(
 						mesh.Material.Texture != null,
-						_context.Lights.Count > 0 && mesh.HasNormals,
 						meshNode.Skin != null,
-						_context.ClipPlane != null);
+						_context.ClipPlane != null,
+						_context.DirectLight != null && mesh.HasNormals,
+						mesh.HasNormals ? _context.PointLights.Count : 0);
 					if (meshNode.Skin != null)
 					{
 						effect.Parameters["_bones"].SetValue(boneTransforms);
@@ -154,7 +155,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (scene.Terrain != null)
 			{
 				var identity = Matrix.Identity;
-				var effect = Resources.GetTerrainEffect(0, _context.Lights.Count > 0, _context.ClipPlane != null);
+				var effect = Resources.GetTerrainEffect(0, _context.HasLights, _context.ClipPlane != null);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{

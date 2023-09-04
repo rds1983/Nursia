@@ -1,10 +1,14 @@
 #include "Macros.fxh"
 
-#ifdef LIGHTNING
+#ifdef DIR_LIGHT
 #include "Lightning.fxh"
 #endif
 
 #define MAX_BONES   96
+
+#if DIR_LIGHT > 0 || POINT_LIGHTS > 0
+#define LIGHTNING 1
+#endif
 
 #ifdef TEXTURE
 DECLARE_TEXTURE(_texture, 0);
@@ -12,10 +16,17 @@ DECLARE_TEXTURE(_texture, 0);
 
 BEGIN_CONSTANTS
 
-#ifdef LIGHTNING
+#ifdef DIR_LIGHT
 
-float3 _lightDir;
-float3 _lightColor;
+float3 _dirLightDirection;
+float3 _dirLightColor;
+
+#endif
+
+#if POINT_LIGHTS > 0
+
+float3 _pointLightPosition[POINT_LIGHTS];
+float3 _pointLightColor[POINT_LIGHTS];
 
 #endif
 
@@ -74,6 +85,10 @@ struct VSOutput
 #ifdef CLIP_PLANE
     float4 ClipDistances: TEXCOORD2;
 #endif
+
+#ifdef POINT_LIGHTS
+	float4 SourcePosition: POSITION1;
+#endif
 };
 
 VSOutput VertexShaderFunction(VSInput input)
@@ -94,6 +109,10 @@ VSOutput VertexShaderFunction(VSInput input)
 #endif
 
     output.Position = mul(input.Position, _worldViewProj);
+	
+#ifdef POINT_LIGHTS
+	output.SourcePosition = input.Position;
+#endif
 
 #ifdef TEXTURE
     output.TexCoord = input.TexCoord;
@@ -124,17 +143,37 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 #endif
 
 #ifdef LIGHTNING
-	float3 result = float3(0, 0, 0);
+	float3 lightColor = float3(0, 0, 0);
 	float3 normal = normalize(input.WorldNormal);
-    result += ComputeLighting(normal, -_lightDir, _lightColor, 1.0);
 
-	float4 c = color * float4(result, 1) * _diffuseColor;
+#ifdef DIR_LIGHT
+	lightColor += ComputeLighting(normal, -_dirLightDirection, _dirLightColor, 1.0);
+#endif
+
+#ifdef POINT_LIGHTS
+	[unroll]
+	for(int i = 0; i < POINT_LIGHTS; ++i)
+	{
+		float3 lightDir = _pointLightPosition[i] - input.SourcePosition.xyz;
+		float dist2 = dot(lightDir, lightDir);
+		lightDir *= rsqrt(dist2);
+		float NdotL = clamp(dot(normal, lightDir), 0.0, 1.0);
+		float3 value = _pointLightColor[i] * (NdotL / (1.0 + dist2));
+		lightColor += value;
+		#ifdef specularFlag
+			float halfDotView = max(0.0, dot(normal, normalize(lightDir + viewVec)));
+			v_lightSpecular += value * pow(halfDotView, u_shininess);
+		#endif // specularFlag
+	}
+
+#endif
+	float4 c = color * float4(lightColor, 1) * _diffuseColor;
 #else
 	float4 c = color * _diffuseColor;
 #endif
     clip(c.a < 0.1?-1:1);
-
-    return c;
+	
+	return c;
 }
 
 TECHNIQUE(Default, VertexShaderFunction, PixelShaderFunction);

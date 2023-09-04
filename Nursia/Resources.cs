@@ -12,7 +12,7 @@ namespace Nursia
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
-		private static Effect[] _defaultEffects = new Effect[16];
+		private static Effect[] _defaultEffects = new Effect[256];
 		private static Effect[] _terrainEffects = new Effect[20];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
@@ -112,27 +112,30 @@ namespace Nursia
 			}
 		}
 
-		public static Effect GetDefaultEffect(bool texture, bool lightning, bool skinning, bool clipPlane)
+		public static Effect GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool directLight, int pointLights)
 		{
 			var key = 0;
-			if (texture)
-			{
-				key |= 1;
-			}
 
-			if (lightning)
-			{
-				key |= 2;
-			}
+			key |= pointLights;
 
-			if (skinning)
+			if (directLight)
 			{
-				key |= 4;
+				key |= 16;
 			}
 
 			if (clipPlane)
 			{
-				key |= 8;
+				key |= 32;
+			}
+
+			if (skinning)
+			{
+				key |= 64;
+			}
+
+			if (texture)
+			{
+				key |= 128;
 			}
 
 			if (_defaultEffects[key] != null)
@@ -141,14 +144,14 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (texture)
+			if (pointLights > 0)
 			{
-				defines["TEXTURE"] = "1";
+				defines["POINT_LIGHTS"] = pointLights.ToString();
 			}
 
-			if (lightning)
+			if (directLight)
 			{
-				defines["LIGHTNING"] = "1";
+				defines["DIR_LIGHT"] = "1";
 			}
 
 			if (skinning)
@@ -159,6 +162,11 @@ namespace Nursia
 			if (clipPlane)
 			{
 				defines["CLIP_PLANE"] = "1";
+			}
+
+			if (texture)
+			{
+				defines["TEXTURE"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "DefaultEffect.efb", defines);

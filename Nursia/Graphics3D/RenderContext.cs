@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Nursia.Graphics3D.Lights;
-using System.Collections.Generic;
 
 namespace Nursia.Graphics3D
 {
@@ -15,13 +15,10 @@ namespace Nursia.Graphics3D
 
 		public Plane? ClipPlane;
 
-		public List<DirectLight> Lights
-		{
-			get
-			{
-				return Scene.Lights;
-			}
-		}
+		public DirectLight DirectLight => Scene.DirectLight;
+		public List<BaseLight> PointLights => Scene.PointLights;
+
+		public bool HasLights => DirectLight != null || PointLights.Count > 0;
 
 		public Matrix Projection
 		{

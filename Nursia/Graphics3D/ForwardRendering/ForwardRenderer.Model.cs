@@ -1,4 +1,5 @@
-﻿using glTFLoader.Schema;
+﻿using System.Linq;
+using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Landscape;
@@ -15,8 +16,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 
 			var device = Nrs.GraphicsDevice;
-
-			var lights = _context.Lights;
 
 			var worldViewProj = mesh.Transform * worldTransform * _context.ViewProjection;
 
@@ -36,31 +35,26 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			device.Apply(mesh.MeshData);
 
-			if (lights.Count > 0)
+			if (_context.HasLights)
 			{
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				for (var i = 0; i < lights.Count; ++i)
+				if (_context.DirectLight != null)
 				{
-					if (i == 1)
-					{
-						device.BlendState = BlendState.Additive;
-					}
-
-					var dl = lights[i];
-
-					effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
-					effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
-
-					device.DrawIndexedPrimitives(effect, mesh.MeshData);
+					effect.Parameters["_dirLightColor"].SetValue(_context.DirectLight.Color.ToVector3());
+					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
 				}
 
-				if (lights.Count > 1)
-				{
-					// Change blend state back
-					device.BlendState = BlendState;
+				if (_context.PointLights.Count > 0) {
+					var pointLightColors = (from l in _context.PointLights select l.Color.ToVector3()).ToArray();
+					effect.Parameters["_pointLightColor"].SetValue(pointLightColors);
+
+					var pointLightPositions = (from l in _context.PointLights select l.Position).ToArray();
+					effect.Parameters["_pointLightPosition"].SetValue(pointLightPositions);
 				}
+
+				device.DrawIndexedPrimitives(effect, mesh.MeshData);
 			}
 			else
 			{
@@ -73,7 +67,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 		internal void DrawTerrain(Effect effect, TerrainTile tile)
 		{
 			var device = Nrs.GraphicsDevice;
-			var lights = _context.Lights;
 			var worldViewProj = tile.Transform * _context.ViewProjection;
 
 			effect.Parameters["_worldViewProjection"].SetValue(worldViewProj);
@@ -88,32 +81,20 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			device.Apply(tile.MeshData);
 
-			if (lights.Count > 0)
+			if (_context.HasLights)
 			{
 				var worldTransform = tile.Transform;
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				for (var i = 0; i < lights.Count; ++i)
+				if (_context.DirectLight != null)
 				{
-					if (i == 1)
-					{
-						device.BlendState = BlendState.Additive;
-					}
-
-					var dl = lights[i];
-
-					effect.Parameters["_lightDir"].SetValue(dl.NormalizedDirection);
-					effect.Parameters["_lightColor"].SetValue(dl.Color.ToVector3());
-
-					device.DrawIndexedPrimitives(effect, tile.MeshData);
+					effect.Parameters["_dirLightColor"].SetValue(_context.DirectLight.Color.ToVector3());
+					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
 				}
 
-				if (lights.Count > 1)
-				{
-					// Change blend state back
-					device.BlendState = BlendState;
-				}
+
+				device.DrawIndexedPrimitives(effect, tile.MeshData);
 			}
 			else
 			{

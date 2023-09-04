@@ -69,10 +69,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
 			effect.Parameters["_moveFactor"].SetValue(_moveFactor);
-			if (context.Scene.Lights.Count > 0)
+			if (context.HasLights)
 			{
-				effect.Parameters["_lightPosition"].SetValue(context.Scene.Lights[0].Position);
-				effect.Parameters["_lightColor"].SetValue(context.Scene.Lights[0].Color.ToVector3());
+				effect.Parameters["_lightPosition"].SetValue(context.DirectLight.Position);
+				effect.Parameters["_lightColor"].SetValue(context.DirectLight.Color.ToVector3());
 			}
 			effect.Parameters["_textureDUDV"].SetValue(Resources.WaterDUDV);
 			effect.Parameters["_textureNormals"].SetValue(Resources.WaterNormals);

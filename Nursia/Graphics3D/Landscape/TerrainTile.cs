@@ -137,10 +137,10 @@ namespace Nursia.Graphics3D.Landscape
 				var sizeZ = SizeZ * Terrain.ResolutionZ;
 				var idx = 0;
 				vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
-				for (var x = 0; x < sizeX; ++x)
+				for (var z = 0; z < sizeZ; ++z)
 				{
-					for (var z = 0; z < sizeZ; ++z)
-				{
+					for (var x = 0; x < sizeX; ++x)
+					{
 						var vx = x * SizeX / (sizeX - 1);
 						var vz = z * SizeZ / (sizeZ - 1);
 						float height = GetHeight(vx, vz);

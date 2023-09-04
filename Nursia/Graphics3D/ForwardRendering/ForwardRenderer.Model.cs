@@ -93,7 +93,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
 				}
 
-
 				device.DrawIndexedPrimitives(effect, tile.MeshData);
 			}
 			else

@@ -155,7 +155,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (scene.Terrain != null)
 			{
 				var identity = Matrix.Identity;
-				var effect = Resources.GetTerrainEffect(0, _context.HasLights, _context.ClipPlane != null);
+				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, _context.DirectLight != null);
 
 				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
 				{

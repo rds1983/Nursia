@@ -59,14 +59,11 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 
 			// Lights
-			foreach (var light in Scene.Lights)
+			list.Items.Add(new ListItem
 			{
-				list.Items.Add(new ListItem
-				{
-					Text = "Directional Light",
-					Tag = light
-				});
-			}
+				Text = "Directional Light",
+				Tag = Scene.DirectLight
+			});
 
 			// Skybox
 			if (Scene.Skybox != null)

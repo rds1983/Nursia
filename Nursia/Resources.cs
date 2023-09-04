@@ -175,7 +175,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetTerrainEffect(int texturesCount, bool lightning, bool clipPlane)
+		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool directLight)
 		{
 			if (texturesCount < 0 || texturesCount > 4)
 			{
@@ -183,7 +183,7 @@ namespace Nursia
 			}
 
 			var key = 0;
-			if (lightning)
+			if (directLight)
 			{
 				key |= 1;
 			}
@@ -201,9 +201,9 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (lightning)
+			if (directLight)
 			{
-				defines["LIGHTNING"] = "1";
+				defines["DIRECT_LIGHT"] = "1";
 			}
 
 			if (clipPlane)

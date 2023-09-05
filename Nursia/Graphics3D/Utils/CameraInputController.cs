@@ -157,7 +157,7 @@ namespace Nursia.Graphics3D.Utils
 		{
 			_forwardKeyPressed = _leftKeyPressed =
 								 _rightKeyPressed = _backwardKeyPressed =
-													_upKeyPressed = _downKeyPressed = false;
+								 _upKeyPressed = _downKeyPressed = false;
 			_keyboardLastTime = null;
 		}
 
@@ -204,7 +204,7 @@ namespace Nursia.Graphics3D.Utils
 			{
 				_camera.Position -= delta * _camera.Up;
 			}
-			
+
 			_keyboardLastTime = DateTime.Now;
 		}
 	}

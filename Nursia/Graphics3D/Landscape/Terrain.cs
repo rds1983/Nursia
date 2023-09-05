@@ -120,6 +120,9 @@ namespace Nursia.Graphics3D.Landscape
 		public int SizeX => TileSizeX * TilesPerX;
 		public int SizeZ => TileSizeZ * TilesPerZ;
 
+		public float MaximumHeight { get; set; } = 10.0f;
+		public float MinimumHeight { get; set; } = -10.0f;
+
 
 		public TerrainTile this[int x, int z]
 		{
@@ -174,6 +177,16 @@ namespace Nursia.Graphics3D.Landscape
 			if (hz < 0 || hz >= _heightMap.GetLength(1))
 			{
 				return;
+			}
+
+			if (height < MinimumHeight)
+			{
+				height = MinimumHeight;
+			}
+
+			if (height > MaximumHeight)
+			{
+				height = MaximumHeight;
 			}
 
 			if (height.EpsilonEquals(_heightMap[hx, hz]))

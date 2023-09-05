@@ -19,7 +19,6 @@ namespace Nursia.Samples.LevelEditor
 		private static StudioGame _instance;
 
 		private readonly GraphicsDeviceManager _graphics;
-		private CameraInputController _controller;
 		private Desktop _desktop = null;
 		private MainForm _mainForm;
 		private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
@@ -72,20 +71,17 @@ namespace Nursia.Samples.LevelEditor
 				Terrain = new Terrain
 				{
 					TextureBase = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png")
+				},
+				DirectLight = new DirectLight
+				{
+					Color = Color.White,
+					Position = new Vector3(10000, 10000, -10000),
+					Direction = new Vector3(0, -1, 0)
 				}
-			};
-
-			scene.DirectLight = new DirectLight
-			{
-				Color = Color.White,
-				Position = new Vector3(10000, 10000, -10000),
-				Direction = new Vector3(0, -1, 0)
 			};
 
 			scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 			_mainForm.Scene = scene;
-
-			_controller = new CameraInputController(scene.Camera);
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -93,23 +89,6 @@ namespace Nursia.Samples.LevelEditor
 			base.Update(gameTime);
 
 			_fpsCounter.Update(gameTime);
-
-			var keyboardState = Keyboard.GetState();
-
-			// Manage camera input controller
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Backward, keyboardState.IsKeyDown(Keys.S));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Up, keyboardState.IsKeyDown(Keys.Up));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
-
-			var mouseState = Mouse.GetState();
-			_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.MiddleButton == ButtonState.Pressed);
-
-			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
-
-			_controller.Update();
 		}
 
 		protected override void Draw(GameTime gameTime)

@@ -94,8 +94,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 						mesh.Material.Texture != null,
 						meshNode.Skin != null,
 						_context.ClipPlane != null,
-						_context.DirectLight != null && mesh.HasNormals,
-						mesh.HasNormals ? _context.PointLights.Count : 0);
+						_context.HasLights && mesh.HasNormals);
+
 					if (meshNode.Skin != null)
 					{
 						effect.Parameters["_bones"].SetValue(boneTransforms);
@@ -158,7 +158,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, scene.HasMarker, _context.DirectLight != null);
+				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, scene.HasMarker, _context.HasLights);
 				if (scene.HasMarker)
 				{
 					var markerPosition = scene.Marker.Position.Value;
@@ -179,10 +179,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 							continue;
 						}
 
-						if (scene.HasMarker)
+						if (scene.HasMarker || scene.HasLights)
 						{
 							effect.Parameters["_world"].SetValue(terrainTile.Transform);
 						}
+
 						DrawTerrain(effect, terrainTile);
 					}
 				}

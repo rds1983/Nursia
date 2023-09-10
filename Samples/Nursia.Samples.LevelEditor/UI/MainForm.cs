@@ -77,7 +77,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			list.Items.Add(new ListItem
 			{
 				Text = "Directional Light",
-				Tag = Scene.DirectLight
+				Tag = Scene.DirectLights[0]
 			});
 
 			// Skybox

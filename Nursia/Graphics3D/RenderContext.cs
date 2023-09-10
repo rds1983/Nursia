@@ -15,10 +15,10 @@ namespace Nursia.Graphics3D
 
 		public Plane? ClipPlane;
 
-		public DirectLight DirectLight => Scene.DirectLight;
+		public List<DirectLight> DirectLights => Scene.DirectLights;
 		public List<BaseLight> PointLights => Scene.PointLights;
 
-		public bool HasLights => DirectLight != null || PointLights.Count > 0;
+		public bool HasLights => Scene.HasLights;
 
 		public Matrix Projection
 		{

@@ -71,14 +71,15 @@ namespace Nursia.Samples.LevelEditor
 				Terrain = new Terrain
 				{
 					TextureBase = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png")
-				},
-				DirectLight = new DirectLight
-				{
-					Color = Color.White,
-					Position = new Vector3(10000, 10000, -10000),
-					Direction = new Vector3(0, -1, 0)
 				}
 			};
+
+			scene.DirectLights.Add(new DirectLight
+			{
+				Color = Color.White,
+				Position = new Vector3(10000, 10000, -10000),
+				Direction = new Vector3(0, -1, 0)
+			});
 
 			scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 			_mainForm.Scene = scene;

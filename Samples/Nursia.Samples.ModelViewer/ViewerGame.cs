@@ -13,6 +13,7 @@ using Nursia.Graphics3D.Lights;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ModelViewer
@@ -29,6 +30,28 @@ namespace ModelViewer
 		private Desktop _desktop;
 		private bool _isAnimating;
 		private DateTime? _animationMoment;
+		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
+
+		static ViewerGame()
+		{
+			_defaultLights.Add(new DirectLight
+			{
+				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
+				Color = new Color(1, 0.9607844f, 0.8078432f)
+			});
+
+/*			_defaultLights.Add(new DirectLight
+			{
+				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
+				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
+			});
+
+			_defaultLights.Add(new DirectLight
+			{
+				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
+				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
+			});*/
+		}
 
 		public ViewerGame()
 		{
@@ -94,14 +117,15 @@ namespace ModelViewer
 
 					_renderer.NearPlaneDistance = size / 1000.0f;
 					_renderer.FarPlaneDistance = size * 10.0f;
-				} else
+				}
+				else
 				{
 					_scene.Camera.SetLookAt(Vector3.One, Vector3.Zero);
 				}
 
 				ResetAnimation();
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				var messageBox = Dialog.CreateMessageBox("Error", ex.Message);
 				messageBox.ShowModal(_desktop);
@@ -137,12 +161,7 @@ namespace ModelViewer
 			Nrs.Game = this;
 			LoadModel(string.Empty);
 
-			_scene.DirectLight = new DirectLight
-			{
-				Color = Color.White,
-				Position = new Vector3(10000, 10000, -10000),
-				Direction = new Vector3(1, -1, -1)
-			};
+			_scene.DirectLights.AddRange(_defaultLights);
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -155,7 +174,7 @@ namespace ModelViewer
 			{
 				_scene.PointLights.Add(new BaseLight
 				{
-					Position = new Vector3(0, 0, 1),
+					Position = new Vector3(0, 0, 2),
 					Color = Color.Yellow
 				});
 			}
@@ -164,8 +183,17 @@ namespace ModelViewer
 			{
 				_scene.PointLights.Add(new BaseLight
 				{
-					Position = new Vector3(-1, 1, 0),
+					Position = new Vector3(-2, 2, 0),
 					Color = Color.Red
+				});
+			}
+
+			if (_mainPanel._checkBoxLight3.IsChecked)
+			{
+				_scene.PointLights.Add(new BaseLight
+				{
+					Position = new Vector3(-2, 0, -2),
+					Color = Color.Blue
 				});
 			}
 		}

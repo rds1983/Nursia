@@ -7,8 +7,9 @@ namespace Nursia.Graphics3D
 {
 	public class Scene
 	{
-		public DirectLight DirectLight { get; set; }
+		public List<DirectLight> DirectLights { get; } = new List<DirectLight>();
 		public List<BaseLight> PointLights { get; } = new List<BaseLight>();
+		public bool HasLights => DirectLights.Count > 0 || PointLights.Count > 0;
 
 		public Skybox Skybox;
 

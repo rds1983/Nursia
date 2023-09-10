@@ -7,7 +7,50 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	partial class ForwardRenderer
 	{
-		internal void DrawMesh(Effect effect, Mesh mesh, ref Matrix worldTransform)
+		private int[] _effectLightType = new int[Constants.MaxLights];
+		private Vector3[] _effectLightPosition = new Vector3[Constants.MaxLights];
+		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
+		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
+
+		private void SetLights(Effect effect)
+		{
+			var lightIndex = 0;
+			foreach (var directLight in _context.DirectLights)
+			{
+				if (lightIndex >= Constants.MaxLights)
+				{
+					break;
+				}
+
+				_effectLightType[lightIndex] = 0;
+				_effectLightColor[lightIndex] = directLight.Color.ToVector3();
+				_effectLightDirection[lightIndex] = directLight.Direction;
+
+				++lightIndex;
+			}
+
+			foreach (var pointLight in _context.PointLights)
+			{
+				if (lightIndex >= Constants.MaxLights)
+				{
+					break;
+				}
+
+				_effectLightType[lightIndex] = 1;
+				_effectLightColor[lightIndex] = pointLight.Color.ToVector3();
+				_effectLightPosition[lightIndex] = pointLight.Position;
+
+				++lightIndex;
+			}
+
+			effect.Parameters["_lightType"].SetValue(_effectLightType);
+			effect.Parameters["_lightPosition"].SetValue(_effectLightPosition);
+			effect.Parameters["_lightDirection"].SetValue(_effectLightDirection);
+			effect.Parameters["_lightColor"].SetValue(_effectLightColor);
+			effect.Parameters["_lightCount"].SetValue(lightIndex);
+		}
+
+		private void DrawMesh(Effect effect, Mesh mesh, ref Matrix worldTransform)
 		{
 			if (mesh == null || mesh.VertexBuffer == null || mesh.IndexBuffer == null || mesh.Material == null)
 			{
@@ -34,25 +77,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			device.Apply(mesh.MeshData);
 
-			if (_context.HasLights)
+			if (_context.HasLights && mesh.HasNormals)
 			{
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				if (_context.DirectLight != null)
-				{
-					effect.Parameters["_dirLightColor"].SetValue(_context.DirectLight.Color.ToVector3());
-					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
-				}
-
-				if (_context.PointLights.Count > 0)
-				{
-					var pointLightColors = (from l in _context.PointLights select l.Color.ToVector3()).ToArray();
-					effect.Parameters["_pointLightColor"].SetValue(pointLightColors);
-
-					var pointLightPositions = (from l in _context.PointLights select l.Position).ToArray();
-					effect.Parameters["_pointLightPosition"].SetValue(pointLightPositions);
-				}
+				SetLights(effect);
 			}
 
 			device.DrawIndexedPrimitives(effect, mesh.MeshData);
@@ -83,11 +113,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				if (_context.DirectLight != null)
-				{
-					effect.Parameters["_dirLightColor"].SetValue(_context.DirectLight.Color.ToVector3());
-					effect.Parameters["_dirLightDirection"].SetValue(_context.DirectLight.Direction);
-				}
+				SetLights(effect);
 			}
 
 			device.DrawIndexedPrimitives(effect, tile.MeshData);

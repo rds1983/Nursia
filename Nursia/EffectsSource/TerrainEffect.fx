@@ -2,7 +2,7 @@
 
 #define PI 3.1415926535897932384626433832795
 
-#ifdef DIRECT_LIGHT
+#ifdef LIGHTNING
 #include "Lightning.fxh"
 #endif
 
@@ -29,13 +29,6 @@ BEGIN_CONSTANTS
 
 float4 _diffuseColor;
 
-#ifdef DIRECT_LIGHT
-
-float3 _dirLightDirection;
-float3 _dirLightColor;
-
-#endif
-
 #ifdef CLIP_PLANE
 
 float4 _clipPlane;
@@ -55,7 +48,7 @@ MATRIX_CONSTANTS
 float4x4 _worldViewProjection;
 float3x3 _worldInverseTranspose;
 
-#ifdef MARKER
+#if LIGHTNING || MARKER
 float4x4 _world;
 #endif
 
@@ -65,7 +58,7 @@ struct VSInput
 {
     float4 Position : SV_POSITION;
 
-#ifdef DIRECT_LIGHT
+#ifdef LIGHTNING
     float3 Normal   : NORMAL;
 #endif
 
@@ -78,7 +71,7 @@ struct VSOutput
 
     float2 TexCoord: TEXCOORD0;
 
-#ifdef DIRECT_LIGHT
+#ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD1;
 #endif
 
@@ -86,7 +79,7 @@ struct VSOutput
     float4 ClipDistances: TEXCOORD2;
 #endif
 
-#ifdef MARKER
+#if LIGHTNING || MARKER
 	float4 SourcePosition: POSITION1;
 #endif
 };
@@ -99,11 +92,11 @@ VSOutput Vertex(VSInput input)
 	output.TexCoord = input.TexCoord;
 	output.Position = mul(input.Position, _worldViewProjection);
 
-#ifdef DIRECT_LIGHT
+#ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
 #endif
 
-#ifdef MARKER
+#if LIGHTNING || MARKER
 	output.SourcePosition = mul(input.Position, _world);
 #endif
 
@@ -145,12 +138,11 @@ float4 Pixel(VSOutput input) : COLOR
 	color = lerp(color, c4, b.a);
 #endif
 
-#ifdef DIRECT_LIGHT
-	float3 result = float3(0, 0, 0);
+#ifdef LIGHTNING
 	float3 normal = normalize(input.WorldNormal);
-    result += ComputeLighting(normal, -_dirLightDirection, _dirLightColor, 1.0);
+	float3 lightPower = CalculateLightPower(normal, input.SourcePosition.xyz);
 
-	float4 c = float4(color, 1) * float4(result, 1) * _diffuseColor;
+	float4 c = float4(color, 1) * float4(lightPower, 1) * _diffuseColor;
 #else
 	float4 c = float4(color, 1) * _diffuseColor;
 #endif

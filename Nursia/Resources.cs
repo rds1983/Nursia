@@ -12,7 +12,7 @@ namespace Nursia
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
-		private static Effect[] _defaultEffects = new Effect[256];
+		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
 		private static Texture2D _white, _waterDUDV, _waterNormals;
 
@@ -112,30 +112,28 @@ namespace Nursia
 			}
 		}
 
-		public static Effect GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool directLight, int pointLights)
+		public static Effect GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning)
 		{
 			var key = 0;
 
-			key |= pointLights;
-
-			if (directLight)
+			if (lightning)
 			{
-				key |= 16;
+				key |= 1;
 			}
 
 			if (clipPlane)
 			{
-				key |= 32;
+				key |= 2;
 			}
 
 			if (skinning)
 			{
-				key |= 64;
+				key |= 4;
 			}
 
 			if (texture)
 			{
-				key |= 128;
+				key |= 8;
 			}
 
 			if (_defaultEffects[key] != null)
@@ -144,14 +142,9 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (pointLights > 0)
+			if (lightning)
 			{
-				defines["POINT_LIGHTS"] = pointLights.ToString();
-			}
-
-			if (directLight)
-			{
-				defines["DIR_LIGHT"] = "1";
+				defines["LIGHTNING"] = "1";
 			}
 
 			if (skinning)
@@ -175,7 +168,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool directLight)
+		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool lightning)
 		{
 			if (texturesCount < 0 || texturesCount > 4)
 			{
@@ -185,7 +178,7 @@ namespace Nursia
 			var key = 0;
 			key |= texturesCount;
 
-			if (directLight)
+			if (lightning)
 			{
 				key |= 8;
 			}
@@ -207,9 +200,9 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (directLight)
+			if (lightning)
 			{
-				defines["DIRECT_LIGHT"] = "1";
+				defines["LIGHTNING"] = "1";
 			}
 
 			if (clipPlane)

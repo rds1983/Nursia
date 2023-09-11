@@ -83,7 +83,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
 
-				var world = Matrix.CreateScale(waterTile.Size) *
+				var world = Matrix.CreateScale(waterTile.SizeX, 0, waterTile.SizeZ) *
 					Matrix.CreateTranslation(waterTile.X,
 						waterTile.Height,
 						waterTile.Z);

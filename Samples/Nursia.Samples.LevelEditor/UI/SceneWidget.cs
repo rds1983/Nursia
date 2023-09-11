@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
@@ -144,6 +145,38 @@ namespace Nursia.Samples.LevelEditor.UI
 			finally
 			{
 				device.Viewport = oldViewport;
+			}
+		}
+
+		protected override void OnPlacedChanged()
+		{
+			base.OnPlacedChanged();
+			
+			if (Desktop == null)
+			{
+				return;
+			}
+
+			Desktop.TouchUp += Desktop_TouchUp;
+		}
+
+		private void Desktop_TouchUp(object sender, EventArgs e)
+		{
+			_controller.SetTouchState(TouchType.Move, false);
+			_controller.SetTouchState(TouchType.Rotate, false);
+
+			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
+			{
+				GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
+
+				if (sizeX > 0 && sizeZ > 0)
+				{
+					var waterTile = new WaterTile(startPos.X, startPos.Z, Scene.DefaultWaterLevel, sizeX, sizeZ);
+					Scene.WaterTiles.Add(waterTile);
+				}
+
+				_touchDownStart = null;
+				Scene.Models.Remove(_waterMarker);
 			}
 		}
 
@@ -293,29 +326,16 @@ namespace Nursia.Samples.LevelEditor.UI
 			return result;
 		}
 
-		public override void OnTouchUp()
+		private void GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ)
 		{
-			base.OnTouchUp();
-			_controller.SetTouchState(TouchType.Move, false);
-			_controller.SetTouchState(TouchType.Rotate, false);
+			var markerPos = Scene.Marker.Position.Value;
 
-			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
-			{
-				var markerPos = Scene.Marker.Position.Value;
-				markerPos.Y = Scene.DefaultWaterLevel;
+			startPos = new Vector3(Math.Min(markerPos.X, _touchDownStart.Value.X),
+				Scene.DefaultWaterLevel,
+				Math.Min(markerPos.Z, _touchDownStart.Value.Z));
 
-				var dist = Vector3.Distance(markerPos, _touchDownStart.Value);
-				if (dist > 0)
-				{
-					var size = markerPos.X - _touchDownStart.Value.X;
-
-					var waterTile = new WaterTile(_touchDownStart.Value.X, _touchDownStart.Value.Z, Scene.DefaultWaterLevel, size);
-					Scene.WaterTiles.Add(waterTile);
-				}
-
-				_touchDownStart = null;
-				Scene.Models.Remove(_waterMarker);
-			}
+			sizeX = Math.Abs(markerPos.X - _touchDownStart.Value.X);
+			sizeZ = Math.Abs(markerPos.Z - _touchDownStart.Value.Z);
 		}
 
 		public override void OnTouchMoved()
@@ -335,22 +355,21 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				if (_touchDownStart != null && Scene.Marker.Position != null)
 				{
-					var markerPos = Scene.Marker.Position.Value;
-					markerPos.Y = Scene.DefaultWaterLevel;
-
-					var dist = Vector3.Distance(markerPos, _touchDownStart.Value);
-					if (dist > 0)
+					GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
+					if (sizeX > 0 && sizeZ > 0)
 					{
 						if (_waterMarker == null)
 						{
 							var mesh = new Mesh(PrimitiveMeshes.SquarePositionFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
 							_waterMarker = new NursiaModel(mesh);
+						}
+
+						if (!Scene.Models.Contains(_waterMarker)) 
+						{
 							Scene.Models.Add(_waterMarker);
 						}
 
-						_waterMarker.Transform = Matrix.CreateScale(_touchDownStart.Value.X - markerPos.X,
-							0,
-							_touchDownStart.Value.Z - markerPos.Z) * Matrix.CreateTranslation(markerPos);
+						_waterMarker.Transform = Matrix.CreateScale(sizeX, 0, sizeZ) * Matrix.CreateTranslation(startPos);
 					}
 				}
 			}

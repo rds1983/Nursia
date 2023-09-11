@@ -101,7 +101,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						effect.Parameters["_bones"].SetValue(boneTransforms);
 					}
 
-					var m = mesh.Transform * meshNode.AbsoluteTransform;
+					var m = mesh.Transform * meshNode.AbsoluteTransform * rootTransform;
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
 					if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{

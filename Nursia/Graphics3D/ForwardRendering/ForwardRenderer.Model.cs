@@ -98,6 +98,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 			effect.Parameters["_diffuseColor"].SetValue(tile.Terrain.DiffuseColor.ToVector4());
 			effect.Parameters["_textureBase"].SetValue(tile.Terrain.TextureBase);
 
+			if (tile.Terrain.TexturesCount > 1)
+			{
+				effect.Parameters["_textureBlend"].SetValue(tile.SplatTexture);
+			}
+
 			if (_context.ClipPlane != null)
 			{
 				var v = _context.ClipPlane.Value;

@@ -13,6 +13,7 @@ namespace Nursia.Graphics3D.Landscape
 		private int _resolutionX = 1, _resolutionZ = 1, _oldResolutionX = 1, _oldResolutionZ = 1;
 		private TerrainTile[,] _tiles;
 		internal float[,] _heightMap;
+		private int _tileSplatTextureWidth = 128, _tileSplatTextureHeight = 128;
 		private bool _dirty = true;
 
 		public int TileSizeX
@@ -71,6 +72,38 @@ namespace Nursia.Graphics3D.Landscape
 				}
 
 				_tilesPerZ = value;
+				SetDirty();
+			}
+		}
+
+		public int TileSplatTextureWidth
+		{
+			get => _tileSplatTextureWidth;
+
+			set
+			{
+				if (value == _tileSplatTextureWidth)
+				{
+					return;
+				}
+
+				_tileSplatTextureWidth = value;
+				SetDirty();
+			}
+		}
+
+		public int TileSplatTextureHeight
+		{
+			get => _tileSplatTextureHeight;
+
+			set
+			{
+				if (value == _tileSplatTextureHeight)
+				{
+					return;
+				}
+
+				_tileSplatTextureHeight = value;
 				SetDirty();
 			}
 		}
@@ -138,6 +171,62 @@ namespace Nursia.Graphics3D.Landscape
 		[Browsable(false)]
 		public Texture2D TextureBase { get; set; }
 
+		[Browsable(false)]
+		public string TexturePaintName1 { get; set; }
+
+		[Browsable(false)]
+		public Texture2D TexturePaint1 { get; set; }
+
+		[Browsable(false)]
+		public string TexturePaintName2 { get; set; }
+
+		[Browsable(false)]
+		public Texture2D TexturePaint2 { get; set; }
+
+		[Browsable(false)]
+		public string TexturePaintName3 { get; set; }
+
+		[Browsable(false)]
+		public Texture2D TexturePaint3 { get; set; }
+
+		[Browsable(false)]
+		public string TexturePaintName4 { get; set; }
+
+		[Browsable(false)]
+		public Texture2D TexturePaint4 { get; set; }
+
+		[Browsable(false)]
+		public int TexturesCount
+		{
+			get
+			{
+				var result = 0;
+				if (TextureBase != null)
+				{
+					++result;
+				}
+
+				if (TexturePaint1 != null)
+				{
+					++result;
+				}
+				if (TexturePaint2 != null)
+				{
+					++result;
+				}
+				if (TexturePaint3 != null)
+				{
+					++result;
+				}
+				if (TexturePaint4 != null)
+				{
+					++result;
+				}
+
+				return result;
+			}
+		}
+
 
 		private void SetDirty()
 		{
@@ -162,6 +251,8 @@ namespace Nursia.Graphics3D.Landscape
 
 			return _heightMap[hx, hz];
 		}
+
+		public TerrainTile GetTile(float x, float z) => _tiles[(int)(x / TileSizeX), (int)(z / TileSizeZ)];
 
 		public void SetHeight(float x, float z, float height)
 		{
@@ -196,8 +287,117 @@ namespace Nursia.Graphics3D.Landscape
 
 			_heightMap[hx, hz] = height;
 
-			var tile = _tiles[(int)(x / TileSizeX), (int)(z / TileSizeZ)];
+			var tile = GetTile(x, z);
 			tile.InvalidateMesh();
+		}
+
+		public Point ToSplatPosition(float x, float z) => new Point((int)((x * TileSplatTextureWidth) / TileSizeX),
+				(int)((z * TileSplatTextureHeight) / TileSizeZ));
+
+		public Vector2 ToTerrainPosition(Point splatPos) => new Vector2((float)splatPos.X * TileSizeX / TileSplatTextureWidth,
+				(float)splatPos.Y * TileSizeZ / TileSplatTextureHeight);
+
+		private TerrainTile GetTileBySplatPosition(Point splatPosition) => _tiles[splatPosition.X / TileSplatTextureWidth, splatPosition.Y / TileSplatTextureHeight];
+
+		public float GetSplatValue(Point splatPos, SplatManChannel channel)
+		{
+			var tile = GetTileBySplatPosition(splatPos);
+			var localX = splatPos.X % TileSplatTextureWidth;
+			var localY = splatPos.Y % TileSplatTextureHeight;
+
+			if (localX < 0 || localY < 0)
+			{
+				return 0;
+			}
+
+			var index = localY * TileSplatTextureHeight + localX;
+			var c = tile.SplatData[index];
+
+			float result = 0;
+			switch (channel)
+			{
+				case SplatManChannel.First:
+					result = c.X;
+					break;
+				case SplatManChannel.Second:
+					result = c.Y;
+					break;
+				case SplatManChannel.Third:
+					result = c.Z;
+					break;
+				case SplatManChannel.Fourth:
+					result = c.W;
+					break;
+			}
+
+			return result;
+		}
+
+		public void SetSplatValue(Point splatPos, SplatManChannel channel, float value)
+		{
+			var tile = GetTileBySplatPosition(splatPos);
+			var localX = splatPos.X % TileSplatTextureWidth;
+			var localY = splatPos.Y % TileSplatTextureHeight;
+
+			if (localX < 0 || localY < 0)
+			{
+				return;
+			}
+
+			var index = localY * TileSplatTextureHeight + localX;
+			var v = tile.SplatData[index];
+
+			float oldValue = 0;
+			switch (channel)
+			{
+				case SplatManChannel.First:
+					oldValue = v.X;
+					break;
+				case SplatManChannel.Second:
+					oldValue = v.Y;
+					break;
+				case SplatManChannel.Third:
+					oldValue = v.Z;
+					break;
+				case SplatManChannel.Fourth:
+					oldValue = v.W;
+					break;
+			}
+
+			if (oldValue.EpsilonEquals(value))
+			{
+				return;
+			}
+
+			switch (channel)
+			{
+				case SplatManChannel.First:
+					v.X = value;
+					break;
+				case SplatManChannel.Second:
+					v.Y = value;
+					break;
+				case SplatManChannel.Third:
+					v.Z = value;
+					break;
+				case SplatManChannel.Fourth:
+					v.W = value;
+					break;
+			}
+
+			// Make sure sum of channels doesnt exceed 1f
+			var sum = v.X + v.Y + v.Z + v.W;
+			if (sum > 1f)
+			{
+				var correction = 1f / sum;
+				v.X *= correction;
+				v.Y *= correction;
+				v.Z *= correction;
+				v.W *= correction;
+			}
+
+			tile.SplatData[index] = v;
+			tile.InvalidateSplatTexture();
 		}
 
 		private void Update()

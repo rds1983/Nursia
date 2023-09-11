@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.Properties;
 using Nursia.Graphics3D;
@@ -20,6 +21,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				_sceneWidget.Scene = value;
 				RefreshExplorer();
+				RefreshLibrary();
 			}
 		}
 
@@ -45,15 +47,24 @@ namespace Nursia.Samples.LevelEditor.UI
 			_topSplitPane.SetSplitterPosition(0, 0.25f);
 			_topSplitPane.SetSplitterPosition(1, 0.7f);
 
+			_sliderTerrainRadius.ValueChanged += (s, a) => UpdateTerrainRadius();
 			_sliderTerrainPower.ValueChanged += (s, a) => UpdateTerrainPower();
 
 			RefreshLibrary();
+
+			UpdateTerrainRadius();
 			UpdateTerrainPower();
+		}
+
+		private void UpdateTerrainRadius()
+		{
+			_labelTerrainRadius.Text = $"Radius: {_sliderTerrainRadius.Value}";
+			_sceneWidget.Instrument.Radius = _sliderTerrainRadius.Value;
 		}
 
 		private void UpdateTerrainPower()
 		{
-			_labelTerrainPower.Text = _sliderTerrainPower.Value.ToString();
+			_labelTerrainPower.Text = $"Power: {_sliderTerrainPower.Value.ToString()}";
 			_sceneWidget.Instrument.Power = _sliderTerrainPower.Value;
 		}
 
@@ -106,6 +117,13 @@ namespace Nursia.Samples.LevelEditor.UI
 			var pos = container.Widgets.Count;
 			button.GridRow = pos / LibraryButtonsPerRow;
 			button.GridColumn = pos % LibraryButtonsPerRow;
+			button.Height = 100;
+
+			if (button.Image != null)
+			{
+				button.ImageWidth = 75;
+				button.ImageHeight = 75;
+			}
 
 			container.Widgets.Add(button);
 		}
@@ -116,9 +134,14 @@ namespace Nursia.Samples.LevelEditor.UI
 			_gridTerrainLibrary.Widgets.Clear();
 
 			_gridTerrainLibrary.ColumnsProportions.Clear();
-			for(var i = 0; i < LibraryButtonsPerRow; i++)
+			for (var i = 0; i < LibraryButtonsPerRow; i++)
 			{
 				_gridTerrainLibrary.ColumnsProportions.Add(new Proportion(ProportionType.Part, 1.0f));
+			}
+
+			if (Scene == null || Scene.Terrain == null)
+			{
+				return;
 			}
 
 			var raiseButton = new InstrumentButton(_allButtons)
@@ -126,15 +149,8 @@ namespace Nursia.Samples.LevelEditor.UI
 				Text = "Raise",
 			};
 
-			raiseButton.PressedChanged += (s, a) =>
-			{
-				if (!raiseButton.IsPressed)
-				{
-					return;
-				}
+			raiseButton.TouchDown += (s, a) => _sceneWidget.Instrument.Type = InstrumentType.RaiseTerrain;
 
-				_sceneWidget.Instrument.Type = InstrumentType.RaiseTerrain;
-			};
 			AddButton(_gridTerrainLibrary, raiseButton);
 
 			var lowerButton = new InstrumentButton(_allButtons)
@@ -142,17 +158,74 @@ namespace Nursia.Samples.LevelEditor.UI
 				Text = "Lower",
 			};
 
-			lowerButton.PressedChanged += (s, a) =>
-			{
-				if (!lowerButton.IsPressed)
-				{
-					return;
-				}
-
-				_sceneWidget.Instrument.Type = InstrumentType.LowerTerrain;
-			};
+			lowerButton.TouchDown += (s, a) => _sceneWidget.Instrument.Type = InstrumentType.LowerTerrain;
 
 			AddButton(_gridTerrainLibrary, lowerButton);
+
+			var terrain = Scene.Terrain;
+			if (terrain.TexturePaint1 != null)
+			{
+				var texturePaintButton = new InstrumentButton(_allButtons)
+				{
+					Text = terrain.TexturePaintName1,
+					Image = new TextureRegion(terrain.TexturePaint1)
+				};
+
+				texturePaintButton.TouchDown += (s, a) =>
+				{
+					_sceneWidget.Instrument.Type = InstrumentType.PaintTexture1;
+				};
+
+				AddButton(_gridTerrainLibrary, texturePaintButton);
+			}
+
+			if (terrain.TexturePaint2 != null)
+			{
+				var texturePaintButton = new InstrumentButton(_allButtons)
+				{
+					Text = terrain.TexturePaintName2,
+					Image = new TextureRegion(terrain.TexturePaint2)
+				};
+
+				texturePaintButton.TouchDown += (s, a) =>
+				{
+					_sceneWidget.Instrument.Type = InstrumentType.PaintTexture2;
+				};
+
+				AddButton(_gridTerrainLibrary, texturePaintButton);
+			}
+
+			if (terrain.TexturePaint3 != null)
+			{
+				var texturePaintButton = new InstrumentButton(_allButtons)
+				{
+					Text = terrain.TexturePaintName3,
+					Image = new TextureRegion(terrain.TexturePaint3)
+				};
+
+				texturePaintButton.TouchDown += (s, a) =>
+				{
+					_sceneWidget.Instrument.Type = InstrumentType.PaintTexture3;
+				};
+
+				AddButton(_gridTerrainLibrary, texturePaintButton);
+			}
+
+			if (terrain.TexturePaint4 != null)
+			{
+				var texturePaintButton = new InstrumentButton(_allButtons)
+				{
+					Text = terrain.TexturePaintName4,
+					Image = new TextureRegion(terrain.TexturePaint4)
+				};
+
+				texturePaintButton.TouchDown += (s, a) =>
+				{
+					_sceneWidget.Instrument.Type = InstrumentType.PaintTexture4;
+				};
+
+				AddButton(_gridTerrainLibrary, texturePaintButton);
+			}
 		}
 	}
 }

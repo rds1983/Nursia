@@ -5,6 +5,7 @@ using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
+using Nursia.Graphics3D.Landscape;
 using Nursia.Graphics3D.Utils;
 using static Nursia.Graphics3D.Utils.CameraInputController;
 
@@ -77,25 +78,13 @@ namespace Nursia.Samples.LevelEditor.UI
 
 		private void UpdateMarker()
 		{
-			if (Scene == null || Scene.Terrain == null)
+			if (Scene == null || Scene.Terrain == null || Instrument.Type == InstrumentType.None)
 			{
 				return;
 			}
 
-			switch (Instrument.Type)
-			{
-				case InstrumentType.None:
-					Scene.Marker.Position = null;
-					break;
-				case InstrumentType.RaiseTerrain:
-					Scene.Marker.Position = CalculateMarkerPosition();
-					break;
-				case InstrumentType.LowerTerrain:
-					Scene.Marker.Position = CalculateMarkerPosition();
-					break;
-			}
-
-			Scene.Marker.Radius = Instrument.Power;
+			Scene.Marker.Position = CalculateMarkerPosition();
+			Scene.Marker.Radius = Instrument.Radius;
 		}
 
 		private void UpdateKeyboard()
@@ -146,36 +135,26 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 		}
 
-		private void RaiseLower()
+		private void UpdateTerrainHeight(Vector2 pos, float power)
 		{
-			if (Scene == null || Scene.Terrain == null || Scene.Marker.Position == null)
-			{
-				return;
-			}
+			var height = Scene.Terrain.GetHeight(pos.X, pos.Y);
+			height += power;
+			Scene.Terrain.SetHeight(pos.X, pos.Y, height);
+		}
 
-			var mouse = Mouse.GetState();
-			if (mouse.LeftButton != ButtonState.Pressed)
-			{
-				return;
-			}
+		private void UpdateTerrainSplatMap(Point splatPos, SplatManChannel channel, float power)
+		{
+			var splatValue = Scene.Terrain.GetSplatValue(splatPos, channel);
+			splatValue += power * 0.5f;
+			Scene.Terrain.SetSplatValue(splatPos, channel, splatValue);
+		}
 
-			var power = 0.0f;
-			if (Instrument.Type == InstrumentType.RaiseTerrain)
-			{
-				power = 0.5f;
-			}
-			else if (Instrument.Type == InstrumentType.LowerTerrain)
-			{
-				power = -0.5f;
-			}
-
-			if (power == 0.0f)
-			{
-				return;
-			}
-
+		private void ApplyLowerRaise()
+		{
+			var power = Instrument.Power;
 			var radius = Scene.Marker.Radius;
 			var markerPos = Scene.Marker.Position.Value;
+
 			for (var x = (int)((markerPos.X - radius) * Scene.Terrain.ResolutionX);
 				x <= (int)((markerPos.X + radius) * Scene.Terrain.ResolutionX);
 				++x)
@@ -192,10 +171,81 @@ namespace Nursia.Samples.LevelEditor.UI
 						continue;
 					}
 
-					var height = Scene.Terrain.GetHeight(pos.X, pos.Y);
-					height += power;
-					Scene.Terrain.SetHeight(pos.X, pos.Y, height);
+					switch (Instrument.Type)
+					{
+						case InstrumentType.None:
+							break;
+						case InstrumentType.RaiseTerrain:
+							UpdateTerrainHeight(pos, power);
+							break;
+						case InstrumentType.LowerTerrain:
+							UpdateTerrainHeight(pos, -power);
+							break;
+					}
 				}
+			}
+		}
+
+		private void ApplyPaint()
+		{
+			var power = Instrument.Power;
+			var radius = Scene.Marker.Radius;
+			var markerPos = Scene.Marker.Position.Value;
+
+			var topLeft = Scene.Terrain.ToSplatPosition(markerPos.X - radius, markerPos.Z - radius);
+			var bottomRight = Scene.Terrain.ToSplatPosition(markerPos.X + radius, markerPos.Z + radius);
+
+			for (var x = topLeft.X; x <= bottomRight.X; ++x)
+			{
+				for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
+				{
+					var splatPos = new Point(x, y);
+					var terrainPos = Scene.Terrain.ToTerrainPosition(splatPos);
+					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
+
+					if (dist > radius)
+					{
+						continue;
+					}
+
+					switch (Instrument.Type)
+					{
+						case InstrumentType.PaintTexture1:
+							UpdateTerrainSplatMap(splatPos, SplatManChannel.First, power);
+							break;
+						case InstrumentType.PaintTexture2:
+							UpdateTerrainSplatMap(splatPos, SplatManChannel.Second, power);
+							break;
+						case InstrumentType.PaintTexture3:
+							UpdateTerrainSplatMap(splatPos, SplatManChannel.Third, power);
+							break;
+						case InstrumentType.PaintTexture4:
+							UpdateTerrainSplatMap(splatPos, SplatManChannel.Fourth, power);
+							break;
+					}
+				}
+			}
+		}
+
+		private void ApplyInstrument()
+		{
+			if (Scene == null || Scene.Terrain == null || Scene.Marker.Position == null)
+			{
+				return;
+			}
+
+			var mouse = Mouse.GetState();
+			if (mouse.LeftButton != ButtonState.Pressed || Instrument.Type == InstrumentType.None || Instrument.Power.EpsilonEquals(0.0f))
+			{
+				return;
+			}
+
+			if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
+			{
+				ApplyLowerRaise();
+			} else
+			{
+				ApplyPaint();
 			}
 		}
 
@@ -211,7 +261,7 @@ namespace Nursia.Samples.LevelEditor.UI
 		{
 			var result = base.OnTouchDown();
 
-			RaiseLower();
+			ApplyInstrument();
 
 			return result;
 		}
@@ -236,7 +286,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			_controller.SetTouchState(TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 			_controller.Update();
 
-			RaiseLower();
+			ApplyInstrument();
 		}
 	}
 }

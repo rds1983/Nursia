@@ -27,24 +27,24 @@
       <HorizontalSplitPane Id="_topSplitPane">
         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
           <TabItem Text="Terrain" ContentVerticalAlignment="Stretch">
-            <VerticalStackPanel Spacing="2">
+            <VerticalStackPanel Spacing="4">
               <VerticalStackPanel.Proportions>
                 <Proportion Type="Fill" />
               </VerticalStackPanel.Proportions>
               <Grid ColumnSpacing="8" RowSpacing="8" Id="_gridTerrainLibrary">
+                <Grid.DefaultRowProportion Type="Auto" />
                 <Grid.ColumnsProportions>
                   <Proportion Type="Part" />
                   <Proportion Type="Part" />
                   <Proportion Type="Part" />
                 </Grid.ColumnsProportions>
-                <Grid.RowsProportions>
-                  <Proportion Type="Pixels" Value="100" />
-                </Grid.RowsProportions>
                 <TextButton Text="Raise" Toggleable="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 <TextButton Text="Lower" Toggleable="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GridColumn="1" />
               </Grid>
-              <Label Text="5.0" HorizontalAlignment="Center" Id="_labelTerrainPower" />
-              <HorizontalSlider Minimum="1" Maximum="10" Value="2" Id="_sliderTerrainPower" />
+              <Label Text="Radius: 5.0" HorizontalAlignment="Center" Id="_labelTerrainRadius" />
+              <HorizontalSlider Minimum="1" Maximum="10" Value="3.2536585" Id="_sliderTerrainRadius" />
+              <Label Text="Power: 0.5" HorizontalAlignment="Center" Id="_labelTerrainPower" />
+              <HorizontalSlider Maximum="1" Value="0.4276423" Id="_sliderTerrainPower" />
             </VerticalStackPanel>
           </TabItem>
         </TabControl>

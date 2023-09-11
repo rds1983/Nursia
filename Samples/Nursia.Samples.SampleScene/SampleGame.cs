@@ -151,7 +151,7 @@ namespace SampleScene
 				Texture = texture
 			};
 
-			_scene.Lights.Add(new DirectLight
+			_scene.DirectLights.Add(new DirectLight
 			{
 				Color = Color.White,
 				Position = new Vector3(10000, 10000, -10000),

@@ -215,6 +215,11 @@ namespace Nursia
 				defines["MARKER"] = "1";
 			}
 
+			if (texturesCount > 0)
+			{
+				defines["TEXTURES"] = texturesCount.ToString();
+			}
+
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "TerrainEffect.efb", defines);
 			_terrainEffects[key] = result;
 

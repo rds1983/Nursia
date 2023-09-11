@@ -28,6 +28,8 @@ DECLARE_TEXTURE(_texture4, 5);
 BEGIN_CONSTANTS
 
 float4 _diffuseColor;
+float _terrainWidth;
+float _terrainHeight;
 
 #ifdef CLIP_PLANE
 
@@ -56,31 +58,32 @@ END_CONSTANTS
 
 struct VSInput
 {
-    float4 Position : SV_POSITION;
+	float4 Position : SV_POSITION;
 
 #ifdef LIGHTNING
-    float3 Normal   : NORMAL;
+	float3 Normal   : NORMAL;
 #endif
 
-    float2 TexCoord : TEXCOORD0;
+	float2 TexCoord : TEXCOORD0;
 };
 
 struct VSOutput
 {
-    float4 Position: SV_POSITION;
+	float4 Position: SV_POSITION;
 
-    float2 TexCoord: TEXCOORD0;
+	float2 TexCoord: TEXCOORD0;
+	float2 SplatTexCoord: TEXCOORD1;
 
 #ifdef LIGHTNING
-	float3 WorldNormal: TEXCOORD1;
+	float3 WorldNormal: POSITION1;
 #endif
 
 #ifdef CLIP_PLANE
-    float4 ClipDistances: TEXCOORD2;
+	float4 ClipDistances: TEXCOORD2;
 #endif
 
 #if LIGHTNING || MARKER
-	float4 SourcePosition: POSITION1;
+	float4 SourcePosition: POSITION2;
 #endif
 };
 
@@ -91,6 +94,7 @@ VSOutput Vertex(VSInput input)
 
 	output.TexCoord = input.TexCoord;
 	output.Position = mul(input.Position, _worldViewProjection);
+	output.SplatTexCoord = float2(input.Position.x / _terrainWidth, input.Position.z / _terrainHeight);
 
 #ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
@@ -118,7 +122,7 @@ float4 Pixel(VSOutput input) : COLOR
 	float3 color = SAMPLE_TEXTURE(_textureBase, input.TexCoord).rgb;
 
 #if TEXTURES > 0
-	float4 b = SAMPLE_TEXTURE(_textureBlend, input.TexCoord).rgba;
+	float4 b = SAMPLE_TEXTURE(_textureBlend, input.SplatTexCoord).rgba;
 	float3 c1 = SAMPLE_TEXTURE(_texture1, input.TexCoord).rgb;
 	color = lerp(color, c1, b.r);
 #endif

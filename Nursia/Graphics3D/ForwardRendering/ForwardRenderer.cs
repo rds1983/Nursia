@@ -158,7 +158,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 		{
 			if (scene.Terrain != null)
 			{
-				var effect = Resources.GetTerrainEffect(0, _context.ClipPlane != null, scene.HasMarker, _context.HasLights);
+				var terrain = scene.Terrain;
+				var effect = Resources.GetTerrainEffect(terrain.TexturesCount - 1, _context.ClipPlane != null,
+														scene.HasMarker, _context.HasLights);
 				if (scene.HasMarker)
 				{
 					var markerPosition = scene.Marker.Position.Value;
@@ -166,11 +168,34 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_markerRadius"].SetValue(scene.Marker.Radius);
 				}
 
-				for (var x = 0; x < scene.Terrain.TilesPerX; ++x)
+				if (terrain.TexturePaint1 != null)
 				{
-					for (var z = 0; z < scene.Terrain.TilesPerZ; ++z)
+					effect.Parameters["_texture1"].SetValue(terrain.TexturePaint1);
+				}
+
+				if (terrain.TexturePaint2 != null)
+				{
+					effect.Parameters["_texture2"].SetValue(terrain.TexturePaint2);
+				}
+
+				if (terrain.TexturePaint3 != null)
+				{
+					effect.Parameters["_texture3"].SetValue(terrain.TexturePaint3);
+				}
+
+				if (terrain.TexturePaint4 != null)
+				{
+					effect.Parameters["_texture4"].SetValue(terrain.TexturePaint4);
+				}
+
+				effect.Parameters["_terrainWidth"].SetValue(terrain.TileSizeX);
+				effect.Parameters["_terrainHeight"].SetValue(terrain.TileSizeZ);
+
+				for (var x = 0; x < terrain.TilesPerX; ++x)
+				{
+					for (var z = 0; z < terrain.TilesPerZ; ++z)
 					{
-						var terrainTile = scene.Terrain[x, z];
+						var terrainTile = terrain[x, z];
 
 						var m = terrainTile.Transform;
 						var boundingBox = terrainTile.MeshData.BoundingBox.Transform(ref m);

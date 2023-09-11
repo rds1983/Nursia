@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Utilities;
 
 namespace Nursia.Graphics3D.Landscape
 {
@@ -7,6 +8,7 @@ namespace Nursia.Graphics3D.Landscape
 	{
 		private MeshData _meshData = null;
 		private Matrix? _transform;
+		private Texture2D _splatTexture;
 
 		public Terrain Terrain { get; }
 
@@ -24,6 +26,29 @@ namespace Nursia.Graphics3D.Landscape
 
 		public int TileX { get; }
 		public int TileZ { get; }
+
+		internal readonly Vector4[] SplatData;
+
+		public Texture2D SplatTexture
+		{
+			get
+			{
+				if (_splatTexture == null)
+				{
+					_splatTexture = new Texture2D(Nrs.GraphicsDevice, Terrain.TileSplatTextureWidth, Terrain.TileSplatTextureHeight);
+
+					var colors = new Color[SplatData.Length];
+					for(var i = 0; i < colors.Length; ++i)
+					{
+						colors[i] = SplatData[i].ToColor();
+					}
+
+					_splatTexture.SetData(colors);
+				}
+
+				return _splatTexture;
+			}
+		}
 
 		public Matrix Transform
 		{
@@ -43,6 +68,7 @@ namespace Nursia.Graphics3D.Landscape
 			Terrain = terrain;
 			TileX = tileX;
 			TileZ = tileZ;
+			SplatData = new Vector4[terrain.TileSplatTextureWidth * terrain.TileSplatTextureHeight];
 		}
 
 		public void InvalidateMesh()
@@ -54,6 +80,12 @@ namespace Nursia.Graphics3D.Landscape
 
 			_meshData.Dispose();
 			_meshData = null;
+		}
+
+		internal void InvalidateSplatTexture()
+		{
+			_splatTexture?.Dispose();
+			_splatTexture = null;
 		}
 
 		private float GetHeight(float x, float z)

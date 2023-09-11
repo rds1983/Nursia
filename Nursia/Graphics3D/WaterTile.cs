@@ -24,7 +24,7 @@ namespace Nursia.Graphics3D
 			X = x;
 			Z = z;
 			Height = height;
-			Size = size / 2;
+			Size = size;
 		}
 	}
 }

@@ -9,8 +9,6 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Skin Skin { get; set; }
 
-		public BoundingSphere BoundingSphere { get; set; }
-
 		public ModelNode Parent { get; set; }
 
 		public Vector3 DefaultTranslation { get; set; } = Vector3.Zero;

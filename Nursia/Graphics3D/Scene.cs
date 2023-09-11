@@ -14,8 +14,8 @@ namespace Nursia.Graphics3D
 		public Skybox Skybox;
 
 		public List<NursiaModel> Models { get; } = new List<NursiaModel>();
-
 		public List<WaterTile> WaterTiles { get; } = new List<WaterTile>();
+		public float DefaultWaterLevel { get; set; } = -2;
 
 		public Terrain Terrain { get; set; }
 

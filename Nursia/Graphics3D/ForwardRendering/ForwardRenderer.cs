@@ -126,8 +126,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 						colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * m * _context.ViewProjection);
 						colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
 
-						device.Apply(PrimitiveMeshes.CubePosition);
-						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePosition);
+						device.Apply(PrimitiveMeshes.CubeFromMinusOneToOne);
+						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubeFromMinusOneToOne);
 
 						device.RasterizerState = RasterizerState;
 					}

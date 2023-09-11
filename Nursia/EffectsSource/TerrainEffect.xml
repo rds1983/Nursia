@@ -1,5 +1,4 @@
 <Root>
-	<MultiCompile>MARKER;_</MultiCompile>
 	<MultiCompile>LIGHTNING;_</MultiCompile>
 	<MultiCompile>CLIP_PLANE;_</MultiCompile>
 	<MultiCompile>MARKER;_</MultiCompile>

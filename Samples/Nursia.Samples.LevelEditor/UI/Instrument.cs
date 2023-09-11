@@ -5,6 +5,7 @@
 		None,
 		RaiseTerrain,
 		LowerTerrain,
+		Water,
 		PaintTexture1,
 		PaintTexture2,
 		PaintTexture3,

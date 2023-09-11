@@ -18,5 +18,7 @@ namespace Nursia.Graphics3D
 		{
 			return new Material(DiffuseColor, Texture);
 		}
+
+		public static Material CreateSolidMaterial(Color color) => new Material(color);
 	}
 }

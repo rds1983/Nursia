@@ -9,7 +9,7 @@ namespace Nursia.Samples.LevelEditor.UI
 {
 	public partial class MainForm
 	{
-		private const int LibraryButtonsPerRow = 2;
+		private const int LibraryButtonsPerRow = 3;
 
 		private readonly PropertyGrid _propertyGrid;
 		private readonly SceneWidget _sceneWidget;
@@ -64,7 +64,7 @@ namespace Nursia.Samples.LevelEditor.UI
 
 		private void UpdateTerrainPower()
 		{
-			_labelTerrainPower.Text = $"Power: {_sliderTerrainPower.Value.ToString()}";
+			_labelTerrainPower.Text = $"Power: {_sliderTerrainPower.Value}";
 			_sceneWidget.Instrument.Power = _sliderTerrainPower.Value;
 		}
 
@@ -161,6 +161,15 @@ namespace Nursia.Samples.LevelEditor.UI
 			lowerButton.TouchDown += (s, a) => _sceneWidget.Instrument.Type = InstrumentType.LowerTerrain;
 
 			AddButton(_gridTerrainLibrary, lowerButton);
+
+			var waterButton = new InstrumentButton(_allButtons)
+			{
+				Text = "Water",
+			};
+
+			waterButton.TouchDown += (s, a) => _sceneWidget.Instrument.Type = InstrumentType.Water;
+
+			AddButton(_gridTerrainLibrary, waterButton);
 
 			var terrain = Scene.Terrain;
 			if (terrain.TexturePaint1 != null)

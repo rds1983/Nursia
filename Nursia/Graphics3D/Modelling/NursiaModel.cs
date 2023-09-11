@@ -44,6 +44,19 @@ namespace Nursia.Graphics3D.Modelling
 			}
 		}
 
+		public NursiaModel(Mesh mesh)
+		{
+			BoundingBox = mesh.BoundingBox;
+
+			var node = new ModelNode();
+			node.Meshes.Add(mesh);
+			Nodes.Add(node);
+		}
+
+		internal NursiaModel()
+		{
+		}
+
 		private static void TraverseNodes(ModelNode root, Action<ModelNode> action)
 		{
 			if (root == null)

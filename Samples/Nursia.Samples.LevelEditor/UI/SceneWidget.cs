@@ -6,6 +6,7 @@ using Myra.Graphics2D.UI;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Landscape;
+using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using static Nursia.Graphics3D.Utils.CameraInputController;
 
@@ -16,6 +17,8 @@ namespace Nursia.Samples.LevelEditor.UI
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
+		private NursiaModel _waterMarker;
+		private Vector3? _touchDownStart;
 
 		public Scene Scene
 		{
@@ -30,6 +33,15 @@ namespace Nursia.Samples.LevelEditor.UI
 		}
 		public ForwardRenderer Renderer { get => _renderer; }
 		public Instrument Instrument { get; } = new Instrument();
+
+		private static bool IsMouseLeftButtonDown
+		{
+			get
+			{
+				var mouseState = Mouse.GetState();
+				return (mouseState.LeftButton == ButtonState.Pressed);
+			}
+		}
 
 		private Vector3? CalculateMarkerPosition()
 		{
@@ -70,7 +82,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				return null;
 			}
-			
+
 			markerPosition = nearPoint + direction * intersectDist.Value;
 
 			return markerPosition;
@@ -240,10 +252,14 @@ namespace Nursia.Samples.LevelEditor.UI
 				return;
 			}
 
-			if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
+			if (Instrument.Type == InstrumentType.Water)
+			{
+			}
+			else if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
 			{
 				ApplyLowerRaise();
-			} else
+			}
+			else
 			{
 				ApplyPaint();
 			}
@@ -261,7 +277,18 @@ namespace Nursia.Samples.LevelEditor.UI
 		{
 			var result = base.OnTouchDown();
 
-			ApplyInstrument();
+			if (Instrument.Type == InstrumentType.Water)
+			{
+				if (IsMouseLeftButtonDown && Scene.Marker.Position != null)
+				{
+					var markerPos = Scene.Marker.Position.Value;
+					_touchDownStart = markerPos;
+				}
+			}
+			else
+			{
+				ApplyInstrument();
+			}
 
 			return result;
 		}
@@ -271,6 +298,24 @@ namespace Nursia.Samples.LevelEditor.UI
 			base.OnTouchUp();
 			_controller.SetTouchState(TouchType.Move, false);
 			_controller.SetTouchState(TouchType.Rotate, false);
+
+			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
+			{
+				var markerPos = Scene.Marker.Position.Value;
+				markerPos.Y = Scene.DefaultWaterLevel;
+
+				var dist = Vector3.Distance(markerPos, _touchDownStart.Value);
+				if (dist > 0)
+				{
+					var size = markerPos.X - _touchDownStart.Value.X;
+
+					var waterTile = new WaterTile(_touchDownStart.Value.X, _touchDownStart.Value.Z, Scene.DefaultWaterLevel, size);
+					Scene.WaterTiles.Add(waterTile);
+				}
+
+				_touchDownStart = null;
+				Scene.Models.Remove(_waterMarker);
+			}
 		}
 
 		public override void OnTouchMoved()
@@ -286,7 +331,33 @@ namespace Nursia.Samples.LevelEditor.UI
 			_controller.SetTouchState(TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 			_controller.Update();
 
-			ApplyInstrument();
+			if (Instrument.Type == InstrumentType.Water)
+			{
+				if (_touchDownStart != null && Scene.Marker.Position != null)
+				{
+					var markerPos = Scene.Marker.Position.Value;
+					markerPos.Y = Scene.DefaultWaterLevel;
+
+					var dist = Vector3.Distance(markerPos, _touchDownStart.Value);
+					if (dist > 0)
+					{
+						if (_waterMarker == null)
+						{
+							var mesh = new Mesh(PrimitiveMeshes.SquareFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
+							_waterMarker = new NursiaModel(mesh);
+							Scene.Models.Add(_waterMarker);
+						}
+
+						_waterMarker.Transform = Matrix.CreateScale(_touchDownStart.Value.X - markerPos.X,
+							0,
+							_touchDownStart.Value.Z - markerPos.Z) * Matrix.CreateTranslation(markerPos);
+					}
+				}
+			}
+			else
+			{
+				ApplyInstrument();
+			}
 		}
 	}
 }

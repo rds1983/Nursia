@@ -34,7 +34,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		public WaterRenderer()
 		{
-			_waterMesh = PrimitiveMeshes.SquarePosition;
+			_waterMesh = PrimitiveMeshes.SquareFromZeroToOne;
 
 			_targetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
 				TargetRefractionSize.X,

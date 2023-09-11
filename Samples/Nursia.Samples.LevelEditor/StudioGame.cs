@@ -138,9 +138,9 @@ namespace Nursia.Samples.LevelEditor
 
 			_fpsCounter.Draw(gameTime);
 
-			_spriteBatch.Begin();
+/*			_spriteBatch.Begin();
 			_spriteBatch.Draw(Scene.Terrain.GetTile(0, 0).SplatTexture, new Rectangle(0, 0, 100, 100), Color.White);
-			_spriteBatch.End();
+			_spriteBatch.End();*/
 		}
 	}
 }

@@ -72,10 +72,10 @@ struct VSOutput
 	float4 Position: SV_POSITION;
 
 	float2 TexCoord: TEXCOORD0;
-	float2 SplatTexCoord: TEXCOORD1;
+	float2 SplatTexCoord: TEXCOORD3;
 
 #ifdef LIGHTNING
-	float3 WorldNormal: POSITION1;
+	float3 WorldNormal: TEXCOORD1;
 #endif
 
 #ifdef CLIP_PLANE
@@ -83,7 +83,7 @@ struct VSOutput
 #endif
 
 #if LIGHTNING || MARKER
-	float4 SourcePosition: POSITION2;
+	float4 SourcePosition: TEXCOORD4;
 #endif
 };
 
@@ -116,7 +116,7 @@ VSOutput Vertex(VSInput input)
 float4 Pixel(VSOutput input) : COLOR
 {
 #ifdef CLIP_PLANE
-    clip(input.ClipDistances); 
+    clip(input.ClipDistances.x);
 #endif
 
 	float3 color = SAMPLE_TEXTURE(_textureBase, input.TexCoord).rgb;

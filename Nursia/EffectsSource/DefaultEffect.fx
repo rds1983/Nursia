@@ -70,11 +70,11 @@ struct VSOutput
 
 #ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD1;
-	float4 SourcePosition: POSITION1;
+	float4 SourcePosition: TEXCOORD2;
 #endif
 
 #ifdef CLIP_PLANE
-    float4 ClipDistances: POSITION2;
+    float4 ClipDistances: TEXCOORD3;
 #endif
 };
 
@@ -120,7 +120,7 @@ VSOutput VertexShaderFunction(VSInput input)
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
 #ifdef CLIP_PLANE
-    clip(input.ClipDistances); 
+    clip(input.ClipDistances.x); 
 #endif
 
 #if TEXTURE

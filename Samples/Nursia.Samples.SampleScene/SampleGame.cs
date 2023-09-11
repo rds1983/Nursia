@@ -92,38 +92,6 @@ namespace SampleScene
 			// Generate height
 			var generator = new HeightMapGenerator();
 			GenerationConfig.Instance.WorldSize = (int)(_scene.Terrain.TileSizeX * _scene.Terrain.TilesPerX);
-			var heightMap = generator.Generate();
-
-			_scene.Terrain.HeightFunc = (x, z) =>
-			{
-				if (x < 0)
-				{
-					x = 0;
-				}
-
-				if (x >= heightMap.GetLength(0))
-				{
-					x = heightMap.GetLength(0) - 1;
-				}
-
-				if (z < 0)
-				{
-					z = 0;
-				}
-
-				if (z >= heightMap.GetLength(1))
-				{
-					z = heightMap.GetLength(1) - 1;
-				}
-
-				var result = (heightMap[(int)x, (int)z] * 100) - 50;
-
-				return result;
-
-				/*				int r = (int)(x / 100) + (int)(z / 100);
-
-								return r % 2 == 0 ? -10 : 10;*/
-			};
 
 			_scene.Terrain.TextureBase = grassy;
 

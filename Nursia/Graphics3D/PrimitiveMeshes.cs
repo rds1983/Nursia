@@ -31,6 +31,18 @@ namespace Nursia.Graphics3D
 			new Vector3(-1, -1,-1)
 		};
 
+		private static Vector3[] _cubeFromZeroToOne = new Vector3[]
+		{
+			new Vector3(0, 1, 1),
+			new Vector3(1, 1, 1),
+			new Vector3(1, 0, 1),
+			new Vector3(0, 0, 1),
+			new Vector3(0, 1, 0),
+			new Vector3(1, 1, 0),
+			new Vector3(1, 0, 0),
+			new Vector3(0, 0, 0)
+		};
+
 		private static Vector3[] _squareFromMinusOneToOne = new Vector3[]
 		{
 				new Vector3(-1, 0, -1),
@@ -42,48 +54,50 @@ namespace Nursia.Graphics3D
 		};
 
 		private static Vector3[] _squareFromZeroToOne = new Vector3[]
-{
+		{
 				new Vector3(0, 0, 0),
 				new Vector3(0, 0, 1),
 				new Vector3(1, 0, 0),
 				new Vector3(1, 0, 0),
 				new Vector3(0, 0, 1),
 				new Vector3(1, 0, 1)
-};
+		};
 
 		private static MeshData _cubePosition;
 		private static MeshData _squarePosition;
 
-		public static MeshData CubeFromMinusOneToOne
+		public static MeshData CubePositionFromMinusOneToOne
 		{
 			get
 			{
 				if (_cubePosition == null)
 				{
-					var vertices = new List<VertexPosition>();
-					foreach (var point in _cubeFromMinusOneToOne)
-					{
-						vertices.Add(new VertexPosition(point));
-					}
-
 					_cubePosition = CreatePrimitivePosition(_cubeFromMinusOneToOne, _cubeIndices);
 				}
 
 				return _cubePosition;
 			}
 		}
-		public static MeshData SquareFromMinusOneToOne
+
+		public static MeshData CubePositionFromZeroToOne
+		{
+			get
+			{
+				if (_cubePosition == null)
+				{
+					_cubePosition = CreatePrimitivePosition(_cubeFromZeroToOne, _cubeIndices);
+				}
+
+				return _cubePosition;
+			}
+		}
+
+		public static MeshData SquarePositionFromMinusOneToOne
 		{
 			get
 			{
 				if (_squarePosition == null)
 				{
-					var vertices = new List<VertexPosition>();
-					foreach (var point in _squareFromMinusOneToOne)
-					{
-						vertices.Add(new VertexPosition(point));
-					}
-
 					_squarePosition = CreatePrimitivePosition(_squareFromMinusOneToOne, _squareIndices);
 				}
 
@@ -91,18 +105,12 @@ namespace Nursia.Graphics3D
 			}
 		}
 
-		public static MeshData SquareFromZeroToOne
+		public static MeshData SquarePositionFromZeroToOne
 		{
 			get
 			{
 				if (_squarePosition == null)
 				{
-					var vertices = new List<VertexPosition>();
-					foreach (var point in _squareFromZeroToOne)
-					{
-						vertices.Add(new VertexPosition(point));
-					}
-
 					_squarePosition = CreatePrimitivePosition(_squareFromZeroToOne, _squareIndices);
 				}
 

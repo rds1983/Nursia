@@ -22,7 +22,7 @@ namespace Nursia.Graphics3D
 
 		public Skybox(int size = 500)
 		{
-			_meshData = PrimitiveMeshes.CubeFromMinusOneToOne;
+			_meshData = PrimitiveMeshes.CubePositionFromMinusOneToOne;
 			Transform = Matrix.CreateScale(size);
 		}
 	}

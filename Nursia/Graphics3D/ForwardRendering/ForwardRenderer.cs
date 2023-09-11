@@ -117,17 +117,16 @@ namespace Nursia.Graphics3D.ForwardRendering
 						device.RasterizerState.FillMode = FillMode.WireFrame;
 						var colorEffect = Resources.ColorEffect;
 
-						var boundingBoxTransform = Matrix.CreateTranslation(Vector3.One) *
-							Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X) / 2.0f,
-							(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y) / 2.0f,
-							(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z) / 2.0f) *
+						var boundingBoxTransform = Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X),
+							(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y),
+							(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z)) *
 							Matrix.CreateTranslation(mesh.BoundingBox.Min);
 
 						colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * m * _context.ViewProjection);
 						colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
 
-						device.Apply(PrimitiveMeshes.CubeFromMinusOneToOne);
-						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubeFromMinusOneToOne);
+						device.Apply(PrimitiveMeshes.CubePositionFromZeroToOne);
+						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePositionFromZeroToOne);
 
 						device.RasterizerState = RasterizerState;
 					}

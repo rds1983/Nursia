@@ -343,7 +343,7 @@ namespace Nursia.Samples.LevelEditor.UI
 					{
 						if (_waterMarker == null)
 						{
-							var mesh = new Mesh(PrimitiveMeshes.SquareFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
+							var mesh = new Mesh(PrimitiveMeshes.SquarePositionFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
 							_waterMarker = new NursiaModel(mesh);
 							Scene.Models.Add(_waterMarker);
 						}

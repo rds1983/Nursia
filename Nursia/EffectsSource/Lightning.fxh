@@ -7,15 +7,9 @@ float3 _lightDirection[MAX_LIGHTS];
 float3 _lightColor[MAX_LIGHTS];
 int _lightCount;
 
-struct LightPower
+float3 CalculateLightPower(float3 normal, float3 sourcePosition)
 {
-	float3 Diffuse;
-};
-
-LightPower CalculateLightPower(float3 normal, float3 sourcePosition)
-{
-	LightPower result;
-	result.Diffuse = float3(0, 0, 0);
+	float3 result = float3(0, 0, 0);
 
 	int lightCount = min(_lightCount, MAX_LIGHTS);
 	for(int i = 0; i < lightCount; ++i)
@@ -42,7 +36,7 @@ LightPower CalculateLightPower(float3 normal, float3 sourcePosition)
 		// Blinn-Phong
 		float diffuseFactor = max(dot(normal, lightDirection), 0.0);
 		float3 value = diffuseFactor * lightColor;
-		result.Diffuse += value;
+		result += value;
 	}
 	
 	return result;

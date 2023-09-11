@@ -290,13 +290,11 @@ namespace ModelViewer
 			if (!_desktop.IsTouchOverGUI)
 			{
 				var mouseState = Mouse.GetState();
-				_controller.SetTouchState(CameraInputController.TouchType.Move, mouseState.LeftButton == ButtonState.Pressed);
 				_controller.SetTouchState(CameraInputController.TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
-
 				_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
-
-				_controller.Update();
 			}
+
+			_controller.Update();
 		}
 
 		private void DrawModel()

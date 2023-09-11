@@ -133,8 +133,8 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	float3 normal = normalize(input.WorldNormal);
 	float3 src = input.SourcePosition.xyz;
 
-	LightPower lightPower = CalculateLightPower(normal, src);
-	color *= float4(lightPower.Diffuse, 1);
+	float3 lightPower = CalculateLightPower(normal, src);
+	color *= float4(lightPower, 1);
 #endif
 	clip(color.a < 0.1?-1:1);
 

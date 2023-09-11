@@ -70,5 +70,18 @@ namespace Nursia.Utilities
 
 			return new BoundingBox(min, max);
 		}
+
+		public static Vector4 Lerp(Vector4 a, Vector4 b, float s)
+		{
+			return new Vector4(MathHelper.Lerp(a.X, b.X, s),
+				MathHelper.Lerp(a.Y, b.Y, s),
+				MathHelper.Lerp(a.Z, b.Z, s),
+				MathHelper.Lerp(a.W, b.W, s));
+		}
+
+		public static Color ToColor(this Vector4 v)
+		{
+			return new Color((byte)(v.X * 255.0f), (byte)(v.Y * 255.0f), (byte)(v.Z * 255.0f), (byte)(v.W * 255.0f));
+		}
 	}
 }

@@ -131,15 +131,14 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 
 #ifdef LIGHTNING
 	float3 normal = normalize(input.WorldNormal);
-	float3 lightPower = CalculateLightPower(normal, input.SourcePosition.xyz);
-	float4 c = color * float4(lightPower, 1);
-#else
-	float4 c = color;
-#endif
+	float3 src = input.SourcePosition.xyz;
 
-    clip(c.a < 0.1?-1:1);
-	
-	return c;
+	LightPower lightPower = CalculateLightPower(normal, src);
+	color *= float4(lightPower.Diffuse, 1);
+#endif
+	clip(color.a < 0.1?-1:1);
+
+	return color;
 }
 
 TECHNIQUE(Default, VertexShaderFunction, PixelShaderFunction);

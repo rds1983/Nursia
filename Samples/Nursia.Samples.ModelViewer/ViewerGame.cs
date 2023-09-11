@@ -40,7 +40,7 @@ namespace ModelViewer
 				Color = new Color(1, 0.9607844f, 0.8078432f)
 			});
 
-/*			_defaultLights.Add(new DirectLight
+			_defaultLights.Add(new DirectLight
 			{
 				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
 				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
@@ -50,7 +50,7 @@ namespace ModelViewer
 			{
 				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
 				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
-			});*/
+			});
 		}
 
 		public ViewerGame()

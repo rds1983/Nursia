@@ -7,17 +7,16 @@ float3 _lightDirection[MAX_LIGHTS];
 float3 _lightColor[MAX_LIGHTS];
 int _lightCount;
 
-float3 BlinnPhong(float3 normal, float3 lightDirection, float3 lightColor)
+struct LightPower
 {
-	float diffuse = max(dot(normal, lightDirection), 0.0);
-	float3 diffuseColor = lightColor * diffuse;
+	float3 Diffuse;
+};
 
-	return diffuseColor;
-}
-
-float3 CalculateLightPower(float3 normal, float3 sourcePosition)
+LightPower CalculateLightPower(float3 normal, float3 sourcePosition)
 {
-	float3 lightPower = float3(0, 0, 0);
+	LightPower result;
+	result.Diffuse = float3(0, 0, 0);
+
 	int lightCount = min(_lightCount, MAX_LIGHTS);
 	for(int i = 0; i < lightCount; ++i)
 	{
@@ -39,9 +38,12 @@ float3 CalculateLightPower(float3 normal, float3 sourcePosition)
 			lightDirection = normalize(toLight);
 			lightColor *= (MAX_POINT_LIGHT_LENGTH - dist) / MAX_POINT_LIGHT_LENGTH;
 		}
-		
-		lightPower += BlinnPhong(normal, lightDirection, lightColor);
+
+		// Blinn-Phong
+		float diffuseFactor = max(dot(normal, lightDirection), 0.0);
+		float3 value = diffuseFactor * lightColor;
+		result.Diffuse += value;
 	}
 	
-	return lightPower;
+	return result;
 }

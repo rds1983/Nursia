@@ -18,7 +18,7 @@ namespace Nursia.Samples.LevelEditor.UI
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
-		private NursiaModel _waterMarker;
+		private ModelInstance _waterMarker;
 		private Vector3? _touchDownStart;
 
 		public Scene Scene
@@ -361,7 +361,7 @@ namespace Nursia.Samples.LevelEditor.UI
 						if (_waterMarker == null)
 						{
 							var mesh = new Mesh(PrimitiveMeshes.SquarePositionFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
-							_waterMarker = new NursiaModel(mesh);
+							_waterMarker = new NursiaModel(mesh).CreateInstance();
 						}
 
 						if (!Scene.Models.Contains(_waterMarker)) 

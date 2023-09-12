@@ -66,7 +66,7 @@ namespace Nursia.Graphics3D.Modelling
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 		private readonly List<List<Mesh>> _meshes = new List<List<Mesh>>();
-		private readonly List<ModelNode> _nodes = new List<ModelNode>();
+		private NursiaModel _model;
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
 		private byte[] FileResolver(string path)
@@ -429,7 +429,7 @@ namespace Nursia.Graphics3D.Modelling
 			result = new Skin();
 			foreach (var jointIndex in gltfSkin.Joints)
 			{
-				result.Joints.Add(_nodes[jointIndex]);
+				result.JointIndices.Add(jointIndex);
 			}
 
 			result.Transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
@@ -450,7 +450,6 @@ namespace Nursia.Graphics3D.Modelling
 				var modelNode = new ModelNode
 				{
 					Id = gltfNode.Name,
-					Index = i,
 					DefaultTranslation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
 					DefaultScale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One,
 					DefaultRotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
@@ -475,14 +474,14 @@ namespace Nursia.Graphics3D.Modelling
 					modelNode.Meshes.AddRange(_meshes[gltfNode.Mesh.Value]);
 				}
 
-				_nodes.Add(modelNode);
+				_model.AllNodes.Add(modelNode);
 			}
 
 			// Second run - set children and skins
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
-				var modelNode = _nodes[i];
+				var modelNode = _model.AllNodes[i];
 
 				if (gltfNode.Skin != null)
 				{
@@ -493,8 +492,8 @@ namespace Nursia.Graphics3D.Modelling
 				{
 					foreach (var childIndex in gltfNode.Children)
 					{
-						_nodes[childIndex].Parent = modelNode;
-						modelNode.Children.Add(_nodes[childIndex]);
+						modelNode.ChildrenIndices.Add(childIndex);
+						_model.AllNodes[childIndex].ParentIndex = i;
 					}
 				}
 			}
@@ -503,8 +502,8 @@ namespace Nursia.Graphics3D.Modelling
 		public NursiaModel Load(AssetManager manager, string assetName)
 		{
 			_meshes.Clear();
-			_nodes.Clear();
 			_skinCache.Clear();
+			_model = new NursiaModel();
 
 			_assetManager = manager;
 			_assetName = assetName;
@@ -516,12 +515,11 @@ namespace Nursia.Graphics3D.Modelling
 			LoadMeshes();
 			LoadAllNodes();
 
-			var result = new NursiaModel();
 
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
 			foreach (var node in scene.Nodes)
 			{
-				result.Nodes.Add(_nodes[node]);
+				_model.RootNodes.Add(_model.AllNodes[node]);
 			}
 
 			if (_gltf.Animations != null)
@@ -547,7 +545,7 @@ namespace Nursia.Graphics3D.Modelling
 
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new NodeAnimation(_nodes[pair.Key]);
+						var nodeAnimation = new NodeAnimation(pair.Key);
 
 						foreach (var pathInfo in pair.Value)
 						{
@@ -576,27 +574,11 @@ namespace Nursia.Graphics3D.Modelling
 					animation.UpdateStartEnd();
 
 					var id = animation.Id ?? "(default)";
-					result.Animations[id] = animation;
+					_model.Animations[id] = animation;
 				}
 			}
 
-			result.ResetTransforms();
-			result.UpdateNodesAbsoluteTransforms();
-
-			var boundingBox = new BoundingBox();
-			result.TraverseNodes(n =>
-			{
-				var m = n.AbsoluteTransform;
-				foreach(var mesh in n.Meshes)
-				{
-					var bb = mesh.BoundingBox.Transform(ref m);
-					boundingBox = BoundingBox.CreateMerged(boundingBox, bb);
-				}
-			});
-
-			result.BoundingBox = boundingBox;
-
-			return result;
+			return _model;
 		}
 	}
 }

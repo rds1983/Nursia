@@ -13,7 +13,7 @@ namespace Nursia.Graphics3D
 
 		public Skybox Skybox;
 
-		public List<NursiaModel> Models { get; } = new List<NursiaModel>();
+		public List<ModelInstance> Models { get; } = new List<ModelInstance>();
 		public List<WaterTile> WaterTiles { get; } = new List<WaterTile>();
 		public float DefaultWaterLevel { get; set; } = -2;
 

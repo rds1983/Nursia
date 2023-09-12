@@ -21,7 +21,7 @@ namespace ModelViewer
 	public class ViewerGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private NursiaModel _model;
+		private ModelInstance _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private MainPanel _mainPanel;
@@ -84,11 +84,11 @@ namespace ModelViewer
 				if (!string.IsNullOrEmpty(file))
 				{
 					var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
-					_model = manager.LoadGltf(Path.GetFileName(file));
+					_model = manager.LoadGltf(Path.GetFileName(file)).CreateInstance();
 
 					_mainPanel._comboAnimations.Items.Clear();
 					_mainPanel._comboAnimations.Items.Add(new ListItem(null));
-					foreach (var pair in _model.Animations)
+					foreach (var pair in _model.Model.Animations)
 					{
 						_mainPanel._comboAnimations.Items.Add(
 							new ListItem(pair.Key)

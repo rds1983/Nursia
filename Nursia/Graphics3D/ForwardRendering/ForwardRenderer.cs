@@ -72,36 +72,36 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_context.Statistics.Reset();
 		}
 
-		private void DrawMeshNode(ModelNode meshNode, ref Matrix rootTransform)
+		private void DrawMeshNode(NodeInstance node, ref Matrix rootTransform)
 		{
-			if (meshNode.Meshes.Count > 0)
+			if (node.Node.Meshes.Count > 0)
 			{
 				// If mesh has bones, then parent node transform had been already
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				Matrix meshTransform = meshNode.Skin == null ? meshNode.AbsoluteTransform * rootTransform : rootTransform;
+				Matrix meshTransform = node.HasSkin ? rootTransform : node.AbsoluteTransform * rootTransform;
 				Matrix[] boneTransforms = null;
 				// Apply the effect and render items
-				if (meshNode.Skin != null)
+				if (node.HasSkin)
 				{
-					boneTransforms = meshNode.Skin.CalculateBoneTransforms();
+					boneTransforms = node.CalculateBoneTransforms();
 				}
 
-				foreach (var mesh in meshNode.Meshes)
+				foreach (var mesh in node.Node.Meshes)
 				{
 					var effect = Resources.GetDefaultEffect(
 						mesh.Material.Texture != null,
-						meshNode.Skin != null,
+						node.HasSkin,
 						_context.ClipPlane != null,
 						_context.HasLights && mesh.HasNormals);
 
-					if (meshNode.Skin != null)
+					if (node.HasSkin)
 					{
 						effect.Parameters["_bones"].SetValue(boneTransforms);
 					}
 
-					var m = mesh.Transform * meshNode.AbsoluteTransform * rootTransform;
+					var m = mesh.Transform * node.AbsoluteTransform * rootTransform;
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
 					if (_context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{
@@ -133,13 +133,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 				}
 			}
 
-			foreach (var child in meshNode.Children)
+			foreach (var childIndex in node.Node.ChildrenIndices)
 			{
-				DrawMeshNode(child, ref rootTransform);
+				DrawMeshNode(node.Model.AllNodes[childIndex], ref rootTransform);
 			}
 		}
 
-		private void DrawModel(NursiaModel model)
+		private void DrawModel(ModelInstance model)
 		{
 			if (!_beginCalled)
 			{
@@ -147,7 +147,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 
 			model.UpdateNodesAbsoluteTransforms();
-			foreach (var mesh in model.Nodes)
+			foreach (var mesh in model.RootNodes)
 			{
 				DrawMeshNode(mesh, ref model.Transform);
 			}

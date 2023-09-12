@@ -9,7 +9,7 @@ namespace Nursia.Samples.LevelEditor.UI
 {
 	public partial class MainForm
 	{
-		private const int LibraryButtonsPerRow = 3;
+		private const int LibraryButtonsPerRow = 2;
 
 		private readonly PropertyGrid _propertyGrid;
 		private readonly SceneWidget _sceneWidget;
@@ -49,8 +49,6 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			_sliderTerrainRadius.ValueChanged += (s, a) => UpdateTerrainRadius();
 			_sliderTerrainPower.ValueChanged += (s, a) => UpdateTerrainPower();
-
-			RefreshLibrary();
 
 			UpdateTerrainRadius();
 			UpdateTerrainPower();
@@ -123,21 +121,17 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				button.ImageWidth = 75;
 				button.ImageHeight = 75;
+				button.ImageTextSpacing = 4;
 			}
 
 			container.Widgets.Add(button);
 		}
 
-		private void RefreshLibrary()
+		public void RefreshLibrary()
 		{
 			_allButtons.Clear();
 			_gridTerrainLibrary.Widgets.Clear();
-
-			_gridTerrainLibrary.ColumnsProportions.Clear();
-			for (var i = 0; i < LibraryButtonsPerRow; i++)
-			{
-				_gridTerrainLibrary.ColumnsProportions.Add(new Proportion(ProportionType.Part, 1.0f));
-			}
+			_gridModelsLibrary.Widgets.Clear();
 
 			if (Scene == null || Scene.Terrain == null)
 			{
@@ -234,6 +228,22 @@ namespace Nursia.Samples.LevelEditor.UI
 				};
 
 				AddButton(_gridTerrainLibrary, texturePaintButton);
+			}
+
+			foreach(var pair in ModelStorage.Models)
+			{
+				var modelButton = new InstrumentButton(_allButtons)
+				{
+					Text = pair.Key
+				};
+
+				modelButton.TouchDown += (s, a) =>
+				{
+					_sceneWidget.Instrument.Type = InstrumentType.Model;
+					_sceneWidget.Instrument.Model = pair.Value;
+				};
+
+				AddButton(_gridModelsLibrary, modelButton);
 			}
 		}
 	}

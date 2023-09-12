@@ -1,9 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using glTFLoader.Schema;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Utilities;
 using System;
+using System.Xml.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -250,19 +252,57 @@ namespace Nursia.Graphics3D.ForwardRendering
 			RefractionPass(scene);
 		}
 
-		public void DrawScene(Scene scene)
+		private bool PrepareDraw(Camera camera)
 		{
 			if (Nrs.GraphicsDevice.Viewport.Width == 0 || Nrs.GraphicsDevice.Viewport.Height == 0)
+			{
+				return false;
+			}
+
+			_context.View = camera.View;
+			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
+				MathHelper.ToRadians(camera.ViewAngle),
+				Nrs.GraphicsDevice.Viewport.AspectRatio,
+				NearPlaneDistance, FarPlaneDistance);
+
+			return true;
+		}
+
+		public void DrawMesh(Mesh mesh, Camera camera)
+		{
+			if (!PrepareDraw(camera))
+			{
+				return;
+			}
+
+			var effect = Resources.GetDefaultEffect(
+					mesh.Material.Texture != null,
+					false,
+					_context.ClipPlane != null,
+					_context.HasLights && mesh.HasNormals);
+
+			var m = Matrix.Identity;
+			DrawMesh(effect, mesh, ref m);
+		}
+
+		public void DrawModel(ModelInstance model, Camera camera)
+		{
+			if (!PrepareDraw(camera))
+			{
+				return;
+			}
+
+			DrawModel(model);
+		}
+
+		public void DrawScene(Scene scene)
+		{
+			if (!PrepareDraw(scene.Camera))
 			{
 				return;
 			}
 
 			_context.Scene = scene;
-			_context.View = scene.Camera.View;
-			_context.Projection = Matrix.CreatePerspectiveFieldOfView(
-				MathHelper.ToRadians(scene.Camera.ViewAngle),
-				Nrs.GraphicsDevice.Viewport.AspectRatio,
-				NearPlaneDistance, FarPlaneDistance);
 
 			if (scene.WaterTiles.Count > 0)
 			{

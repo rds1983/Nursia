@@ -1,4 +1,6 @@
-﻿namespace Nursia.Samples.LevelEditor.UI
+﻿using Nursia.Graphics3D.Modelling;
+
+namespace Nursia.Samples.LevelEditor.UI
 {
 	public enum InstrumentType
 	{
@@ -10,6 +12,7 @@
 		PaintTexture2,
 		PaintTexture3,
 		PaintTexture4,
+		Model
 	}
 
 	public class Instrument
@@ -18,5 +21,10 @@
 
 		public float Radius { get; set; } = 4.0f;
 		public float Power { get; set; } = 0.2f;
+		public NursiaModel Model { get; set; }
+
+		public bool IsPaintInstrument => Type != InstrumentType.None &&
+				Type != InstrumentType.Water &&
+				Type != InstrumentType.Model;
 	}
 }

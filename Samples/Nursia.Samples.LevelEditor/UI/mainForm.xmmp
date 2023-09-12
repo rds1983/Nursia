@@ -32,20 +32,22 @@
                 <Proportion Type="Fill" />
               </VerticalStackPanel.Proportions>
               <Grid ColumnSpacing="8" RowSpacing="8" Id="_gridTerrainLibrary">
+                <Grid.DefaultColumnProportion Type="Part" />
                 <Grid.DefaultRowProportion Type="Auto" />
-                <Grid.ColumnsProportions>
-                  <Proportion Type="Part" />
-                  <Proportion Type="Part" />
-                  <Proportion Type="Part" />
-                </Grid.ColumnsProportions>
                 <TextButton Text="Raise" Toggleable="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 <TextButton Text="Lower" Toggleable="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GridColumn="1" />
               </Grid>
               <Label Text="Radius: 5.0" HorizontalAlignment="Center" Id="_labelTerrainRadius" />
-              <HorizontalSlider Minimum="1" Maximum="10" Value="3.2536585" Id="_sliderTerrainRadius" />
+              <HorizontalSlider Minimum="1" Maximum="10" Value="5" Id="_sliderTerrainRadius" />
               <Label Text="Power: 0.5" HorizontalAlignment="Center" Id="_labelTerrainPower" />
-              <HorizontalSlider Maximum="1" Value="0.4276423" Id="_sliderTerrainPower" />
+              <HorizontalSlider Maximum="1" Value="0.5" Id="_sliderTerrainPower" />
             </VerticalStackPanel>
+          </TabItem>
+          <TabItem Text="Models" ContentVerticalAlignment="Stretch">
+            <Grid ColumnSpacing="8" RowSpacing="8" Id="_gridModelsLibrary">
+              <Grid.DefaultColumnProportion Type="Part" />
+              <Grid.DefaultRowProportion Type="Auto" />
+            </Grid>
           </TabItem>
         </TabControl>
         <Panel Id="_panelScene">

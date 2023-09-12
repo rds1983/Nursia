@@ -53,7 +53,7 @@ namespace Nursia.Samples.LevelEditor
 		private void LoadTerrainTexture(Terrain terrain, int index, AssetManager assetManager, string filePath)
 		{
 			var texture = assetManager.LoadTexture2D(GraphicsDevice, filePath);
-			var name = Path.GetFileName(filePath);
+			var name = Path.GetFileNameWithoutExtension(filePath);
 
 			switch(index)
 			{
@@ -85,7 +85,8 @@ namespace Nursia.Samples.LevelEditor
 			Nrs.Game = this;
 			_mainForm = new MainForm();
 
-			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets"));
+			var assetFolder = Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets");
+			var assetManager = AssetManager.CreateFileAssetManager(assetFolder);
 
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainForm);
@@ -115,6 +116,9 @@ namespace Nursia.Samples.LevelEditor
 			_mainForm.Scene = scene;
 
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
+
+			ModelStorage.Load(Path.Combine(assetFolder, "models"));
+			_mainForm.RefreshLibrary();
 		}
 
 		protected override void Update(GameTime gameTime)

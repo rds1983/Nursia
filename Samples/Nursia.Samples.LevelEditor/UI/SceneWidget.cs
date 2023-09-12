@@ -18,7 +18,8 @@ namespace Nursia.Samples.LevelEditor.UI
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
-		private ModelInstance _waterMarker;
+		private Mesh _waterMarker;
+		private ModelInstance _modelMarker;
 		private Vector3? _touchDownStart;
 
 		public Scene Scene
@@ -140,6 +141,17 @@ namespace Nursia.Samples.LevelEditor.UI
 				UpdateMarker();
 				_renderer.Begin();
 				_renderer.DrawScene(Scene);
+
+				if (_waterMarker != null)
+				{
+					_renderer.DrawMesh(_waterMarker, Scene.Camera);
+				}
+
+				if (_modelMarker != null)
+				{
+					_renderer.DrawModel(_modelMarker, Scene.Camera);
+				}
+
 				_renderer.End();
 			}
 			finally
@@ -151,7 +163,7 @@ namespace Nursia.Samples.LevelEditor.UI
 		protected override void OnPlacedChanged()
 		{
 			base.OnPlacedChanged();
-			
+
 			if (Desktop == null)
 			{
 				return;
@@ -176,7 +188,7 @@ namespace Nursia.Samples.LevelEditor.UI
 				}
 
 				_touchDownStart = null;
-				Scene.Models.Remove(_waterMarker);
+				_waterMarker = null;
 			}
 		}
 
@@ -231,7 +243,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 		}
 
-		private void ApplyPaint()
+		private void ApplyTerrainPaint()
 		{
 			var power = Instrument.Power;
 			var radius = Scene.Marker.Radius;
@@ -272,29 +284,15 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 		}
 
-		private void ApplyInstrument()
+		private void ApplyPaintInstrument()
 		{
-			if (Scene == null || Scene.Terrain == null || Scene.Marker.Position == null)
-			{
-				return;
-			}
-
-			var mouse = Mouse.GetState();
-			if (mouse.LeftButton != ButtonState.Pressed || Instrument.Type == InstrumentType.None || Instrument.Power.EpsilonEquals(0.0f))
-			{
-				return;
-			}
-
-			if (Instrument.Type == InstrumentType.Water)
-			{
-			}
-			else if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
+			if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
 			{
 				ApplyLowerRaise();
 			}
 			else
 			{
-				ApplyPaint();
+				ApplyTerrainPaint();
 			}
 		}
 
@@ -304,23 +302,63 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			var mouseState = Mouse.GetState();
 			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
+
+			if (Instrument.Type == InstrumentType.Model)
+			{
+				if (Scene.Marker.Position != null)
+				{
+					if (_modelMarker == null || _modelMarker.Model != Instrument.Model)
+					{
+						_modelMarker = Instrument.Model.CreateInstance();
+					}
+
+					var pos = Scene.Marker.Position.Value;
+					pos.Y = -_modelMarker.BoundingBox.Min.Y;
+					pos.Y += Scene.Terrain.GetHeight(pos.X, pos.Z);
+
+					_modelMarker.Transform = Matrix.CreateTranslation(pos);
+				} else
+				{
+					_modelMarker = null;
+				}
+			}
+		}
+
+		public override void OnMouseLeft()
+		{
+			base.OnMouseLeft();
+
+			_modelMarker = null;
 		}
 
 		public override bool OnTouchDown()
 		{
 			var result = base.OnTouchDown();
 
-			if (Instrument.Type == InstrumentType.Water)
+			if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
 			{
-				if (IsMouseLeftButtonDown && Scene.Marker.Position != null)
-				{
-					var markerPos = Scene.Marker.Position.Value;
-					_touchDownStart = markerPos;
-				}
+				return result;
 			}
-			else
+
+			if (Instrument.IsPaintInstrument)
 			{
-				ApplyInstrument();
+				ApplyPaintInstrument();
+			}
+			else if (Instrument.Type == InstrumentType.Water)
+			{
+				_touchDownStart = Scene.Marker.Position.Value;
+			}
+			else if (Instrument.Type == InstrumentType.Model)
+			{
+				var pos = Scene.Marker.Position.Value;
+
+				var model = Instrument.Model.CreateInstance();
+				pos.Y = -model.BoundingBox.Min.Y;
+				pos.Y += Scene.Terrain.GetHeight(pos.X, pos.Z);
+
+				model.Transform = Matrix.CreateTranslation(pos);
+
+				Scene.Models.Add(model);
 			}
 
 			return result;
@@ -351,31 +389,30 @@ namespace Nursia.Samples.LevelEditor.UI
 			_controller.SetTouchState(TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 			_controller.Update();
 
-			if (Instrument.Type == InstrumentType.Water)
+			if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
 			{
-				if (_touchDownStart != null && Scene.Marker.Position != null)
+				return;
+			}
+
+			if (Instrument.IsPaintInstrument)
+			{
+				ApplyPaintInstrument();
+			}
+			else if (Instrument.Type == InstrumentType.Water)
+			{
+				if (_touchDownStart != null)
 				{
 					GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
 					if (sizeX > 0 && sizeZ > 0)
 					{
 						if (_waterMarker == null)
 						{
-							var mesh = new Mesh(PrimitiveMeshes.SquarePositionFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
-							_waterMarker = new NursiaModel(mesh).CreateInstance();
-						}
-
-						if (!Scene.Models.Contains(_waterMarker)) 
-						{
-							Scene.Models.Add(_waterMarker);
+							_waterMarker = new Mesh(PrimitiveMeshes.SquarePositionFromZeroToOne, Material.CreateSolidMaterial(Color.Green));
 						}
 
 						_waterMarker.Transform = Matrix.CreateScale(sizeX, 0, sizeZ) * Matrix.CreateTranslation(startPos);
 					}
 				}
-			}
-			else
-			{
-				ApplyInstrument();
 			}
 		}
 	}

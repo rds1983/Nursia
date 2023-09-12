@@ -52,7 +52,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			VerticalAlignment = VerticalAlignment.Stretch;
 			ContentHorizontalAlignment = HorizontalAlignment.Center;
 			ContentVerticalAlignment = VerticalAlignment.Center;
-			TextPosition = TextPositionEnum.OverlapsImage;
+			TextPosition = TextPositionEnum.Top;
 		}
 
 		public override void OnPressedChanged()

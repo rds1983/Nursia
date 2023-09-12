@@ -12,13 +12,6 @@ namespace Nursia.Graphics3D.Modelling
 
 		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
 
-		public NursiaModel(Mesh mesh)
-		{
-			var node = new ModelNode();
-			node.Meshes.Add(mesh);
-			RootNodes.Add(node);
-		}
-
 		internal NursiaModel()
 		{
 		}

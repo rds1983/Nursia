@@ -10,42 +10,45 @@ namespace Nursia.Graphics3D.Landscape
 		private readonly Point _tileSize;
 		private readonly Point _tileVertexCount;
 		private readonly Point _tileSplatTextureSize;
-		private Point _tilesCount;
-		private bool _dirty = true;
+		private readonly Point _tilesCount;
+		private Point _tileSplatTextureScale = new Point(10, 10);
 		private TerrainTile[,] _tiles;
 
 		public Point TileSize => _tileSize;
 		public Point TileVertexCount => _tileVertexCount;
-		public Point TilesCount
-		{
-			get => _tilesCount;
-			set
-			{
-				if (_tilesCount == value)
-				{
-					return;
-				}
-
-				_tilesCount = value;
-				SetDirty();
-			}
-		}
+		public Point TilesCount => _tilesCount;
 
 		public Point TileSplatTextureSize => _tileSplatTextureSize;
 
 		public Point Size => TileSize * TilesCount;
 
+		public Point TileSplatTextureScale
+		{
+			get => _tileSplatTextureScale;
+			set
+			{
+				if (value == _tileSplatTextureScale)
+				{
+					return;
+				}
+
+				_tileSplatTextureScale = value;
+
+				for (var x = 0; x < _tilesCount.X; ++x)
+				{
+					for (var y = 0; y < _tilesCount.Y; ++y)
+					{
+						_tiles[x, y].InvalidateMesh();
+					}
+				}
+			}
+		}
+
 		public float MaximumHeight { get; set; } = 10.0f;
 		public float MinimumHeight { get; set; } = -10.0f;
 
-		public TerrainTile this[int x, int z]
-		{
-			get
-			{
-				Update();
-				return _tiles[x, z];
-			}
-		}
+		[Browsable(false)]
+		public TerrainTile this[int x, int y] => _tiles[x, y];
 
 		public Color DiffuseColor { get; set; } = Color.White;
 
@@ -115,35 +118,19 @@ namespace Nursia.Graphics3D.Landscape
 			_tileVertexCount = new Point(tileVertexCountX, tileVertexCountZ);
 			_tilesCount = new Point(tilesCountX, tilesCountZ);
 			_tileSplatTextureSize = new Point(tileSplatTextureWidth, tileSplatTextureHeight);
-		}
-
-		private void Update()
-		{
-			if (!_dirty)
-			{
-				return;
-			}
 
 			_tiles = new TerrainTile[_tilesCount.X, _tilesCount.Y];
 			for (var x = 0; x < _tilesCount.X; ++x)
 			{
-				for (var z = 0; z < _tilesCount.Y; ++z)
+				for (var y = 0; y < _tilesCount.Y; ++y)
 				{
-					_tiles[x, z] = new TerrainTile(this, x, z);
+					_tiles[x, y] = new TerrainTile(this, x, y);
 				}
 			}
-
-			_dirty = false;
-		}
-
-		private void SetDirty()
-		{
-			_dirty = true;
 		}
 
 		private TerrainTile SafelyGetTile(int x, int y)
 		{
-			Update();
 			if (x < 0 || x >= _tiles.GetLength(0))
 			{
 				return null;

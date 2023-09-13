@@ -64,7 +64,9 @@
             <ListItem Text="Terrain (#_terrain)" />
             <ListItem Text="Water (#_water)" />
           </ListBox>
-          <Panel Id="_panelProperties" />
+          <ScrollViewer>
+            <Panel Id="_panelProperties" />
+          </ScrollViewer>
         </VerticalSplitPane>
       </HorizontalSplitPane>
     </Panel>

@@ -89,6 +89,12 @@ namespace Nursia.Samples.LevelEditor.UI
 				Tag = Scene.DirectLights[0]
 			});
 
+			list.Items.Add(new ListItem
+			{
+				Text = "Terrain",
+				Tag = Scene.Terrain
+			});
+
 			// Skybox
 			if (Scene.Skybox != null)
 			{

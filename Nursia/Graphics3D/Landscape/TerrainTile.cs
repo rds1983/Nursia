@@ -61,7 +61,7 @@ namespace Nursia.Graphics3D.Landscape
 			_transform = Matrix.CreateTranslation(new Vector3(_pos.X * Size.X, 0, _pos.Y * Size.Y));
 		}
 
-		private void InvalidateMesh()
+		public void InvalidateMesh()
 		{
 			_meshData?.Dispose();
 			_meshData = null;
@@ -100,11 +100,7 @@ namespace Nursia.Graphics3D.Landscape
 
 		public void SetHeight(Point localHeightPos, float height)
 		{
-			if (height < Terrain.MinimumHeight || height > Terrain.MaximumHeight)
-			{
-				return;
-			}
-
+			height = MathHelper.Clamp(height, Terrain.MinimumHeight, Terrain.MaximumHeight);
 			if (_heightMap[localHeightPos.X, localHeightPos.Y].EpsilonEquals(height))
 			{
 				return;
@@ -128,8 +124,6 @@ namespace Nursia.Graphics3D.Landscape
 
 			return result;
 		}
-
-		private Vector3 CalculateNormal(float x, float y) => CalculateNormal(new Vector2(x, y));
 
 		private bool CheckIfFlatTile(out float h2)
 		{
@@ -174,11 +168,11 @@ namespace Nursia.Graphics3D.Landscape
 				vertices = new VertexPositionNormalTexture[]
 				{
 					new VertexPositionNormalTexture(new Vector3(0, h, 0), Vector3.Up,  Vector2.Zero),
-					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1, 0)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1, 0)),
-					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(1, 1))
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, Terrain.TileSplatTextureScale.Y)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(Terrain.TileSplatTextureScale.X, 0)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(Terrain.TileSplatTextureScale.X, 0)),
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, Terrain.TileSplatTextureScale.Y)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(Terrain.TileSplatTextureScale.X, Terrain.TileSplatTextureScale.Y))
 				};
 
 				indices = new short[]
@@ -199,15 +193,16 @@ namespace Nursia.Graphics3D.Landscape
 						float vx = x * Terrain.TileSize.X / (float)(sizeX - 1);
 						float vy = y * Terrain.TileSize.Y / (float)(sizeY - 1);
 
-						var globalPos = new Vector2(_pos.X * Terrain.TileSize.X + vx, _pos.Y * Terrain.TileSize.X + vy);
+						var globalPos = new Vector2(_pos.X * Terrain.TileSize.X + vx,
+													_pos.Y * Terrain.TileSize.X + vy);
 
 						float height = Terrain.GetHeight(globalPos);
 						var position = new Vector3(vx, height, vy);
 						vertices[idx] = new VertexPositionNormalTexture(
 							position,
 							CalculateNormal(globalPos),
-							new Vector2((float)x / (sizeX - 1), (float)y / (sizeY - 1))
-						);
+							new Vector2((float)x * Terrain.TileSplatTextureScale.X / (sizeX - 1), 
+										(float)y * Terrain.TileSplatTextureScale.Y / (sizeY - 1)));
 
 						++idx;
 					}

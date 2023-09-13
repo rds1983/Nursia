@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.Properties;
@@ -49,6 +50,11 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			_sliderTerrainRadius.ValueChanged += (s, a) => UpdateTerrainRadius();
 			_sliderTerrainPower.ValueChanged += (s, a) => UpdateTerrainPower();
+
+			_menuItemSave.Selected += (s, a) =>
+			{
+				Scene.Save(@"D:\Temp\Nursia\");
+			};
 
 			UpdateTerrainRadius();
 			UpdateTerrainPower();
@@ -176,7 +182,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				var texturePaintButton = new InstrumentButton(_allButtons)
 				{
-					Text = terrain.TexturePaintName1,
+					Text = Path.GetFileNameWithoutExtension(terrain.TexturePaintName1),
 					Image = new TextureRegion(terrain.TexturePaint1)
 				};
 
@@ -192,7 +198,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				var texturePaintButton = new InstrumentButton(_allButtons)
 				{
-					Text = terrain.TexturePaintName2,
+					Text = Path.GetFileNameWithoutExtension(terrain.TexturePaintName2),
 					Image = new TextureRegion(terrain.TexturePaint2)
 				};
 
@@ -208,7 +214,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				var texturePaintButton = new InstrumentButton(_allButtons)
 				{
-					Text = terrain.TexturePaintName3,
+					Text = Path.GetFileNameWithoutExtension(terrain.TexturePaintName3),
 					Image = new TextureRegion(terrain.TexturePaint3)
 				};
 
@@ -224,7 +230,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				var texturePaintButton = new InstrumentButton(_allButtons)
 				{
-					Text = terrain.TexturePaintName4,
+					Text = Path.GetFileNameWithoutExtension(terrain.TexturePaintName4),
 					Image = new TextureRegion(terrain.TexturePaint4)
 				};
 

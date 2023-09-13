@@ -208,24 +208,9 @@ namespace Nursia.Graphics3D.Modelling
 
 		private static Matrix LoadTransform(JObject data)
 		{
-			var scale = Vector3.One;
-			JToken token;
-			if (data.TryGetValue("scale", out token))
-			{
-				scale = token.ToVector3();
-			}
-
-			var translation = Vector3.Zero;
-			if (data.TryGetValue("translation", out token))
-			{
-				translation = token.ToVector3();
-			}
-
-			var rotation = Vector4.Zero;
-			if (data.TryGetValue("rotation", out token))
-			{
-				rotation = token.ToVector4();
-			}
+			var scale = data.OptionalVector3("scale", Vector3.One);
+			var translation = data.OptionalVector3("translation", Vector3.Zero);
+			var rotation = data.OptionalVector4("rotation", Vector4.Zero);
 
 			var quaternion = new Quaternion(rotation.X,
 				rotation.Y, rotation.Z, rotation.W);

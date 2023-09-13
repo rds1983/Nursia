@@ -38,7 +38,6 @@ namespace Nursia.Graphics3D.Lights
 				_normalizedDirection = _direction;
 				_normalizedDirection.Normalize();
 			}
-
 		}
 	}
 }

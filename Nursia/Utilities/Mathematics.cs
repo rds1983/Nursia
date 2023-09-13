@@ -22,9 +22,22 @@ namespace Nursia.Utilities
 			return Math.Abs(left - right) <= epsilon;
 		}
 
+		public static bool EpsilonEquals(this Vector4 a, Vector4 b, float epsilon = ZeroTolerance)
+		{
+			return a.X.EpsilonEquals(b.X, epsilon) &&
+				a.Y.EpsilonEquals(b.Y, epsilon) &&
+				a.Z.EpsilonEquals(b.Z, epsilon) &&
+				a.W.EpsilonEquals(b.W, epsilon);
+		}
+
 		public static bool IsZero(this float a)
 		{
 			return a.EpsilonEquals(0.0f);
+		}
+
+		public static bool IsZero(this Vector4 a)
+		{
+			return a.EpsilonEquals(Vector4.Zero);
 		}
 
 		public static Plane CreatePlane(float height, Vector3 planeNormalDirection, Matrix viewProjection, bool clipSide)

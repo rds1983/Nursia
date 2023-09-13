@@ -48,6 +48,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			_allButtons = allButtons ?? throw new ArgumentNullException(nameof(allButtons));
 			_allButtons.Add(this);
 			Toggleable = true;
+			LabelHorizontalAlignment = HorizontalAlignment.Center;
 			HorizontalAlignment = HorizontalAlignment.Stretch;
 			VerticalAlignment = VerticalAlignment.Stretch;
 			ContentHorizontalAlignment = HorizontalAlignment.Center;

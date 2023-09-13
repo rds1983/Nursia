@@ -50,32 +50,6 @@ namespace Nursia.Samples.LevelEditor
 			}
 		}
 
-		private void LoadTerrainTexture(Terrain terrain, int index, AssetManager assetManager, string filePath)
-		{
-			var texture = assetManager.LoadTexture2D(GraphicsDevice, filePath);
-			var name = Path.GetFileNameWithoutExtension(filePath);
-
-			switch(index)
-			{
-				case 1:
-					terrain.TexturePaint1 = texture;
-					terrain.TexturePaintName1 = name;
-					break;
-				case 2:
-					terrain.TexturePaint2 = texture;
-					terrain.TexturePaintName2 = name;
-					break;
-				case 3:
-					terrain.TexturePaint3 = texture;
-					terrain.TexturePaintName3 = name;
-					break;
-				case 4:
-					terrain.TexturePaint4 = texture;
-					terrain.TexturePaintName4 = name;
-					break;
-			}
-		}
-
 		protected override void LoadContent()
 		{
 			base.LoadContent();
@@ -86,31 +60,13 @@ namespace Nursia.Samples.LevelEditor
 			_mainForm = new MainForm();
 
 			var assetFolder = Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets");
-			var assetManager = AssetManager.CreateFileAssetManager(assetFolder);
 
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainForm);
 
-			// Light
-			var scene = new Scene
-			{
-				Terrain = new Terrain
-				{
-					TextureBase = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png"),
-				}
-			};
+			var sceneManager = AssetManager.CreateFileAssetManager(@"D:\Temp\Nursia\");
 
-			LoadTerrainTexture(scene.Terrain, 1, assetManager, @"terrain/dirt.png");
-			LoadTerrainTexture(scene.Terrain, 2, assetManager, @"terrain/mud.png");
-			LoadTerrainTexture(scene.Terrain, 3, assetManager, @"terrain/path.png");
-			LoadTerrainTexture(scene.Terrain, 4, assetManager, @"terrain/pinkFlowers.png");
-
-			scene.DirectLights.Add(new DirectLight
-			{
-				Color = Color.White,
-				Position = new Vector3(10000, 10000, -10000),
-				Direction = new Vector3(1, -1, -1)
-			});
+			var scene = Scene.Load(@"D:\Temp\Nursia\scene.json", sceneManager);
 
 			scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 			_mainForm.Scene = scene;

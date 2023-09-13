@@ -1,28 +1,36 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Nursia.Graphics3D.Landscape
 {
 	public class Terrain
 	{
-		private readonly Point _tileSize;
-		private readonly Point _tileVertexCount;
-		private readonly Point _tileSplatTextureSize;
-		private readonly Point _tilesCount;
-		private Point _tileSplatTextureScale = new Point(10, 10);
-		private TerrainTile[,] _tiles;
+		public const int DefaultTileSizeX = 100;
+		public const int DefaultTileSizeY = 100;
+		public const int DefaultTileVertexCountX = 100;
+		public const int DefaultTileVertexCountY = 100;
+		public const int DefaultSplatTextureSizeX = 128;
+		public const int DefaultSplatTextureSizeY = 128;
+		public const int DefaultTilesCountX = 10;
+		public const int DefaultTilesCountY = 10;
+		public const float DefaultTextureScaleX = 10;
+		public const float DefaultTextureScaleY = 10;
 
-		public Point TileSize => _tileSize;
-		public Point TileVertexCount => _tileVertexCount;
-		public Point TilesCount => _tilesCount;
+		private readonly TerrainTile[,] _tiles;
+		private Vector2 _tileSplatTextureScale = new Vector2(DefaultTextureScaleX, DefaultTextureScaleY);
 
-		public Point TileSplatTextureSize => _tileSplatTextureSize;
+		public Point TileSize { get; }
+		public Point TileVertexCount { get; }
+		public Point TilesCount { get; }
+
+		public Point TileSplatTextureSize { get; }
 
 		public Point Size => TileSize * TilesCount;
 
-		public Point TileSplatTextureScale
+		public Vector2 TileTextureScale
 		{
 			get => _tileSplatTextureScale;
 			set
@@ -34,15 +42,17 @@ namespace Nursia.Graphics3D.Landscape
 
 				_tileSplatTextureScale = value;
 
-				for (var x = 0; x < _tilesCount.X; ++x)
+				for (var x = 0; x < TilesCount.X; ++x)
 				{
-					for (var y = 0; y < _tilesCount.Y; ++y)
+					for (var y = 0; y < TilesCount.Y; ++y)
 					{
 						_tiles[x, y].InvalidateMesh();
 					}
 				}
 			}
 		}
+
+		public float DefaultHeight { get; } = 0.0f;
 
 		public float MaximumHeight { get; set; } = 10.0f;
 		public float MinimumHeight { get; set; } = -10.0f;
@@ -51,6 +61,9 @@ namespace Nursia.Graphics3D.Landscape
 		public TerrainTile this[int x, int y] => _tiles[x, y];
 
 		public Color DiffuseColor { get; set; } = Color.White;
+
+		[Browsable(false)]
+		public string TextureBaseName { get; set; }
 
 		[Browsable(false)]
 		public Texture2D TextureBase { get; set; }
@@ -111,18 +124,22 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		public Terrain(int tileSizeX = 100, int tileSizeZ = 100, int tileVertexCountX = 100, int tileVertexCountZ = 100,
-			int tilesCountX = 10, int tilesCountZ = 10, int tileSplatTextureWidth = 128, int tileSplatTextureHeight = 128)
+		public Terrain(int tileSizeX = DefaultTileSizeX, int tileSizeY = DefaultTileSizeY,
+			int tileVertexCountX = DefaultTileVertexCountX, int tileVertexCountY = DefaultTileVertexCountY,
+			int tilesCountX = DefaultTilesCountX, int tilesCountY = DefaultTilesCountY,
+			int tileSplatTextureWidth = DefaultSplatTextureSizeX, int tileSplatTextureHeight = DefaultSplatTextureSizeY,
+			float defaultHeight = 0.0f)
 		{
-			_tileSize = new Point(tileSizeX, tileSizeZ);
-			_tileVertexCount = new Point(tileVertexCountX, tileVertexCountZ);
-			_tilesCount = new Point(tilesCountX, tilesCountZ);
-			_tileSplatTextureSize = new Point(tileSplatTextureWidth, tileSplatTextureHeight);
+			TileSize = new Point(tileSizeX, tileSizeY);
+			TileVertexCount = new Point(tileVertexCountX, tileVertexCountY);
+			TilesCount = new Point(tilesCountX, tilesCountY);
+			TileSplatTextureSize = new Point(tileSplatTextureWidth, tileSplatTextureHeight);
+			DefaultHeight = defaultHeight;
 
-			_tiles = new TerrainTile[_tilesCount.X, _tilesCount.Y];
-			for (var x = 0; x < _tilesCount.X; ++x)
+			_tiles = new TerrainTile[TilesCount.X, TilesCount.Y];
+			for (var x = 0; x < TilesCount.X; ++x)
 			{
-				for (var y = 0; y < _tilesCount.Y; ++y)
+				for (var y = 0; y < TilesCount.Y; ++y)
 				{
 					_tiles[x, y] = new TerrainTile(this, x, y);
 				}
@@ -159,13 +176,13 @@ namespace Nursia.Graphics3D.Landscape
 		{
 			if (heightPos.X < 0 || heightPos.Y < 0)
 			{
-				return 0.0f;
+				return DefaultHeight;
 			}
 
 			var tile = GetTileByHeightPosition(heightPos);
 			if (tile == null)
 			{
-				return 0.0f;
+				return DefaultHeight;
 			}
 
 			var x = heightPos.X % TileVertexCount.X;
@@ -220,24 +237,24 @@ namespace Nursia.Graphics3D.Landscape
 
 			var c = tile.GetSplatData(localX, localY);
 
-			float result = 0;
+			byte result = 0;
 			switch (channel)
 			{
 				case SplatManChannel.First:
-					result = c.X;
+					result = c.R;
 					break;
 				case SplatManChannel.Second:
-					result = c.Y;
+					result = c.G;
 					break;
 				case SplatManChannel.Third:
-					result = c.Z;
+					result = c.B;
 					break;
 				case SplatManChannel.Fourth:
-					result = c.W;
+					result = c.A;
 					break;
 			}
 
-			return result;
+			return (float)result / 255.0f;
 		}
 
 		public void SetSplatValue(Point splatPos, SplatManChannel channel, float value)
@@ -253,24 +270,25 @@ namespace Nursia.Graphics3D.Landscape
 
 			var c = tile.GetSplatData(localX, localY);
 
-			float oldValue = 0;
+			byte bvalue = (byte)MathHelper.Clamp(value * 255.0f, 0, 255);
+			byte oldValue = 0;
 			switch (channel)
 			{
 				case SplatManChannel.First:
-					oldValue = c.X;
+					oldValue = c.R;
 					break;
 				case SplatManChannel.Second:
-					oldValue = c.Y;
+					oldValue = c.G;
 					break;
 				case SplatManChannel.Third:
-					oldValue = c.Z;
+					oldValue = c.B;
 					break;
 				case SplatManChannel.Fourth:
-					oldValue = c.W;
+					oldValue = c.A;
 					break;
 			}
 
-			if (oldValue.EpsilonEquals(value))
+			if (oldValue == bvalue)
 			{
 				return;
 			}
@@ -278,28 +296,31 @@ namespace Nursia.Graphics3D.Landscape
 			switch (channel)
 			{
 				case SplatManChannel.First:
-					c.X = value;
+					c.R = bvalue;
 					break;
 				case SplatManChannel.Second:
-					c.Y = value;
+					c.G = bvalue;
 					break;
 				case SplatManChannel.Third:
-					c.Z = value;
+					c.B = bvalue;
 					break;
 				case SplatManChannel.Fourth:
-					c.W = value;
+					c.A = bvalue;
 					break;
 			}
 
 			// Make sure sum of channels doesnt exceed 1f
-			var sum = c.X + c.Y + c.Z + c.W;
+			var v = c.ToVector4();
+			var sum = v.X + v.Y + v.Z + v.W;
 			if (sum > 1f)
 			{
 				var correction = 1f / sum;
-				c.X *= correction;
-				c.Y *= correction;
-				c.Z *= correction;
-				c.W *= correction;
+				v.X *= correction;
+				v.Y *= correction;
+				v.Z *= correction;
+				v.W *= correction;
+
+				c = v.ToColor();
 			}
 
 			tile.SetSplatData(localX, localY, c);

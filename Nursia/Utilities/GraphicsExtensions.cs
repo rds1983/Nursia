@@ -9,7 +9,7 @@ using Nursia.Vertices;
 
 namespace Nursia.Utilities
 {
-	internal static class GraphicsExtension
+	internal static class GraphicsExtensions
 	{
 		private class ColorInfo
 		{
@@ -19,7 +19,7 @@ namespace Nursia.Utilities
 
 		private static readonly Dictionary<string, ColorInfo> _colors = new Dictionary<string, ColorInfo>();
 
-		static GraphicsExtension()
+		static GraphicsExtensions()
 		{
 			var type = typeof(Color);
 

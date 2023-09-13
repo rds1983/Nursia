@@ -116,12 +116,6 @@ namespace Nursia.Graphics3D.Landscape
 
 		public void SetHeight(int x, int y, float height) => SetHeight(new Point(x, y), height);
 
-		private Vector2 ToGlobalHeight(Vector2 localHeightPos) =>
-			new Vector2(_pos.X * Terrain.TileVertexCount.X + localHeightPos.X,
-				_pos.Y * Terrain.TileVertexCount.X + localHeightPos.Y);
-
-		private Vector2 ToGlobalHeight(float x, float y) => ToGlobalHeight(new Vector2(x, y));
-
 		private Vector3 CalculateNormal(Vector2 pos)
 		{
 			float heightL = Terrain.GetHeight(pos.X - 1, pos.Y);
@@ -202,10 +196,10 @@ namespace Nursia.Graphics3D.Landscape
 				{
 					for (var x = 0; x < sizeX; ++x)
 					{
-						float vx = x * sizeX / (float)(sizeX - 1);
-						float vy = y * sizeY / (float)(sizeY - 1);
+						float vx = x * Terrain.TileSize.X / (float)(sizeX - 1);
+						float vy = y * Terrain.TileSize.Y / (float)(sizeY - 1);
 
-						var globalPos = ToGlobalHeight(vx, vy);
+						var globalPos = new Vector2(_pos.X * Terrain.TileSize.X + vx, _pos.Y * Terrain.TileSize.X + vy);
 
 						float height = Terrain.GetHeight(globalPos);
 						var position = new Vector3(vx, height, vy);

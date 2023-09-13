@@ -149,10 +149,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			}
 
 			model.UpdateNodesAbsoluteTransforms();
-			foreach (var mesh in model.RootNodes)
-			{
-				DrawMeshNode(mesh, ref model.Transform);
-			}
+			DrawMeshNode(model.RootNode, ref model.Transform);
 		}
 
 		private void RefractionPass(Scene scene)
@@ -189,14 +186,14 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_texture4"].SetValue(terrain.TexturePaint4);
 				}
 
-				effect.Parameters["_terrainWidth"].SetValue(terrain.TileSizeX);
-				effect.Parameters["_terrainHeight"].SetValue(terrain.TileSizeZ);
+				effect.Parameters["_terrainWidth"].SetValue(terrain.TileSize.X);
+				effect.Parameters["_terrainHeight"].SetValue(terrain.TileSize.Y);
 
-				for (var x = 0; x < terrain.TilesPerX; ++x)
+				for (var x = 0; x < terrain.TilesCount.X; ++x)
 				{
-					for (var z = 0; z < terrain.TilesPerZ; ++z)
+					for (var y = 0; y < terrain.TilesCount.Y; ++y)
 					{
-						var terrainTile = terrain[x, z];
+						var terrainTile = terrain[x, y];
 
 						var m = terrainTile.Transform;
 						var boundingBox = terrainTile.MeshData.BoundingBox.Transform(ref m);

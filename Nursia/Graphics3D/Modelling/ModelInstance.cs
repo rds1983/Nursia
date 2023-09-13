@@ -16,7 +16,7 @@ namespace Nursia.Graphics3D.Modelling
 		public NursiaModel Model { get; } = new NursiaModel();
 
 		public List<NodeInstance> AllNodes { get; } = new List<NodeInstance>();
-		public List<NodeInstance> RootNodes { get; } = new List<NodeInstance>();
+		public NodeInstance RootNode { get; }
 
 
 		public ModelAnimation CurrentAnimation
@@ -45,39 +45,29 @@ namespace Nursia.Graphics3D.Modelling
 
 		public BoundingBox BoundingBox { get; internal set; }
 
-		internal ModelInstance(NursiaModel model)
+		internal ModelInstance(NursiaModel model, int rootNodeIndex = 0)
 		{
 			Model = model ?? throw new ArgumentNullException(nameof(model));
 
-			foreach(var node in model.AllNodes)
+			foreach (var node in model.AllNodes)
 			{
 				AllNodes.Add(new NodeInstance(this, node));
 			}
 
-			foreach(var root in model.RootNodes)
-			{
-				var instance = (from n in AllNodes where n.Node == root select n).First();
-				RootNodes.Add(instance);
-			}
+			RootNode = (from n in AllNodes where n.Node == model.RootNodes[rootNodeIndex] select n).First();
 		}
 
 		private void TraverseNodes(NodeInstance root, Action<NodeInstance> action)
 		{
 			action(root);
 
-			foreach(var index in root.Node.ChildrenIndices)
+			foreach (var index in root.Node.ChildrenIndices)
 			{
 				TraverseNodes(AllNodes[index], action);
 			}
 		}
 
-		internal void TraverseNodes(Action<NodeInstance> action)
-		{
-			foreach (var node in RootNodes)
-			{
-				TraverseNodes(node, action);
-			}
-		}
+		internal void TraverseNodes(Action<NodeInstance> action) => TraverseNodes(RootNode, action);
 
 		internal void UpdateNodesAbsoluteTransforms()
 		{
@@ -96,7 +86,8 @@ namespace Nursia.Graphics3D.Modelling
 
 		public void ResetTransforms()
 		{
-			TraverseNodes(n => {
+			TraverseNodes(n =>
+			{
 				n.Transform = Mathematics.CreateTransform(n.Node.DefaultTranslation, n.Node.DefaultScale, n.Node.DefaultRotation);
 			});
 		}

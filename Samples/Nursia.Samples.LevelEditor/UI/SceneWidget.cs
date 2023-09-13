@@ -67,7 +67,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			var ray = new Ray(nearPoint, direction);
 
 			// Firstly determine whether we intersect zero height terrain rectangle
-			var bb = Utils.CreateBoundingBox(0, Scene.Terrain.SizeX, 0, 0, 0, Scene.Terrain.SizeZ);
+			var bb = Utils.CreateBoundingBox(0, Scene.Terrain.Size.X, 0, 0, 0, Scene.Terrain.Size.Y);
 			var intersectDist = ray.Intersects(bb);
 			if (intersectDist == null)
 			{
@@ -78,7 +78,7 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			// Now determine where we intersect terrain rectangle with real height
 			var height = Scene.Terrain.GetHeight(markerPosition.X, markerPosition.Z);
-			bb = Utils.CreateBoundingBox(0, Scene.Terrain.SizeX, height, height, 0, Scene.Terrain.SizeZ);
+			bb = Utils.CreateBoundingBox(0, Scene.Terrain.Size.X, height, height, 0, Scene.Terrain.Size.Y);
 			intersectDist = ray.Intersects(bb);
 			if (intersectDist == null)
 			{
@@ -192,11 +192,11 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 		}
 
-		private void UpdateTerrainHeight(Vector2 pos, float power)
+		private void UpdateTerrainHeight(Point pos, float power)
 		{
-			var height = Scene.Terrain.GetHeight(pos.X, pos.Y);
+			var height = Scene.Terrain.GetHeightByHeightPos(pos);
 			height += power;
-			Scene.Terrain.SetHeight(pos.X, pos.Y, height);
+			Scene.Terrain.SetHeightByHeightPos(pos, height);
 		}
 
 		private void UpdateTerrainSplatMap(Point splatPos, SplatManChannel channel, float power)
@@ -212,16 +212,16 @@ namespace Nursia.Samples.LevelEditor.UI
 			var radius = Scene.Marker.Radius;
 			var markerPos = Scene.Marker.Position.Value;
 
-			for (var x = (int)((markerPos.X - radius) * Scene.Terrain.ResolutionX);
-				x <= (int)((markerPos.X + radius) * Scene.Terrain.ResolutionX);
-				++x)
+			var topLeft = Scene.Terrain.ToHeightPosition(markerPos.X - radius, markerPos.Z - radius);
+			var bottomRight = Scene.Terrain.ToHeightPosition(markerPos.X + radius, markerPos.Z + radius);
+
+			for (var x = topLeft.X; x <= bottomRight.X; ++x)
 			{
-				for (var z = (int)((markerPos.Z - radius) * Scene.Terrain.ResolutionZ);
-					z <= (int)((markerPos.Z + radius) * Scene.Terrain.ResolutionZ);
-					++z)
+				for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
 				{
-					var pos = new Vector2(x / (float)Scene.Terrain.ResolutionX, z / (float)Scene.Terrain.ResolutionZ);
-					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), pos);
+					var heightPos = new Point(x, y);
+					var terrainPos = Scene.Terrain.HeightToTerrainPosition(heightPos);
+					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
 
 					if (dist > radius)
 					{
@@ -233,10 +233,10 @@ namespace Nursia.Samples.LevelEditor.UI
 						case InstrumentType.None:
 							break;
 						case InstrumentType.RaiseTerrain:
-							UpdateTerrainHeight(pos, power);
+							UpdateTerrainHeight(heightPos, power);
 							break;
 						case InstrumentType.LowerTerrain:
-							UpdateTerrainHeight(pos, -power);
+							UpdateTerrainHeight(heightPos, -power);
 							break;
 					}
 				}
@@ -257,7 +257,7 @@ namespace Nursia.Samples.LevelEditor.UI
 				for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
 				{
 					var splatPos = new Point(x, y);
-					var terrainPos = Scene.Terrain.ToTerrainPosition(splatPos);
+					var terrainPos = Scene.Terrain.SplatToTerrainPosition(splatPos);
 					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
 
 					if (dist > radius)

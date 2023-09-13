@@ -6,8 +6,12 @@ namespace Nursia.Graphics3D.Landscape
 {
 	public class TerrainTile
 	{
+		private readonly Point _pos;
+		private readonly float[,] _heightMap;
+		private readonly Vector4[] _splatData;
+		private readonly Matrix _transform;
+
 		private MeshData _meshData = null;
-		private Matrix? _transform;
 		private Texture2D _splatTexture;
 
 		public Terrain Terrain { get; }
@@ -21,13 +25,9 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		private int SizeX => Terrain.TileSizeX;
-		private int SizeZ => Terrain.TileSizeZ;
+		private Point Size => Terrain.TileSize;
 
-		public int TileX { get; }
-		public int TileZ { get; }
-
-		internal readonly Vector4[] SplatData;
+		public Point Position => _pos;
 
 		public Texture2D SplatTexture
 		{
@@ -35,12 +35,12 @@ namespace Nursia.Graphics3D.Landscape
 			{
 				if (_splatTexture == null)
 				{
-					_splatTexture = new Texture2D(Nrs.GraphicsDevice, Terrain.TileSplatTextureWidth, Terrain.TileSplatTextureHeight);
+					_splatTexture = new Texture2D(Nrs.GraphicsDevice, Terrain.TileSplatTextureSize.X, Terrain.TileSplatTextureSize.Y);
 
-					var colors = new Color[SplatData.Length];
-					for(var i = 0; i < colors.Length; ++i)
+					var colors = new Color[_splatData.Length];
+					for (var i = 0; i < colors.Length; ++i)
 					{
-						colors[i] = SplatData[i].ToColor();
+						colors[i] = _splatData[i].ToColor();
 					}
 
 					_splatTexture.SetData(colors);
@@ -50,58 +50,84 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
-		public Matrix Transform
-		{
-			get
-			{
-				if (_transform == null)
-				{
-					_transform = Matrix.CreateTranslation(new Vector3(TileX * SizeX, 0, TileZ * SizeZ));
-				}
-
-				return _transform.Value;
-			}
-		}
+		public Matrix Transform => _transform;
 
 		internal TerrainTile(Terrain terrain, int tileX, int tileZ)
 		{
 			Terrain = terrain;
-			TileX = tileX;
-			TileZ = tileZ;
-			SplatData = new Vector4[terrain.TileSplatTextureWidth * terrain.TileSplatTextureHeight];
+			_pos = new Point(tileX, tileZ);
+			_splatData = new Vector4[terrain.TileSplatTextureSize.X * terrain.TileSplatTextureSize.Y];
+			_heightMap = new float[terrain.TileVertexCount.X, terrain.TileVertexCount.Y];
+			_transform = Matrix.CreateTranslation(new Vector3(_pos.X * Size.X, 0, _pos.Y * Size.Y));
 		}
 
-		public void InvalidateMesh()
+		private void InvalidateMesh()
 		{
-			if (_meshData == null)
-			{
-				return;
-			}
-
-			_meshData.Dispose();
+			_meshData?.Dispose();
 			_meshData = null;
 		}
 
-		internal void InvalidateSplatTexture()
+		private void InvalidateSplatTexture()
 		{
 			_splatTexture?.Dispose();
 			_splatTexture = null;
 		}
 
-		private float GetHeight(float x, float z)
+		public Vector4 GetSplatData(Point localSplatPos)
 		{
-			x += TileX * SizeX;
-			z += TileZ * SizeZ;
-
-			return Terrain.GetHeight(x, z);
+			var index = localSplatPos.Y * Terrain.TileSplatTextureSize.X + localSplatPos.X;
+			return _splatData[index];
 		}
 
-		private Vector3 CalculateNormal(float x, float z)
+		public Vector4 GetSplatData(int x, int y) => GetSplatData(new Point(x, y));
+
+		public void SetSplatData(Point localSplatPos, Vector4 data)
 		{
-			float heightL = GetHeight(x - 1, z);
-			float heightR = GetHeight(x + 1, z);
-			float heightD = GetHeight(x, z - 1);
-			float heightU = GetHeight(x, z + 1);
+			var index = localSplatPos.Y * Terrain.TileSplatTextureSize.X + localSplatPos.X;
+			if (_splatData[index] == data)
+			{
+				return;
+			}
+
+			_splatData[index] = data;
+			InvalidateSplatTexture();
+		}
+
+		public void SetSplatData(int x, int y, Vector4 data) => SetSplatData(new Point(x, y), data);
+
+		public float GetHeight(Point localHeightPos) => _heightMap[localHeightPos.X, localHeightPos.Y];
+		public float GetHeight(int x, int y) => GetHeight(new Point(x, y));
+
+		public void SetHeight(Point localHeightPos, float height)
+		{
+			if (height < Terrain.MinimumHeight || height > Terrain.MaximumHeight)
+			{
+				return;
+			}
+
+			if (_heightMap[localHeightPos.X, localHeightPos.Y].EpsilonEquals(height))
+			{
+				return;
+			}
+
+			_heightMap[localHeightPos.X, localHeightPos.Y] = height;
+			InvalidateMesh();
+		}
+
+		public void SetHeight(int x, int y, float height) => SetHeight(new Point(x, y), height);
+
+		private Vector2 ToGlobalHeight(Vector2 localHeightPos) =>
+			new Vector2(_pos.X * Terrain.TileVertexCount.X + localHeightPos.X,
+				_pos.Y * Terrain.TileVertexCount.X + localHeightPos.Y);
+
+		private Vector2 ToGlobalHeight(float x, float y) => ToGlobalHeight(new Vector2(x, y));
+
+		private Vector3 CalculateNormal(Vector2 pos)
+		{
+			float heightL = Terrain.GetHeight(pos.X - 1, pos.Y);
+			float heightR = Terrain.GetHeight(pos.X + 1, pos.Y);
+			float heightD = Terrain.GetHeight(pos.X, pos.Y - 1);
+			float heightU = Terrain.GetHeight(pos.X, pos.Y + 1);
 
 			var result = new Vector3(heightL - heightR, 2, heightD - heightU);
 			result.Normalize();
@@ -109,21 +135,23 @@ namespace Nursia.Graphics3D.Landscape
 			return result;
 		}
 
-		private bool CheckIfFlatTile()
+		private Vector3 CalculateNormal(float x, float y) => CalculateNormal(new Vector2(x, y));
+
+		private bool CheckIfFlatTile(out float h2)
 		{
 			var result = true;
 			float? height = null;
 
-			for (var x = 0; x < Terrain._heightMap.GetLength(0); ++x)
+			for (var x = 0; x < _heightMap.GetLength(0); ++x)
 			{
-				for (var z = 0; z < Terrain._heightMap.GetLength(1); ++z)
+				for (var y = 0; y < _heightMap.GetLength(1); ++y)
 				{
-					var h = Terrain._heightMap[x, z];
+					var h = _heightMap[x, y];
 					if (height == null)
 					{
 						height = h;
 					}
-					else if (height.Value != h)
+					else if (!height.Value.EpsilonEquals(h))
 					{
 						result = false;
 						goto finish;
@@ -132,6 +160,7 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		finish:;
 
+			h2 = height ?? 0;
 			return result;
 		}
 
@@ -142,19 +171,20 @@ namespace Nursia.Graphics3D.Landscape
 				return;
 			}
 
-			var isFlatTile = CheckIfFlatTile();
+			float h;
+			var isFlatTile = CheckIfFlatTile(out h);
 			VertexPositionNormalTexture[] vertices;
 			short[] indices;
 			if (isFlatTile)
 			{
 				vertices = new VertexPositionNormalTexture[]
 				{
-					new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up,  Vector2.Zero),
-					new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
-					new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
-					new VertexPositionNormalTexture(new Vector3(SizeX, 0, 0), Vector3.Up, new Vector2(1, 0)),
-					new VertexPositionNormalTexture(new Vector3(0, 0, SizeZ), Vector3.Up, new Vector2(0, 1)),
-					new VertexPositionNormalTexture(new Vector3(SizeX, 0, SizeZ), Vector3.Up, new Vector2(1, 1))
+					new VertexPositionNormalTexture(new Vector3(0, h, 0), Vector3.Up,  Vector2.Zero),
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1, 0)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1, 0)),
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(1, 1))
 				};
 
 				indices = new short[]
@@ -164,24 +194,25 @@ namespace Nursia.Graphics3D.Landscape
 			}
 			else
 			{
-
-				var sizeX = SizeX * Terrain.ResolutionX;
-				var sizeZ = SizeZ * Terrain.ResolutionZ;
+				var sizeX = Terrain.TileVertexCount.X;
+				var sizeY = Terrain.TileVertexCount.Y;
 				var idx = 0;
-				vertices = new VertexPositionNormalTexture[sizeX * sizeZ];
-				for (var z = 0; z < sizeZ; ++z)
+				vertices = new VertexPositionNormalTexture[sizeX * sizeY];
+				for (var y = 0; y < sizeY; ++y)
 				{
 					for (var x = 0; x < sizeX; ++x)
 					{
-						var vx = x * SizeX / (sizeX - 1);
-						var vz = z * SizeZ / (sizeZ - 1);
-						float height = GetHeight(vx, vz);
+						float vx = x * sizeX / (float)(sizeX - 1);
+						float vy = y * sizeY / (float)(sizeY - 1);
 
-						var position = new Vector3(vx, height, vz);
+						var globalPos = ToGlobalHeight(vx, vy);
+
+						float height = Terrain.GetHeight(globalPos);
+						var position = new Vector3(vx, height, vy);
 						vertices[idx] = new VertexPositionNormalTexture(
 							position,
-							CalculateNormal(vx, vz),
-							new Vector2((float)x / (sizeX - 1), (float)z / (sizeZ - 1))
+							CalculateNormal(globalPos),
+							new Vector2((float)x / (sizeX - 1), (float)y / (sizeY - 1))
 						);
 
 						++idx;
@@ -189,8 +220,8 @@ namespace Nursia.Graphics3D.Landscape
 				}
 
 				idx = 0;
-				indices = new short[6 * (sizeX - 1) * (sizeZ - 1)];
-				for (var z = 0; z < sizeZ - 1; ++z)
+				indices = new short[6 * (sizeX - 1) * (sizeY - 1)];
+				for (var z = 0; z < sizeY - 1; ++z)
 				{
 					for (var x = 0; x < sizeX - 1; ++x)
 					{

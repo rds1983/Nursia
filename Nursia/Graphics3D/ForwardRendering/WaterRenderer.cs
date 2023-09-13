@@ -11,39 +11,25 @@ namespace Nursia.Graphics3D.ForwardRendering
 		private const float WaveSpeed = 0.03f;
 
 		private readonly MeshData _waterMesh;
-		private readonly RenderTarget2D _targetRefraction;
-		private readonly RenderTarget2D _targetReflection;
 		private DateTime? _lastRenderTime;
 		private float _moveFactor = 0;
 
-		public RenderTarget2D TargetRefraction
-		{
-			get
-			{
-				return _targetRefraction;
-			}
-		}
+		public RenderTarget2D TargetRefraction { get; }
 
-		public RenderTarget2D TargetReflection
-		{
-			get
-			{
-				return _targetReflection;
-			}
-		}
+		public RenderTarget2D TargetReflection { get; }
 
 		public WaterRenderer()
 		{
 			_waterMesh = PrimitiveMeshes.SquarePositionFromZeroToOne;
 
-			_targetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
+			TargetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
 				TargetRefractionSize.X,
 				TargetRefractionSize.Y,
 				false,
 				SurfaceFormat.Color,
 				DepthFormat.Depth24);
 
-			_targetReflection = new RenderTarget2D(Nrs.GraphicsDevice,
+			TargetReflection = new RenderTarget2D(Nrs.GraphicsDevice,
 				TargetReflectionSize.X,
 				TargetReflectionSize.Y,
 				false,

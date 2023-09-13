@@ -1,161 +1,42 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
-using System;
 using System.ComponentModel;
 
 namespace Nursia.Graphics3D.Landscape
 {
 	public class Terrain
 	{
-		private int _tileSizeX = 100, _tileSizeZ = 100;
-		private int _tilesPerX = 10, _tilesPerZ = 10;
-		private int _resolutionX = 1, _resolutionZ = 1, _oldResolutionX = 1, _oldResolutionZ = 1;
-		private TerrainTile[,] _tiles;
-		internal float[,] _heightMap;
-		private int _tileSplatTextureWidth = 128, _tileSplatTextureHeight = 128;
+		private readonly Point _tileSize;
+		private readonly Point _tileVertexCount;
+		private readonly Point _tileSplatTextureSize;
+		private Point _tilesCount;
 		private bool _dirty = true;
+		private TerrainTile[,] _tiles;
 
-		public int TileSizeX
+		public Point TileSize => _tileSize;
+		public Point TileVertexCount => _tileVertexCount;
+		public Point TilesCount
 		{
-			get => _tileSizeX;
+			get => _tilesCount;
 			set
 			{
-				if (_tileSizeX == value)
+				if (_tilesCount == value)
 				{
 					return;
 				}
 
-				_tileSizeX = value;
+				_tilesCount = value;
 				SetDirty();
 			}
 		}
 
-		public int TileSizeZ
-		{
-			get => _tileSizeZ;
-			set
-			{
-				if (_tileSizeZ == value)
-				{
-					return;
-				}
+		public Point TileSplatTextureSize => _tileSplatTextureSize;
 
-				_tileSizeZ = value;
-				SetDirty();
-			}
-		}
-
-		public int TilesPerX
-		{
-			get => _tilesPerX;
-			set
-			{
-				if (value == _tilesPerX)
-				{
-					return;
-				}
-
-				_tilesPerX = value;
-				SetDirty();
-			}
-		}
-
-		public int TilesPerZ
-		{
-			get => _tilesPerZ;
-			set
-			{
-				if (value == _tilesPerZ)
-				{
-					return;
-				}
-
-				_tilesPerZ = value;
-				SetDirty();
-			}
-		}
-
-		public int TileSplatTextureWidth
-		{
-			get => _tileSplatTextureWidth;
-
-			set
-			{
-				if (value == _tileSplatTextureWidth)
-				{
-					return;
-				}
-
-				_tileSplatTextureWidth = value;
-				SetDirty();
-			}
-		}
-
-		public int TileSplatTextureHeight
-		{
-			get => _tileSplatTextureHeight;
-
-			set
-			{
-				if (value == _tileSplatTextureHeight)
-				{
-					return;
-				}
-
-				_tileSplatTextureHeight = value;
-				SetDirty();
-			}
-		}
-
-		public int ResolutionX
-		{
-			get => _resolutionX;
-			set
-			{
-				if (value < 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(value));
-				}
-
-				if (value == _resolutionX)
-				{
-					return;
-				}
-
-				_oldResolutionX = _resolutionX;
-				_resolutionX = value;
-				SetDirty();
-			}
-		}
-
-		public int ResolutionZ
-		{
-			get => _resolutionZ;
-			set
-			{
-				if (value < 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(value));
-				}
-
-				if (value == _resolutionZ)
-				{
-					return;
-				}
-
-				_oldResolutionZ = value;
-				_resolutionZ = value;
-				SetDirty();
-			}
-		}
-
-		public int SizeX => TileSizeX * TilesPerX;
-		public int SizeZ => TileSizeZ * TilesPerZ;
+		public Point Size => TileSize * TilesCount;
 
 		public float MaximumHeight { get; set; } = 10.0f;
 		public float MinimumHeight { get; set; } = -10.0f;
-
 
 		public TerrainTile this[int x, int z]
 		{
@@ -227,91 +108,130 @@ namespace Nursia.Graphics3D.Landscape
 			}
 		}
 
+		public Terrain(int tileSizeX = 100, int tileSizeZ = 100, int tileVertexCountX = 100, int tileVertexCountZ = 100,
+			int tilesCountX = 10, int tilesCountZ = 10, int tileSplatTextureWidth = 128, int tileSplatTextureHeight = 128)
+		{
+			_tileSize = new Point(tileSizeX, tileSizeZ);
+			_tileVertexCount = new Point(tileVertexCountX, tileVertexCountZ);
+			_tilesCount = new Point(tilesCountX, tilesCountZ);
+			_tileSplatTextureSize = new Point(tileSplatTextureWidth, tileSplatTextureHeight);
+		}
+
+		private void Update()
+		{
+			if (!_dirty)
+			{
+				return;
+			}
+
+			_tiles = new TerrainTile[_tilesCount.X, _tilesCount.Y];
+			for (var x = 0; x < _tilesCount.X; ++x)
+			{
+				for (var z = 0; z < _tilesCount.Y; ++z)
+				{
+					_tiles[x, z] = new TerrainTile(this, x, z);
+				}
+			}
+
+			_dirty = false;
+		}
 
 		private void SetDirty()
 		{
 			_dirty = true;
 		}
 
-		public float GetHeight(float x, float z)
+		private TerrainTile SafelyGetTile(int x, int y)
 		{
 			Update();
+			if (x < 0 || x >= _tiles.GetLength(0))
+			{
+				return null;
+			}
 
-			var hx = (int)(x * ResolutionX);
-			if (hx < 0 || hx >= _heightMap.GetLength(0))
+			if (y < 0 || y >= _tiles.GetLength(1))
+			{
+				return null;
+			}
+
+			return _tiles[x, y];
+		}
+
+		public Point ToHeightPosition(Vector2 pos) => new Point((int)(pos.X * TileVertexCount.X / TileSize.X),
+				(int)(pos.Y * TileVertexCount.Y / TileSize.Y));
+
+		public Point ToHeightPosition(float x, float y) => ToHeightPosition(new Vector2(x, y));
+
+		public Vector2 HeightToTerrainPosition(Point heightPos) => new Vector2((float)heightPos.X * TileSize.X / TileVertexCount.X,
+				(float)heightPos.Y * TileSize.Y / TileVertexCount.Y);
+
+		private TerrainTile GetTileByHeightPosition(Point heightPos) =>
+			SafelyGetTile(heightPos.X / TileVertexCount.X, heightPos.Y / TileVertexCount.Y);
+
+		public float GetHeightByHeightPos(Point heightPos)
+		{
+			if (heightPos.X < 0 || heightPos.Y < 0)
 			{
 				return 0.0f;
 			}
 
-			var hz = (int)(z * ResolutionZ);
-			if (hz < 0 || hz >= _heightMap.GetLength(1))
+			var tile = GetTileByHeightPosition(heightPos);
+			if (tile == null)
 			{
 				return 0.0f;
 			}
 
-			return _heightMap[hx, hz];
+			var x = heightPos.X % TileVertexCount.X;
+			var y = heightPos.Y % TileVertexCount.Y;
+			return tile.GetHeight(x, y);
 		}
 
-		public TerrainTile GetTile(float x, float z) => _tiles[(int)(x / TileSizeX), (int)(z / TileSizeZ)];
+		public float GetHeightByHeightPos(int x, int y) => GetHeightByHeightPos(new Point(x, y));
 
-		public void SetHeight(float x, float z, float height)
+		public float GetHeight(Vector2 pos) => GetHeightByHeightPos(ToHeightPosition(pos));
+
+		public float GetHeight(float x, float y) => GetHeight(new Vector2(x, y));
+
+		public void SetHeightByHeightPos(Point heightPos, float height)
 		{
-			Update();
-
-			var hx = (int)(x * ResolutionX);
-			if (hx < 0 || hx >= _heightMap.GetLength(0))
+			if (heightPos.X < 0 || heightPos.Y < 0)
 			{
 				return;
 			}
 
-			var hz = (int)(z * ResolutionZ);
-			if (hz < 0 || hz >= _heightMap.GetLength(1))
+			var tile = GetTileByHeightPosition(heightPos);
+			if (tile == null)
 			{
 				return;
 			}
 
-			if (height < MinimumHeight)
-			{
-				height = MinimumHeight;
-			}
-
-			if (height > MaximumHeight)
-			{
-				height = MaximumHeight;
-			}
-
-			if (height.EpsilonEquals(_heightMap[hx, hz]))
-			{
-				return;
-			}
-
-			_heightMap[hx, hz] = height;
-
-			var tile = GetTile(x, z);
-			tile.InvalidateMesh();
+			var x = heightPos.X % TileVertexCount.X;
+			var y = heightPos.Y % TileVertexCount.Y;
+			tile.SetHeight(x, y, height);
 		}
 
-		public Point ToSplatPosition(float x, float z) => new Point((int)((x * TileSplatTextureWidth) / TileSizeX),
-				(int)((z * TileSplatTextureHeight) / TileSizeZ));
+		public void SetHeightByHeightPos(int x, int y, float height) => SetHeightByHeightPos(new Point(x, y), height);
 
-		public Vector2 ToTerrainPosition(Point splatPos) => new Vector2((float)splatPos.X * TileSizeX / TileSplatTextureWidth,
-				(float)splatPos.Y * TileSizeZ / TileSplatTextureHeight);
+		public Point ToSplatPosition(float x, float z) => new Point((int)((x * TileSplatTextureSize.X) / TileSize.X),
+				(int)((z * TileSplatTextureSize.Y) / TileSize.Y));
 
-		private TerrainTile GetTileBySplatPosition(Point splatPosition) => _tiles[splatPosition.X / TileSplatTextureWidth, splatPosition.Y / TileSplatTextureHeight];
+		public Vector2 SplatToTerrainPosition(Point splatPos) => new Vector2((float)splatPos.X * TileSize.X / TileSplatTextureSize.X,
+				(float)splatPos.Y * TileSize.Y / TileSplatTextureSize.Y);
+
+		private TerrainTile GetTileBySplatPosition(Point splatPosition) => _tiles[splatPosition.X / TileSplatTextureSize.X, splatPosition.Y / TileSplatTextureSize.Y];
 
 		public float GetSplatValue(Point splatPos, SplatManChannel channel)
 		{
 			var tile = GetTileBySplatPosition(splatPos);
-			var localX = splatPos.X % TileSplatTextureWidth;
-			var localY = splatPos.Y % TileSplatTextureHeight;
+			var localX = splatPos.X % TileSplatTextureSize.X;
+			var localY = splatPos.Y % TileSplatTextureSize.Y;
 
 			if (localX < 0 || localY < 0)
 			{
 				return 0;
 			}
 
-			var index = localY * TileSplatTextureHeight + localX;
-			var c = tile.SplatData[index];
+			var c = tile.GetSplatData(localX, localY);
 
 			float result = 0;
 			switch (channel)
@@ -336,31 +256,30 @@ namespace Nursia.Graphics3D.Landscape
 		public void SetSplatValue(Point splatPos, SplatManChannel channel, float value)
 		{
 			var tile = GetTileBySplatPosition(splatPos);
-			var localX = splatPos.X % TileSplatTextureWidth;
-			var localY = splatPos.Y % TileSplatTextureHeight;
+			var localX = splatPos.X % TileSplatTextureSize.X;
+			var localY = splatPos.Y % TileSplatTextureSize.Y;
 
 			if (localX < 0 || localY < 0)
 			{
 				return;
 			}
 
-			var index = localY * TileSplatTextureHeight + localX;
-			var v = tile.SplatData[index];
+			var c = tile.GetSplatData(localX, localY);
 
 			float oldValue = 0;
 			switch (channel)
 			{
 				case SplatManChannel.First:
-					oldValue = v.X;
+					oldValue = c.X;
 					break;
 				case SplatManChannel.Second:
-					oldValue = v.Y;
+					oldValue = c.Y;
 					break;
 				case SplatManChannel.Third:
-					oldValue = v.Z;
+					oldValue = c.Z;
 					break;
 				case SplatManChannel.Fourth:
-					oldValue = v.W;
+					oldValue = c.W;
 					break;
 			}
 
@@ -372,65 +291,31 @@ namespace Nursia.Graphics3D.Landscape
 			switch (channel)
 			{
 				case SplatManChannel.First:
-					v.X = value;
+					c.X = value;
 					break;
 				case SplatManChannel.Second:
-					v.Y = value;
+					c.Y = value;
 					break;
 				case SplatManChannel.Third:
-					v.Z = value;
+					c.Z = value;
 					break;
 				case SplatManChannel.Fourth:
-					v.W = value;
+					c.W = value;
 					break;
 			}
 
 			// Make sure sum of channels doesnt exceed 1f
-			var sum = v.X + v.Y + v.Z + v.W;
+			var sum = c.X + c.Y + c.Z + c.W;
 			if (sum > 1f)
 			{
 				var correction = 1f / sum;
-				v.X *= correction;
-				v.Y *= correction;
-				v.Z *= correction;
-				v.W *= correction;
+				c.X *= correction;
+				c.Y *= correction;
+				c.Z *= correction;
+				c.W *= correction;
 			}
 
-			tile.SplatData[index] = v;
-			tile.InvalidateSplatTexture();
-		}
-
-		private void Update()
-		{
-			if (!_dirty) return;
-
-			var oldHeightMap = _heightMap;
-			_heightMap = new float[SizeX * ResolutionX, SizeZ * ResolutionZ];
-			if (oldHeightMap != null)
-			{
-				// Keep old heights
-				for (var oldHeightX = 0; oldHeightX < _heightMap.GetLength(0); ++oldHeightX)
-				{
-					for (var oldHeightZ = 0; oldHeightZ < _heightMap.GetLength(1); ++oldHeightZ)
-					{
-						var x = oldHeightX / _oldResolutionX;
-						var z = oldHeightZ / _oldResolutionZ;
-						var height = oldHeightMap[oldHeightX, oldHeightZ];
-						SetHeight(x, z, height);
-					}
-				}
-			}
-
-			_tiles = new TerrainTile[_tilesPerX, _tilesPerZ];
-			for (var x = 0; x < _tilesPerX; ++x)
-			{
-				for (var z = 0; z < _tilesPerZ; ++z)
-				{
-					_tiles[x, z] = new TerrainTile(this, x, z);
-				}
-			}
-
-			_dirty = false;
+			tile.SetSplatData(localX, localY, c);
 		}
 	}
 }

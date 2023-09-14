@@ -57,7 +57,7 @@ namespace Nursia.Samples.LevelEditor
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainForm);
 
-			var baseFolder = @"D:\Temp\Nursia\";
+			var baseFolder = @"D:\Temp\Nursia\scenes\scene1";
 			var assetManager = AssetManager.CreateFileAssetManager(baseFolder);
 			var scene = Scene.Load(Path.Combine(baseFolder, @"scene.json"), assetManager);
 

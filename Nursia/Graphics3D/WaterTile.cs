@@ -2,7 +2,7 @@
 
 namespace Nursia.Graphics3D
 {
-	public class WaterTile
+	public class WaterTile: ItemWithId
 	{
 		[Category("Position")]
 		public float X { get; set; }

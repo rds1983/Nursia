@@ -327,7 +327,7 @@ namespace Nursia.Utilities
 			return value.ToVector4();
 		}
 
-		public static string ToString(this float f)
+		public static string ToJsonString(this float f)
 		{
 			return f.ToString(CultureInfo.InvariantCulture);
 		}
@@ -360,8 +360,8 @@ namespace Nursia.Utilities
 		{
 			var result = new JArray
 			{
-				v.X.ToString(),
-				v.Y.ToString()
+				v.X.ToJsonString(),
+				v.Y.ToJsonString()
 			};
 
 			return result;
@@ -371,9 +371,9 @@ namespace Nursia.Utilities
 		{
 			var result = new JArray
 			{
-				v.X.ToString(),
-				v.Y.ToString(),
-				v.Z.ToString()
+				v.X.ToJsonString(),
+				v.Y.ToJsonString(),
+				v.Z.ToJsonString()
 			};
 
 			return result;

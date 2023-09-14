@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 namespace Nursia.Graphics3D
 {
-	public class Scene: ItemWithId
+	public class Scene : ItemWithId
 	{
 		public List<DirectLight> DirectLights { get; } = new List<DirectLight>();
 		public List<BaseLight> PointLights { get; } = new List<BaseLight>();
@@ -47,11 +47,27 @@ namespace Nursia.Graphics3D
 			light.Position = obj.EnsureVector3("Position");
 		}
 
-		private static void LoadDirectLight(DirectLight light, JObject obj)
+		private static DirectLight LoadDirectLight(JObject obj)
 		{
-			LoadBaseLight(light, obj);
+			var result = new DirectLight();
+			LoadBaseLight(result, obj);
 
-			light.Direction = obj.EnsureVector3("Direction");
+			result.Direction = obj.EnsureVector3("Direction");
+
+			return result;
+		}
+
+		private static WaterTile LoadWaterTile(JObject obj)
+		{
+			var result = new WaterTile(obj.EnsureFloat("X"), obj.EnsureFloat("Z"), obj.EnsureFloat("Height"),
+				obj.EnsureFloat("SizeX"), obj.EnsureFloat("SizeZ"))
+			{
+				Tiling = obj.EnsureFloat("Tiling")
+			};
+
+			LoadItem(result, obj);
+
+			return result;
 		}
 
 		public static Scene Load(string jsonPath, AssetManager assetManager)
@@ -63,10 +79,9 @@ namespace Nursia.Graphics3D
 			var scene = new Scene();
 			LoadItem(scene, rootObject);
 			var directLightsObj = rootObject["DirectLights"];
-			foreach(JObject directLightObj in directLightsObj)
+			foreach (JObject directLightObj in directLightsObj)
 			{
-				var directLight = new DirectLight();
-				LoadDirectLight(directLight, directLightObj);
+				var directLight = LoadDirectLight(directLightObj);
 				scene.DirectLights.Add(directLight);
 			}
 
@@ -128,7 +143,7 @@ namespace Nursia.Graphics3D
 						{
 							// Height Map
 							var data = new byte[tileVertexCount.X * tileVertexCount.Y * sizeof(float)];
-							using(var stream = File.OpenRead(path))
+							using (var stream = File.OpenRead(path))
 							{
 								stream.Read(data, 0, data.Length);
 							}
@@ -155,9 +170,18 @@ namespace Nursia.Graphics3D
 						}
 					}
 				}
-				
-				
+
 				scene.Terrain = terrain;
+			}
+
+			var waterTilesObj = rootObject["WaterTiles"];
+			if (waterTilesObj != null)
+			{
+				foreach (JObject waterTileObj in waterTilesObj)
+				{
+					var waterTile = LoadWaterTile(waterTileObj);
+					scene.WaterTiles.Add(waterTile);
+				}
 			}
 
 			return scene;
@@ -192,13 +216,27 @@ namespace Nursia.Graphics3D
 			return result;
 		}
 
+		private static JObject SaveWaterTile(WaterTile waterTile)
+		{
+			var result = SaveItem(waterTile);
+
+			result["X"] = waterTile.X.ToJsonString();
+			result["Z"] = waterTile.Z.ToJsonString();
+			result["Height"] = waterTile.Height.ToJsonString();
+			result["SizeX"] = waterTile.SizeX.ToJsonString();
+			result["SizeZ"] = waterTile.SizeZ.ToJsonString();
+			result["Tiling"] = waterTile.Tiling.ToJsonString();
+
+			return result;
+		}
+
 		public void Save(string outputFolder)
 		{
 			var result = SaveItem(this);
 
 			// Direct lights
 			var directLightsObj = new JArray();
-			foreach(var directLight in DirectLights)
+			foreach (var directLight in DirectLights)
 			{
 				var directLightObj = SaveDirectLight(directLight);
 				directLightsObj.Add(directLightObj);
@@ -222,12 +260,10 @@ namespace Nursia.Graphics3D
 					["TexturePaint4"] = Terrain.TexturePaintName4,
 				};
 
-				result["Terrain"] = terrainObj;
-
 				// Write each tile
-				for(var x = 0; x < Terrain.TilesCount.X; ++x)
+				for (var x = 0; x < Terrain.TilesCount.X; ++x)
 				{
-					for(var y = 0;  y < Terrain.TilesCount.Y; ++y)
+					for (var y = 0; y < Terrain.TilesCount.Y; ++y)
 					{
 						var tile = Terrain[x, y];
 
@@ -266,6 +302,17 @@ namespace Nursia.Graphics3D
 						}
 					}
 				}
+
+				result["Terrain"] = terrainObj;
+			}
+
+			var waterTilesObj = new JArray();
+			foreach (var waterTile in WaterTiles)
+			{
+				var waterTileObj = SaveWaterTile(waterTile);
+				waterTilesObj.Add(waterTileObj);
+
+				result["WaterTiles"] = waterTilesObj;
 			}
 
 			var json = JsonConvert.SerializeObject(result, Formatting.Indented);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using AssetManagementBase;
@@ -47,6 +48,53 @@ namespace Nursia.Samples.LevelEditor.UI
 			BuildUI();
 
 			_propertyGrid = new PropertyGrid();
+			_propertyGrid.Settings.ImagePropertyValueGetter = name =>
+			{
+				switch (name)
+				{
+					case "TextureBase":
+						return Scene.Terrain.TextureBaseName;
+					case "TexturePaint1":
+						return Scene.Terrain.TexturePaintName1;
+					case "TexturePaint2":
+						return Scene.Terrain.TexturePaintName2;
+					case "TexturePaint3":
+						return Scene.Terrain.TexturePaintName3;
+					case "TexturePaint4":
+						return Scene.Terrain.TexturePaintName4;
+				}
+
+				throw new Exception($"Unknown property {name}");
+			};
+			_propertyGrid.Settings.ImagePropertyValueSetter = (name, value) =>
+			{
+				switch (name)
+				{
+					case "TextureBase":
+						Scene.Terrain.TextureBaseName = value;
+						break;
+					case "TexturePaint1":
+						Scene.Terrain.TexturePaintName1 = value;
+						RefreshLibrary();
+						break;
+					case "TexturePaint2":
+						Scene.Terrain.TexturePaintName2 = value;
+						RefreshLibrary();
+						break;
+					case "TexturePaint3":
+						Scene.Terrain.TexturePaintName3 = value;
+						RefreshLibrary();
+						break;
+					case "TexturePaint4":
+						Scene.Terrain.TexturePaintName4 = value;
+						RefreshLibrary();
+						break;
+					default:
+						throw new Exception($"Unknown property {name}");
+				}
+
+			};
+
 			_panelProperties.Widgets.Add(_propertyGrid);
 
 			_sceneWidget = new SceneWidget
@@ -66,7 +114,7 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			_menuItemSave.Selected += (s, a) =>
 			{
-				Scene.Save(@"D:\Temp\Nursia\");
+				Scene.Save(@"D:\Temp\Nursia\scenes\scene1");
 			};
 
 			UpdateTerrainRadius();

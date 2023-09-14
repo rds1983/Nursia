@@ -21,7 +21,7 @@ namespace SampleScene
 	public class SampleGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private NursiaModel _model;
+		private ModelInstance _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private MainPanel _mainPanel;
@@ -80,18 +80,14 @@ namespace SampleScene
 			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets"));
 
 			// Model
-			_model = assetManager.LoadGltf("models/Sinbad.glb");
+			_model = assetManager.LoadGltf("models/Sinbad.glb").CreateInstance();
 			_model.Transform = Matrix.CreateTranslation(new Vector3(0, 10, 0));
-			_model.CurrentAnimation = _model.Animations["Dance"];
+			_model.CurrentAnimation = _model.Model.Animations["Dance"];
 			_scene.Models.Add(_model);
 
 			// Terrain
 			var grassy = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png");
 			_scene.Terrain = new Terrain();
-
-			// Generate height
-			var generator = new HeightMapGenerator();
-			GenerationConfig.Instance.WorldSize = (int)(_scene.Terrain.TileSizeX * _scene.Terrain.TilesPerX);
 
 			_scene.Terrain.TextureBase = grassy;
 

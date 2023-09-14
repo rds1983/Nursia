@@ -1,11 +1,8 @@
-﻿using glTFLoader.Schema;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Nursia.Graphics3D.Modelling;
 using Nursia.Utilities;
 using System;
-using System.Xml.Linq;
 
 namespace Nursia.Graphics3D.ForwardRendering
 {
@@ -14,7 +11,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 		private DepthStencilState _oldDepthStencilState;
 		private RasterizerState _oldRasterizerState;
 		private BlendState _oldBlendState;
-		private SamplerState _oldSamplerState;
 		private RenderTargetUsage _oldRenderTargetUsage;
 		private bool _beginCalled;
 		private readonly RenderContext _context = new RenderContext();
@@ -23,8 +19,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
 		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
-		public SamplerState SamplerState { get; set; } = SamplerState.LinearWrap;
-
+		
 		public RenderStatistics Statistics => _context.Statistics;
 
 		private WaterRenderer WaterRenderer
@@ -60,13 +55,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_oldDepthStencilState = device.DepthStencilState;
 			_oldRasterizerState = device.RasterizerState;
 			_oldBlendState = device.BlendState;
-			_oldSamplerState = device.SamplerStates[0];
 			_oldRenderTargetUsage = device.PresentationParameters.RenderTargetUsage;
 
 			device.BlendState = BlendState;
 			device.DepthStencilState = DepthStencilState;
 			device.RasterizerState = RasterizerState;
-			device.SamplerStates[0] = SamplerState;
+
 			device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
 
 			_beginCalled = true;
@@ -186,8 +180,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 					effect.Parameters["_texture4"].SetValue(terrain.TexturePaint4);
 				}
 
-				effect.Parameters["_terrainWidth"].SetValue(terrain.TileSize.X);
-				effect.Parameters["_terrainHeight"].SetValue(terrain.TileSize.Y);
+				effect.Parameters["_textureScaleX"].SetValue(terrain.TileTextureScale.X);
+				effect.Parameters["_textureScaleY"].SetValue(terrain.TileTextureScale.Y);
 
 				for (var x = 0; x < terrain.TilesCount.X; ++x)
 				{
@@ -237,9 +231,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 				device.Apply(skybox.MeshData);
 
-				device.SamplerStates[0] = SamplerState.LinearClamp;
 				device.DrawIndexedPrimitives(effect, skybox.MeshData);
-				device.SamplerStates[0] = SamplerState;
 
 				++_context.Statistics.MeshesDrawn;
 
@@ -375,10 +367,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			_oldRasterizerState = null;
 			device.BlendState = _oldBlendState;
 			_oldBlendState = null;
-			device.SamplerStates[0] = _oldSamplerState;
-			_oldSamplerState = null;
 			device.PresentationParameters.RenderTargetUsage = _oldRenderTargetUsage;
-
 
 			_beginCalled = false;
 		}

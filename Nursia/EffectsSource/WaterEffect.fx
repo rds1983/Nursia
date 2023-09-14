@@ -1,9 +1,9 @@
 #include "Macros.fxh"
 
-DECLARE_TEXTURE(_textureRefraction, 0);
-DECLARE_TEXTURE(_textureReflection, 1);
-DECLARE_TEXTURE(_textureDUDV, 2);
-DECLARE_TEXTURE(_textureNormals, 3);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureRefraction);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureReflection);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureDUDV);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals);
 
 BEGIN_CONSTANTS
 

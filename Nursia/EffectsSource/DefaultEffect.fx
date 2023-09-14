@@ -14,7 +14,7 @@
 
 #ifdef TEXTURE
 
-DECLARE_TEXTURE(_texture, 0);
+DECLARE_TEXTURE_LINEAR_WRAP(_texture);
 
 #endif
 

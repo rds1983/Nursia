@@ -21,12 +21,12 @@
 #define _cb(r)
 
 #define DECLARE_TEXTURE(Name, index) \
-    Texture2D<float4> Name : register(t##index); \
-    sampler Name##Sampler : register(s##index)
+	Texture2D<float4> Name : register(t##index); \
+	sampler Name##Sampler : register(s##index)
 
 #define DECLARE_CUBEMAP(Name, index) \
-    TextureCube<float4> Name : register(t##index); \
-    sampler Name##Sampler : register(s##index)
+	TextureCube<float4> Name : register(t##index); \
+	sampler Name##Sampler : register(s##index)
 
 #define SAMPLE_TEXTURE(Name, texCoord)  Name.Sample(Name##Sampler, texCoord)
 #define SAMPLE_CUBEMAP(Name, texCoord)  Name.Sample(Name##Sampler, texCoord)
@@ -48,13 +48,17 @@
 #define _ps(r)  : register(ps, r)
 #define _cb(r)
 
-#define DECLARE_TEXTURE(Name, index) \
-    texture2D Name; \
-    sampler Name##Sampler : register(s##index) = sampler_state { Texture = (Name); };
-
-#define DECLARE_CUBEMAP(Name, index) \
-    textureCUBE Name; \
-    sampler Name##Sampler : register(s##index) = sampler_state { Texture = (Name); };
+#define DECLARE_TEXTURE_LINEAR_WRAP(Name) \
+	texture2D Name; \
+	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Wrap; AddressV = Wrap; };
+	
+#define DECLARE_TEXTURE_LINEAR_CLAMP(Name) \
+	texture2D Name; \
+	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Clamp; AddressV = Clamp; };
+	
+#define DECLARE_CUBEMAP_LINEAR_CLAMP(Name) \
+	textureCUBE Name; \
+	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Clamp; AddressV = Clamp; };
 
 #define SAMPLE_TEXTURE(Name, texCoord)  tex2D(Name##Sampler, texCoord)
 #define SAMPLE_CUBEMAP(Name, texCoord)  texCUBE(Name##Sampler, texCoord)

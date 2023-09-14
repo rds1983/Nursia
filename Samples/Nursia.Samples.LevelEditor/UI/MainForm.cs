@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using AssetManagementBase;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.Properties;
@@ -24,6 +25,18 @@ namespace Nursia.Samples.LevelEditor.UI
 				RefreshExplorer();
 				RefreshLibrary();
 			}
+		}
+
+		public string BasePath
+		{
+			get => _propertyGrid.Settings.BasePath;
+			set => _propertyGrid.Settings.BasePath = value;
+		}
+
+		public AssetManager AssetManager
+		{
+			get => _propertyGrid.Settings.AssetManager;
+			set => _propertyGrid.Settings.AssetManager = value;
 		}
 
 		public ForwardRenderer Renderer { get => _sceneWidget.Renderer; }

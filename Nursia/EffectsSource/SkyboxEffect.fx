@@ -1,6 +1,6 @@
 #include "Macros.fxh"
 
-DECLARE_CUBEMAP(_texture, 0);
+DECLARE_CUBEMAP_LINEAR_CLAMP(_texture);
 
 BEGIN_CONSTANTS
 

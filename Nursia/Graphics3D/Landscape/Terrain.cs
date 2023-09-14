@@ -66,30 +66,21 @@ namespace Nursia.Graphics3D.Landscape
 		public string TextureBaseName { get; set; }
 
 		[Browsable(false)]
-		public Texture2D TextureBase { get; set; }
-
-		[Browsable(false)]
 		public string TexturePaintName1 { get; set; }
-
-		[Browsable(false)]
-		public Texture2D TexturePaint1 { get; set; }
 
 		[Browsable(false)]
 		public string TexturePaintName2 { get; set; }
 
 		[Browsable(false)]
-		public Texture2D TexturePaint2 { get; set; }
-
-		[Browsable(false)]
 		public string TexturePaintName3 { get; set; }
-
-		[Browsable(false)]
-		public Texture2D TexturePaint3 { get; set; }
 
 		[Browsable(false)]
 		public string TexturePaintName4 { get; set; }
 
-		[Browsable(false)]
+		public Texture2D TextureBase { get; set; }
+		public Texture2D TexturePaint1 { get; set; }
+		public Texture2D TexturePaint2 { get; set; }
+		public Texture2D TexturePaint3 { get; set; }
 		public Texture2D TexturePaint4 { get; set; }
 
 		[Browsable(false)]
@@ -222,18 +213,24 @@ namespace Nursia.Graphics3D.Landscape
 		public Vector2 SplatToTerrainPosition(Point splatPos) => new Vector2((float)splatPos.X * TileSize.X / TileSplatTextureSize.X,
 				(float)splatPos.Y * TileSize.Y / TileSplatTextureSize.Y);
 
-		private TerrainTile GetTileBySplatPosition(Point splatPosition) => _tiles[splatPosition.X / TileSplatTextureSize.X, splatPosition.Y / TileSplatTextureSize.Y];
+		private TerrainTile GetTileBySplatPosition(Point splatPosition) =>
+			SafelyGetTile(splatPosition.X / TileSplatTextureSize.X, splatPosition.Y / TileSplatTextureSize.Y);
 
 		public float GetSplatValue(Point splatPos, SplatManChannel channel)
 		{
-			var tile = GetTileBySplatPosition(splatPos);
-			var localX = splatPos.X % TileSplatTextureSize.X;
-			var localY = splatPos.Y % TileSplatTextureSize.Y;
-
-			if (localX < 0 || localY < 0)
+			if (splatPos.X < 0 || splatPos.Y < 0)
 			{
 				return 0;
 			}
+
+			var tile = GetTileBySplatPosition(splatPos);
+			if (tile == null)
+			{
+				return 0;
+			}
+			
+			var localX = splatPos.X % TileSplatTextureSize.X;
+			var localY = splatPos.Y % TileSplatTextureSize.Y;
 
 			var c = tile.GetSplatData(localX, localY);
 
@@ -259,14 +256,19 @@ namespace Nursia.Graphics3D.Landscape
 
 		public void SetSplatValue(Point splatPos, SplatManChannel channel, float value)
 		{
-			var tile = GetTileBySplatPosition(splatPos);
-			var localX = splatPos.X % TileSplatTextureSize.X;
-			var localY = splatPos.Y % TileSplatTextureSize.Y;
-
-			if (localX < 0 || localY < 0)
+			if (splatPos.X < 0 || splatPos.Y < 0)
 			{
 				return;
 			}
+
+			var tile = GetTileBySplatPosition(splatPos);
+			if (tile == null)
+			{
+				return;
+			}
+
+			var localX = splatPos.X % TileSplatTextureSize.X;
+			var localY = splatPos.Y % TileSplatTextureSize.Y;
 
 			var c = tile.GetSplatData(localX, localY);
 

@@ -6,30 +6,31 @@
 #include "Lightning.fxh"
 #endif
 
-DECLARE_TEXTURE(_textureBase, 0);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureBase);
 
 #if TEXTURES > 0
-DECLARE_TEXTURE(_textureBlend, 2);
-DECLARE_TEXTURE(_texture1, 1);
+
+DECLARE_TEXTURE_LINEAR_CLAMP(_textureBlend);
+DECLARE_TEXTURE_LINEAR_WRAP(_texture1);
 #endif
 
 #if TEXTURES > 1
-DECLARE_TEXTURE(_texture2, 3);
+DECLARE_TEXTURE_LINEAR_WRAP(_texture2);
 #endif
 
 #if TEXTURES > 2
-DECLARE_TEXTURE(_texture3, 4);
+DECLARE_TEXTURE_LINEAR_WRAP(_texture3);
 #endif
 
 #if TEXTURES > 3
-DECLARE_TEXTURE(_texture4, 5);
+DECLARE_TEXTURE_LINEAR_WRAP(_texture4);
 #endif
 
 BEGIN_CONSTANTS
 
 float4 _diffuseColor;
-float _terrainWidth;
-float _terrainHeight;
+float _textureScaleX;
+float _textureScaleY;
 
 #ifdef CLIP_PLANE
 
@@ -41,7 +42,6 @@ float4 _clipPlane;
 
 float3 _markerPosition;
 float _markerRadius;
-#define COLOR_BRUSH float4(0.4,0.4,0.4, 0.4);
 
 #endif
 
@@ -94,7 +94,6 @@ VSOutput Vertex(VSInput input)
 
 	output.TexCoord = input.TexCoord;
 	output.Position = mul(input.Position, _worldViewProjection);
-	output.SplatTexCoord = float2(input.Position.x / _terrainWidth, input.Position.z / _terrainHeight);
 
 #ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
@@ -119,26 +118,27 @@ float4 Pixel(VSOutput input) : COLOR
     clip(input.ClipDistances.x);
 #endif
 
-	float3 color = SAMPLE_TEXTURE(_textureBase, input.TexCoord).rgb;
+	float2 tiledTex = float2(input.TexCoord.x * _textureScaleX, input.TexCoord.y * _textureScaleY);
+	float3 color = SAMPLE_TEXTURE(_textureBase, tiledTex).rgb;
 
 #if TEXTURES > 0
-	float4 b = SAMPLE_TEXTURE(_textureBlend, input.SplatTexCoord).rgba;
-	float3 c1 = SAMPLE_TEXTURE(_texture1, input.TexCoord).rgb;
+	float4 b = tex2D(_textureBlendSampler, input.TexCoord).rgba;
+	float3 c1 = SAMPLE_TEXTURE(_texture1, tiledTex).rgb;
 	color = lerp(color, c1, b.r);
 #endif
 
 #if TEXTURES > 1
-	float3 c2 = SAMPLE_TEXTURE(_texture2, input.TexCoord).rgb;
+	float3 c2 = SAMPLE_TEXTURE(_texture2, tiledTex).rgb;
 	color = lerp(color, c2, b.g);
 #endif
 
 #if TEXTURES > 2
-	float3 c3 = SAMPLE_TEXTURE(_texture3, input.TexCoord).rgb;
+	float3 c3 = SAMPLE_TEXTURE(_texture3, tiledTex).rgb;
 	color = lerp(color, c3, b.b);
 #endif
 
 #if TEXTURES > 3
-	float3 c4 = SAMPLE_TEXTURE(_texture4, input.TexCoord).rgb;
+	float3 c4 = SAMPLE_TEXTURE(_texture4, tiledTex).rgb;
 	color = lerp(color, c4, b.a);
 #endif
 
@@ -161,7 +161,7 @@ float4 Pixel(VSOutput input) : COLOR
 	}
 #endif
 
-    clip(c.a < 0.1?-1:1);
+	clip(c.a < 0.1?-1:1);
 
 	return c;
 }

@@ -6,16 +6,12 @@ using Myra;
 using Myra.Graphics2D.UI;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
-using Nursia.Graphics3D.Lights;
 using Nursia.Samples.LevelEditor.UI;
-using Nursia.Graphics3D.Landscape;
 
 namespace Nursia.Samples.LevelEditor
 {
 	public class StudioGame : Game
 	{
-		private static StudioGame _instance;
-
 		private readonly GraphicsDeviceManager _graphics;
 		private Desktop _desktop = null;
 		private MainForm _mainForm;
@@ -32,8 +28,6 @@ namespace Nursia.Samples.LevelEditor
 
 		public StudioGame()
 		{
-			_instance = this;
-
 			_graphics = new GraphicsDeviceManager(this)
 			{
 				PreferredBackBufferWidth = 1200,
@@ -59,20 +53,23 @@ namespace Nursia.Samples.LevelEditor
 			Nrs.Game = this;
 			_mainForm = new MainForm();
 
-			var assetFolder = Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets");
 
 			_desktop = new Desktop();
 			_desktop.Widgets.Add(_mainForm);
 
-			var sceneManager = AssetManager.CreateFileAssetManager(@"D:\Temp\Nursia\");
-
-			var scene = Scene.Load(@"D:\Temp\Nursia\scene.json", sceneManager);
+			var baseFolder = @"D:\Temp\Nursia\";
+			var assetManager = AssetManager.CreateFileAssetManager(baseFolder);
+			var scene = Scene.Load(Path.Combine(baseFolder, @"scene.json"), assetManager);
 
 			scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 			_mainForm.Scene = scene;
 
+			_mainForm.BasePath = baseFolder;
+			_mainForm.AssetManager = assetManager;
+
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
 
+			var assetFolder = Path.Combine(Utils.ExecutingAssemblyDirectory, "Assets");
 			ModelStorage.Load(Path.Combine(assetFolder, "models"));
 			_mainForm.RefreshLibrary();
 		}

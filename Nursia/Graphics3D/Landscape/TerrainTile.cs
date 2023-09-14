@@ -178,11 +178,11 @@ namespace Nursia.Graphics3D.Landscape
 				vertices = new VertexPositionNormalTexture[]
 				{
 					new VertexPositionNormalTexture(new Vector3(0, h, 0), Vector3.Up,  Vector2.Zero),
-					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, Terrain.TileTextureScale.Y)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(Terrain.TileTextureScale.X, 0)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(Terrain.TileTextureScale.X, 0)),
-					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, Terrain.TileTextureScale.Y)),
-					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(Terrain.TileTextureScale.X, Terrain.TileTextureScale.Y))
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1.0f)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1.0f, 0)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, 0), Vector3.Up, new Vector2(1.0f, 0)),
+					new VertexPositionNormalTexture(new Vector3(0, h, Size.Y), Vector3.Up, new Vector2(0, 1.0f)),
+					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(1.0f, 1.0f))
 				};
 
 				indices = new short[]
@@ -200,19 +200,16 @@ namespace Nursia.Graphics3D.Landscape
 				{
 					for (var x = 0; x < sizeX; ++x)
 					{
-						float vx = x * Terrain.TileSize.X / (float)(sizeX - 1);
-						float vy = y * Terrain.TileSize.Y / (float)(sizeY - 1);
+						float vx = x * Size.X / (float)(sizeX - 1);
+						float vy = y * Size.Y / (float)(sizeY - 1);
 
 						var globalPos = new Vector2(_pos.X * Terrain.TileSize.X + vx,
 													_pos.Y * Terrain.TileSize.X + vy);
 
 						float height = Terrain.GetHeight(globalPos);
 						var position = new Vector3(vx, height, vy);
-						vertices[idx] = new VertexPositionNormalTexture(
-							position,
-							CalculateNormal(globalPos),
-							new Vector2(x * Terrain.TileTextureScale.X / (sizeX - 1), 
-										y * Terrain.TileTextureScale.Y / (sizeY - 1)));
+						vertices[idx] = new VertexPositionNormalTexture(position, CalculateNormal(globalPos),
+							new Vector2((float)x / (sizeX - 1), (float)y / (sizeY - 1)));
 
 						++idx;
 					}

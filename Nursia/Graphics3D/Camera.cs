@@ -77,6 +77,9 @@ namespace Nursia.Graphics3D
 			}
 		}
 
+		public Vector3 Target => Position + Direction;
+
+
 		public Vector3 Up
 		{
 			get

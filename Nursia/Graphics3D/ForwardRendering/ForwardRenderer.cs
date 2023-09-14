@@ -146,8 +146,32 @@ namespace Nursia.Graphics3D.ForwardRendering
 			DrawMeshNode(model.RootNode, ref model.Transform);
 		}
 
-		private void RefractionPass(Scene scene)
+		private void RenderPass(Scene scene)
 		{
+			var skybox = scene.Skybox;
+			if (skybox != null && skybox.Texture != null)
+			{
+				var device = Nrs.GraphicsDevice;
+
+				device.DepthStencilState = DepthStencilState.DepthRead;
+				var effect = Resources.SkyboxEffect;
+
+				var view = _context.View;
+				view.Translation = Vector3.Zero;
+				var transform = view * _context.Projection;
+
+				effect.Parameters["_transform"].SetValue(skybox.Transform * transform);
+				effect.Parameters["_texture"].SetValue(skybox.Texture);
+
+				device.Apply(skybox.MeshData);
+
+				device.DrawIndexedPrimitives(effect, skybox.MeshData);
+
+				++_context.Statistics.MeshesDrawn;
+
+				device.DepthStencilState = DepthStencilState;
+			}
+
 			if (scene.Terrain != null)
 			{
 				var terrain = scene.Terrain;
@@ -210,35 +234,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				DrawModel(model);
 			}
-		}
-
-		private void ReflectionPass(Scene scene)
-		{
-			var skybox = scene.Skybox;
-			if (skybox != null && skybox.Texture != null)
-			{
-				var device = Nrs.GraphicsDevice;
-
-				device.DepthStencilState = DepthStencilState.DepthRead;
-				var effect = Resources.SkyboxEffect;
-
-				var view = _context.View;
-				view.Translation = Vector3.Zero;
-				var transform = view * _context.Projection;
-
-				effect.Parameters["_transform"].SetValue(skybox.Transform * transform);
-				effect.Parameters["_texture"].SetValue(skybox.Texture);
-
-				device.Apply(skybox.MeshData);
-
-				device.DrawIndexedPrimitives(effect, skybox.MeshData);
-
-				++_context.Statistics.MeshesDrawn;
-
-				device.DepthStencilState = DepthStencilState;
-			}
-
-			RefractionPass(scene);
 		}
 
 		private bool PrepareDraw(Camera camera)
@@ -310,7 +305,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						-Vector3.Up,
 						_context.ViewProjection,
 						false);
-					RefractionPass(scene);
+					RenderPass(scene);
 
 					device.SetRenderTarget(waterRenderer.TargetReflection);
 					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
@@ -330,7 +325,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						_context.ViewProjection,
 						true);
 
-					ReflectionPass(scene);
+					RenderPass(scene);
 
 					camera.Position = oldPos;
 					camera.PitchAngle = -camera.PitchAngle;
@@ -345,7 +340,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			_context.ClipPlane = null;
 
-			ReflectionPass(scene);
+			RenderPass(scene);
 
 			if (scene.WaterTiles.Count > 0)
 			{

@@ -8,11 +8,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 	{
 		private readonly Point TargetRefractionSize = new Point(1280, 720);
 		private readonly Point TargetReflectionSize = new Point(640, 360);
-		private const float WaveSpeed = 0.03f;
 
 		private readonly MeshData _waterMesh;
 		private DateTime? _lastRenderTime;
-		private float _moveFactor = 0;
 
 		public RenderTarget2D TargetRefraction { get; }
 
@@ -20,7 +18,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		public WaterRenderer()
 		{
-			_waterMesh = PrimitiveMeshes.SquarePositionFromZeroToOne;
+			_waterMesh = PrimitiveMeshes.SquarePositionTextureFromZeroToOne;
 
 			TargetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
 				TargetRefractionSize.X,
@@ -40,42 +38,74 @@ namespace Nursia.Graphics3D.ForwardRendering
 		public void DrawWater(RenderContext context)
 		{
 			var device = Nrs.GraphicsDevice;
-			var effect = Resources.WaterEffect;
 
 			// Update move factor
 			var now = DateTime.Now;
+			var deltaTime = 0.0f;
 			if (_lastRenderTime != null)
 			{
-				var passed = (float)(now - _lastRenderTime.Value).TotalSeconds;
-				_moveFactor += WaveSpeed * passed;
-				_moveFactor %= 1.0f;
+				deltaTime = (float)(now - _lastRenderTime.Value).TotalSeconds;
 			}
 
 			_lastRenderTime = now;
 
-			effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
-			effect.Parameters["_moveFactor"].SetValue(_moveFactor);
-			if (context.HasLights)
-			{
-				effect.Parameters["_lightPosition"].SetValue(context.DirectLights[0].Position);
-				effect.Parameters["_lightColor"].SetValue(context.DirectLights[0].Color.ToVector3());
-			}
-			effect.Parameters["_textureDUDV"].SetValue(Resources.WaterDUDV);
-			effect.Parameters["_textureNormals"].SetValue(Resources.WaterNormals);
-			effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
-			effect.Parameters["_textureReflection"].SetValue(TargetReflection);
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
 			{
-				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
+				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.Specular, waterTile.Reflection, waterTile.Refraction, waterTile.Fresnel);
 
-				var world = Matrix.CreateScale(waterTile.SizeX, 0, waterTile.SizeZ) *
-					Matrix.CreateTranslation(waterTile.X,
-						waterTile.Height,
-						waterTile.Z);
+				// Textures
+				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
+				effect.Parameters["_textureWave1"].SetValue(Resources.WaterWave1);
 
+				effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
+				effect.Parameters["_textureReflection"].SetValue(TargetReflection);
+
+				// Offsets
+				waterTile.WaveMapOffset0 += waterTile.WaveVelocity0 * deltaTime;
+				waterTile.WaveMapOffset1 += waterTile.WaveVelocity1 * deltaTime;
+
+				if (waterTile.WaveMapOffset0.X >= 1.0f || waterTile.WaveMapOffset0.X <= -1.0f)
+					waterTile.WaveMapOffset0.X = 0.0f;
+				if (waterTile.WaveMapOffset1.X >= 1.0f || waterTile.WaveMapOffset1.X <= -1.0f)
+					waterTile.WaveMapOffset1.X = 0.0f;
+				if (waterTile.WaveMapOffset0.Y >= 1.0f || waterTile.WaveMapOffset0.Y <= -1.0f)
+					waterTile.WaveMapOffset0.Y = 0.0f;
+				if (waterTile.WaveMapOffset1.Y >= 1.0f || waterTile.WaveMapOffset1.Y <= -1.0f)
+					waterTile.WaveMapOffset1.Y = 0.0f;
+				effect.Parameters["_waveMapOffset0"].SetValue(waterTile.WaveMapOffset0);
+				effect.Parameters["_waveMapOffset1"].SetValue(waterTile.WaveMapOffset1);
+
+				effect.Parameters["_waveTextureScale"].SetValue(waterTile.WaveTextureScale);
+
+				// Light
+				effect.Parameters["_lightDirection"].SetValue(context.DirectLights[0].NormalizedDirection);
+				effect.Parameters["_lightColor"].SetValue(context.DirectLights[0].Color.ToVector4());
+				
+				// Material specular parameters
+				effect.Parameters["_shininess"].SetValue(waterTile.Shininess);
+				effect.Parameters["_reflectivity"].SetValue(waterTile.Reflectivity);
+
+				// World view proj
+				var world = Matrix.CreateScale(waterTile.SizeX, 1, waterTile.SizeZ) *
+					Matrix.CreateTranslation(waterTile.X, waterTile.Height, waterTile.Z);
 				effect.Parameters["_world"].SetValue(world);
-				effect.Parameters["_viewProjection"].SetValue(context.ViewProjection);
+				var worldViewProj = world * context.ViewProjection;
+				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
+
+				// Compute reflection view matrix
+				Vector3 reflCameraPosition = context.Scene.Camera.Position;
+				reflCameraPosition.Y = -context.Scene.Camera.Position.Y + waterTile.Height * 2;
+				Vector3 reflTargetPos = context.Scene.Camera.Target;
+				reflTargetPos.Y = -context.Scene.Camera.Target.Y + waterTile.Height * 2;
+				Vector3 invUpVector = Vector3.Cross(context.Scene.Camera.Right, reflTargetPos - reflCameraPosition);
+				var reflectionViewMatrix = Matrix.CreateLookAt(reflCameraPosition, reflTargetPos, invUpVector);
+				var reflectProjectWorld = world * reflectionViewMatrix * context.Projection;
+				effect.Parameters["_reflectViewProj"].SetValue(reflectProjectWorld);
+
+				// Rest
+				effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
+				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
 
 				device.Apply(_waterMesh);
 				device.DrawIndexedPrimitives(effect, _waterMesh);

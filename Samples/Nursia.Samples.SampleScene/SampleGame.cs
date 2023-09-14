@@ -87,12 +87,13 @@ namespace SampleScene
 
 			// Terrain
 			var grassy = assetManager.LoadTexture2D(GraphicsDevice, @"terrain/grassy2.png");
-			_scene.Terrain = new Terrain();
-
-			_scene.Terrain.TextureBase = grassy;
+/*			_scene.Terrain = new Terrain
+			{
+				TextureBase = grassy
+			};*/
 
 			// Water
-			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, 1000));
+			_scene.WaterTiles.Add(new WaterTile(0, 0, 0, 1000, 1000));
 
 			// Skybox
 			var texture = new TextureCube(GraphicsDevice, 1024, false, SurfaceFormat.Color);
@@ -124,7 +125,6 @@ namespace SampleScene
 
 			// Reset camera
 			_scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
-
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -196,13 +196,12 @@ namespace SampleScene
 
 			_desktop.Render();
 
-			/*			_spriteBatch.Begin();
-
-						_spriteBatch.Draw(_renderer.WaterReflection, 
-							new Rectangle(0, 500, 600, 300), 
-							Color.White);
-
-						_spriteBatch.End();*/
+			_spriteBatch.Begin();
+			var tex = _renderer.WaterRefraction;
+			// _spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
+			var tex2 = _renderer.WaterReflection;
+			// _spriteBatch.Draw(tex2, new Rectangle(0, 0, tex2.Width, tex2.Height), Color.White);
+			_spriteBatch.End();
 
 			_fpsCounter.Draw(gameTime);
 		}

@@ -7,6 +7,7 @@ using Myra.Graphics2D.UI;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Samples.LevelEditor.UI;
+using StbImageSharp;
 
 namespace Nursia.Samples.LevelEditor
 {
@@ -44,6 +45,17 @@ namespace Nursia.Samples.LevelEditor
 			}
 		}
 
+		private byte[] LoadSkyboxImage(AssetManager assetManager, string name)
+		{
+			ImageResult image;
+			using (var stream = assetManager.OpenAssetStream("../../skybox/" + name))
+			{
+				image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+			}
+
+			return image.Data;
+		}
+
 		protected override void LoadContent()
 		{
 			base.LoadContent();
@@ -66,6 +78,27 @@ namespace Nursia.Samples.LevelEditor
 
 			_mainForm.BasePath = baseFolder;
 			_mainForm.AssetManager = assetManager;
+
+			// Skybox
+			var texture = new TextureCube(GraphicsDevice, 1024, false, SurfaceFormat.Color);
+
+			var data = LoadSkyboxImage(assetManager, @"negX.png");
+			texture.SetData(CubeMapFace.NegativeX, data);
+			data = LoadSkyboxImage(assetManager, @"negY.png");
+			texture.SetData(CubeMapFace.NegativeY, data);
+			data = LoadSkyboxImage(assetManager, @"negZ.png");
+			texture.SetData(CubeMapFace.NegativeZ, data);
+			data = LoadSkyboxImage(assetManager, @"posX.png");
+			texture.SetData(CubeMapFace.PositiveX, data);
+			data = LoadSkyboxImage(assetManager, @"posY.png");
+			texture.SetData(CubeMapFace.PositiveY, data);
+			data = LoadSkyboxImage(assetManager, @"posZ.png");
+			texture.SetData(CubeMapFace.PositiveZ, data);
+
+			scene.Skybox = new Skybox(100)
+			{
+				Texture = texture
+			};
 
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -95,9 +128,12 @@ namespace Nursia.Samples.LevelEditor
 
 			_fpsCounter.Draw(gameTime);
 
-/*			_spriteBatch.Begin();
-			_spriteBatch.Draw(Scene.Terrain.GetTile(0, 0).SplatTexture, new Rectangle(0, 0, 100, 100), Color.White);
-			_spriteBatch.End();*/
+			_spriteBatch.Begin();
+			var tex = Renderer.WaterRefraction;
+			// _spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
+			var tex2 = Renderer.WaterReflection;
+			// _spriteBatch.Draw(tex2, new Rectangle(0, 0, tex2.Width, tex2.Height), Color.White);
+			_spriteBatch.End();
 		}
 	}
 }

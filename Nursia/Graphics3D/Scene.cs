@@ -60,10 +60,7 @@ namespace Nursia.Graphics3D
 		private static WaterTile LoadWaterTile(JObject obj)
 		{
 			var result = new WaterTile(obj.EnsureFloat("X"), obj.EnsureFloat("Z"), obj.EnsureFloat("Height"),
-				obj.EnsureFloat("SizeX"), obj.EnsureFloat("SizeZ"))
-			{
-				Tiling = obj.EnsureFloat("Tiling")
-			};
+				obj.EnsureFloat("SizeX"), obj.EnsureFloat("SizeZ"));
 
 			LoadItem(result, obj);
 
@@ -225,7 +222,6 @@ namespace Nursia.Graphics3D
 			result["Height"] = waterTile.Height.ToJsonString();
 			result["SizeX"] = waterTile.SizeX.ToJsonString();
 			result["SizeZ"] = waterTile.SizeZ.ToJsonString();
-			result["Tiling"] = waterTile.Tiling.ToJsonString();
 
 			return result;
 		}

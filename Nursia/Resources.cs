@@ -14,7 +14,8 @@ namespace Nursia
 		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
-		private static Texture2D _white, _waterDUDV, _waterNormals;
+		private static Effect[] _waterEffects = new Effect[32];
+		private static Texture2D _white, _waterDUDV, _waterNormals, _waterWave0, _waterWave1;
 
 		private static Assembly Assembly
 		{
@@ -52,20 +53,6 @@ namespace Nursia
 			}
 		}
 
-		public static Effect WaterEffect
-		{
-			get
-			{
-				if (_waterEffect != null)
-				{
-					return _waterEffect;
-				}
-
-				_waterEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb");
-				return _waterEffect;
-			}
-		}
-
 		public static Effect SkyboxEffect
 		{
 			get
@@ -80,35 +67,35 @@ namespace Nursia
 			}
 		}
 
-		public static Texture2D WaterDUDV
+		public static Texture2D WaterWave0
 		{
 			get
 			{
-				if (_waterDUDV == null)
+				if (_waterWave0 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterDUDV.png"))
+					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterWave0.png"))
 					{
-						_waterDUDV = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+						_waterWave0 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
 					}
 				}
 
-				return _waterDUDV;
+				return _waterWave0;
 			}
 		}
 
-		public static Texture2D WaterNormals
+		public static Texture2D WaterWave1
 		{
 			get
 			{
-				if (_waterNormals == null)
+				if (_waterWave1 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals.png"))
+					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterWave0.png"))
 					{
-						_waterNormals = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+						_waterWave1 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
 					}
 				}
 
-				return _waterNormals;
+				return _waterWave1;
 			}
 		}
 
@@ -222,6 +209,71 @@ namespace Nursia
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "TerrainEffect.efb", defines);
 			_terrainEffects[key] = result;
+
+			return result;
+		}
+
+		public static Effect GetWaterEffect(bool waves, bool specular, bool reflection, bool refraction, bool fresnel)
+		{
+			var key = 0;
+			if (waves)
+			{
+				key |= 1;
+			}
+
+			if (specular)
+			{
+				key |= 2;
+			}
+
+			if (reflection)
+			{
+				key |= 4;
+			}
+
+			if (refraction)
+			{
+				key |= 8;
+			}
+
+			if (fresnel)
+			{
+				key |= 16;
+			}
+
+			if (_waterEffects[key] != null)
+			{
+				return _waterEffects[key];
+			}
+
+			var defines = new Dictionary<string, string>();
+			if (waves)
+			{
+				defines["WAVES"] = "1";
+			}
+
+			if (specular)
+			{
+				defines["SPECULAR"] = "1";
+			}
+
+			if (reflection)
+			{
+				defines["REFLECTION"] = "1";
+			}
+
+			if (refraction)
+			{
+				defines["REFRACTION"] = "1";
+			}
+
+			if (fresnel)
+			{
+				defines["FRESNEL"] = "1";
+			}
+
+			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb", defines);
+			_waterEffects[key] = result;
 
 			return result;
 		}

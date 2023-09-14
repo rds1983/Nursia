@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.Vertices;
 
 namespace Nursia.Graphics3D
@@ -63,8 +64,19 @@ namespace Nursia.Graphics3D
 				new Vector3(1, 0, 1)
 		};
 
+		private static VertexPositionTexture[] _squarePositionTextureFromZeroToOneData = new VertexPositionTexture[]
+		{
+				new VertexPositionTexture(new Vector3(0, 0, 0), Vector2.Zero),
+				new VertexPositionTexture(new Vector3(0, 0, 1), new Vector2(0, 1)),
+				new VertexPositionTexture(new Vector3(1, 0, 0), new Vector2(1, 0)),
+				new VertexPositionTexture(new Vector3(1, 0, 0),new Vector2(1, 0)),
+				new VertexPositionTexture(new Vector3(0, 0, 1),new Vector2(0, 1)),
+				new VertexPositionTexture(new Vector3(1, 0, 1), new Vector2(1, 1))
+		};
+
 		private static MeshData _cubePosition;
-		private static MeshData _squarePosition;
+		private static MeshData _squarePositionFromZeroToOne;
+		private static MeshData _squarePositionTextureFromZeroToOne;
 
 		public static MeshData CubePositionFromMinusOneToOne
 		{
@@ -96,12 +108,12 @@ namespace Nursia.Graphics3D
 		{
 			get
 			{
-				if (_squarePosition == null)
+				if (_squarePositionTextureFromZeroToOne == null)
 				{
-					_squarePosition = CreatePrimitivePosition(_squareFromMinusOneToOne, _squareIndices);
+					_squarePositionTextureFromZeroToOne = CreatePrimitivePosition(_squareFromMinusOneToOne, _squareIndices);
 				}
 
-				return _squarePosition;
+				return _squarePositionTextureFromZeroToOne;
 			}
 		}
 
@@ -109,12 +121,25 @@ namespace Nursia.Graphics3D
 		{
 			get
 			{
-				if (_squarePosition == null)
+				if (_squarePositionFromZeroToOne == null)
 				{
-					_squarePosition = CreatePrimitivePosition(_squareFromZeroToOne, _squareIndices);
+					_squarePositionFromZeroToOne = CreatePrimitivePosition(_squareFromZeroToOne, _squareIndices);
 				}
 
-				return _squarePosition;
+				return _squarePositionFromZeroToOne;
+			}
+		}
+
+		public static MeshData SquarePositionTextureFromZeroToOne
+		{
+			get
+			{
+				if (_squarePositionTextureFromZeroToOne == null)
+				{
+					_squarePositionTextureFromZeroToOne = new MeshData(_squarePositionTextureFromZeroToOneData, _squareIndices);
+				}
+
+				return _squarePositionTextureFromZeroToOne;
 			}
 		}
 

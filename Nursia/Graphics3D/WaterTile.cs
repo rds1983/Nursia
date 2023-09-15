@@ -4,6 +4,13 @@ using Nursia.Utilities;
 
 namespace Nursia.Graphics3D
 {
+	public enum WaterRenderMode
+	{
+		Standard,
+		RefractionTexture,
+		ReflectionTexture
+	}
+
 	public class WaterTile: ItemWithId
 	{
 		[Category("Position")]
@@ -47,6 +54,9 @@ namespace Nursia.Graphics3D
 
 		[Category("Behavior")]
 		public float Reflectivity { get; set; } = 1.5f;
+		
+		[Category("Behavior")]
+		public float FresnelFactor { get; set; } = 1.0f;
 
 		[Category("Behavior")]
 		public Vector2 WaveVelocity0 { get; set; } = new Vector2(0.01f, 0.03f);
@@ -56,6 +66,9 @@ namespace Nursia.Graphics3D
 
 		internal Vector2 WaveMapOffset0;
 		internal Vector2 WaveMapOffset1;
+
+		[Category("Behavior")]
+		public WaterRenderMode RenderMode { get; set; }
 
 
 		public WaterTile(float x, float z, float height, float sizeX = 40.0f, float sizeZ = 40.0f)

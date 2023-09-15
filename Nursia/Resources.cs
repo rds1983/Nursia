@@ -11,11 +11,11 @@ namespace Nursia
 	internal static class Resources
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA");
-		private static Effect _colorEffect, _waterEffect, _skyboxEffect;
+		private static Effect _colorEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
 		private static Effect[] _waterEffects = new Effect[32];
-		private static Texture2D _white, _waterDUDV, _waterNormals, _waterWave0, _waterWave1;
+		private static Texture2D _white, _waterWave0, _waterWave1;
 
 		private static Assembly Assembly
 		{

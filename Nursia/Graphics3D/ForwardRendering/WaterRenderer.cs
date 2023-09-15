@@ -85,6 +85,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				// Material specular parameters
 				effect.Parameters["_shininess"].SetValue(waterTile.Shininess);
 				effect.Parameters["_reflectivity"].SetValue(waterTile.Reflectivity);
+				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
 
 				// World view proj
 				var world = Matrix.CreateScale(waterTile.SizeX, 1, waterTile.SizeZ) *
@@ -108,6 +109,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
 
 				device.Apply(_waterMesh);
+
+				effect.CurrentTechnique = effect.Techniques[waterTile.RenderMode.ToString()];
 				device.DrawIndexedPrimitives(effect, _waterMesh);
 				++context.Statistics.MeshesDrawn;
 			}

@@ -75,6 +75,8 @@ namespace Nursia.Graphics3D
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }
 
+		public BoundingBox BoundingBox => new BoundingBox(new Vector3(X, Height, Z), new Vector3(X + SizeX, Height, Z + SizeZ));
+
 		internal RenderTarget2D TargetRefraction;
 		internal RenderTarget2D TargetReflection;
 		internal RenderTarget2D TargetDepth;

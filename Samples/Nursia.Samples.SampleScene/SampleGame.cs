@@ -197,10 +197,6 @@ namespace SampleScene
 			_desktop.Render();
 
 			_spriteBatch.Begin();
-			var tex = _renderer.WaterRefraction;
-			// _spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
-			var tex2 = _renderer.WaterReflection;
-			// _spriteBatch.Draw(tex2, new Rectangle(0, 0, tex2.Width, tex2.Height), Color.White);
 			_spriteBatch.End();
 
 			_fpsCounter.Draw(gameTime);

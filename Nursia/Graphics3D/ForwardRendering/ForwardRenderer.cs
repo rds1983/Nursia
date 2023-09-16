@@ -311,6 +311,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 					// Depth pass
 					foreach (var waterTile in scene.WaterTiles)
 					{
+						if (_context.Frustrum.Contains(waterTile.BoundingBox) == ContainmentType.Disjoint)
+						{
+							continue;
+						}
+
 						_context.RenderPassType = RenderPassType.Depth;
 						UpdateRenderTarget(ref waterTile.TargetDepth, SurfaceFormat.Single);
 						device.SetRenderTarget(waterTile.TargetDepth);

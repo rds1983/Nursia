@@ -37,13 +37,7 @@ namespace Nursia.Graphics3D
 		public bool Specular { get; set; } = true;
 
 		[Category("Behavior")]
-		public bool Reflection { get; set; } = true;
-
-		[Category("Behavior")]
-		public bool Refraction { get; set; } = true;
-
-		[Category("Behavior")]
-		public bool Fresnel { get; set; } = true;
+		public bool SoftEdges { get; set; } = true;
 
 		[Category("Behavior")]
 		public Color Color { get; set; } = new Vector4(0.5f, 0.79f, 0.75f, 1.0f).ToColor();

@@ -1,4 +1,5 @@
 <Root>
 	<MultiCompile>SPECULAR;_</MultiCompile>
 	<MultiCompile>SOFT_EDGES;_</MultiCompile>
+	<MultiCompile>WAVES;_</MultiCompile>
 </Root>

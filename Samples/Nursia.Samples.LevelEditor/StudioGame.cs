@@ -73,7 +73,6 @@ namespace Nursia.Samples.LevelEditor
 			var assetManager = AssetManager.CreateFileAssetManager(baseFolder);
 			var scene = Scene.Load(Path.Combine(baseFolder, @"scene.json"), assetManager);
 
-			scene.Camera.SetLookAt(new Vector3(10, 10, 10), Vector3.Zero);
 			_mainForm.Scene = scene;
 
 			_mainForm.BasePath = baseFolder;

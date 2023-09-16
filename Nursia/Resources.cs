@@ -14,7 +14,7 @@ namespace Nursia
 		private static Effect _colorEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
-		private static Effect[] _waterEffects = new Effect[32];
+		private static Effect[] _waterEffects = new Effect[8];
 		private static Texture2D _white, _waterWave0, _waterWave1;
 
 		private static Assembly Assembly
@@ -213,7 +213,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool waves, bool specular, bool reflection, bool refraction, bool fresnel)
+		public static Effect GetWaterEffect(bool waves, bool specular, bool softEdges)
 		{
 			var key = 0;
 			if (waves)
@@ -226,19 +226,9 @@ namespace Nursia
 				key |= 2;
 			}
 
-			if (reflection)
+			if (softEdges)
 			{
 				key |= 4;
-			}
-
-			if (refraction)
-			{
-				key |= 8;
-			}
-
-			if (fresnel)
-			{
-				key |= 16;
 			}
 
 			if (_waterEffects[key] != null)
@@ -257,19 +247,9 @@ namespace Nursia
 				defines["SPECULAR"] = "1";
 			}
 
-			if (reflection)
+			if (softEdges)
 			{
-				defines["REFLECTION"] = "1";
-			}
-
-			if (refraction)
-			{
-				defines["REFRACTION"] = "1";
-			}
-
-			if (fresnel)
-			{
-				defines["FRESNEL"] = "1";
+				defines["SOFT_EDGES"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb", defines);

@@ -31,7 +31,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
 			{
-				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.Specular, waterTile.Reflection, waterTile.Refraction, waterTile.Fresnel);
+				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.Specular, waterTile.SoftEdges);
 
 				// Textures
 				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
@@ -73,22 +73,24 @@ namespace Nursia.Graphics3D.ForwardRendering
 					Matrix.CreateTranslation(waterTile.X, waterTile.Height, waterTile.Z);
 				effect.Parameters["_world"].SetValue(world);
 				var worldViewProj = world * context.ViewProjection;
-
-/*				var rrr = new float[2001];
-				for(var i = -500; i <= 1500; ++i)
-				{
-					var v = new Vector4(500, 500, -i, 1);
-					var r = Vector4.Transform(v, context.Projection);
-					var zw = r.Z / r.W;
-
-					float near = 0.1f; // this should be loaded up from master renderer, hard coded for laziness
-					float far = 1000.0f; // this should be loaded up from master renderer, hard coded for laziness
-
-
-					rrr[i + 500] = 2.0f * near * far / (far + near - (2.0f * zw - 1.0f) * (far - near));
-				}*/
-
 				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
+				effect.Parameters["_far"].SetValue(context.FarPlaneDistance);
+				effect.Parameters["_near"].SetValue(context.NearPlaneDistance);
+
+				/*				var rrr = new float[2001];
+								for(var i = -500; i <= 1500; ++i)
+								{
+									var v = new Vector4(500, 500, -i, 1);
+									var r = Vector4.Transform(v, context.Projection);
+									var zw = r.Z / r.W;
+
+									float near = 0.1f; // this should be loaded up from master renderer, hard coded for laziness
+									float far = 1000.0f; // this should be loaded up from master renderer, hard coded for laziness
+
+
+									rrr[i + 500] = 2.0f * near * far / (far + near - (2.0f * zw - 1.0f) * (far - near));
+								}*/
+
 
 				// Compute reflection view matrix
 				Vector3 reflCameraPosition = context.Scene.Camera.Position;

@@ -1,7 +1,4 @@
 <Root>
-	<MultiCompile>WAVES;_</MultiCompile>
 	<MultiCompile>SPECULAR;_</MultiCompile>
-	<MultiCompile>REFLECTION;_</MultiCompile>
-	<MultiCompile>REFRACTION;_</MultiCompile>
-	<MultiCompile>FRESNEL;_</MultiCompile>
+	<MultiCompile>SOFT_EDGES;_</MultiCompile>
 </Root>

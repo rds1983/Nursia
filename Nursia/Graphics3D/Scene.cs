@@ -181,6 +181,16 @@ namespace Nursia.Graphics3D
 				}
 			}
 
+			var cameraObj = rootObject["Camera"] as JObject;
+			var camera = scene.Camera;
+			if (cameraObj != null)
+			{
+				camera.Position = cameraObj.EnsureVector3("Position");
+				camera.YawAngle = cameraObj.EnsureFloat("YawAngle");
+				camera.RollAngle = cameraObj.EnsureFloat("RollAngle");
+				camera.PitchAngle = cameraObj.EnsureFloat("PitchAngle");
+			}
+
 			return scene;
 		}
 
@@ -310,6 +320,16 @@ namespace Nursia.Graphics3D
 
 				result["WaterTiles"] = waterTilesObj;
 			}
+
+			var cameraObj = new JObject
+			{
+				["Position"] = Camera.Position.ToJArray(),
+				["YawAngle"] = Camera.YawAngle.ToJsonString(),
+				["PitchAngle"] = Camera.PitchAngle.ToJsonString(),
+				["RollAngle"] = Camera.RollAngle.ToJsonString()
+			};
+
+			result["Camera"] = cameraObj;
 
 			var json = JsonConvert.SerializeObject(result, Formatting.Indented);
 

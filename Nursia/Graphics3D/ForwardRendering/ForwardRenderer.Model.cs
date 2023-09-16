@@ -6,49 +6,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	partial class ForwardRenderer
 	{
-		private int[] _effectLightType = new int[Constants.MaxLights];
-		private Vector3[] _effectLightPosition = new Vector3[Constants.MaxLights];
-		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
-		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
-
-		private void SetLights(Effect effect)
-		{
-			var lightIndex = 0;
-			foreach (var directLight in _context.DirectLights)
-			{
-				if (lightIndex >= Constants.MaxLights)
-				{
-					break;
-				}
-
-				_effectLightType[lightIndex] = 0;
-				_effectLightColor[lightIndex] = directLight.Color.ToVector3();
-				_effectLightDirection[lightIndex] = directLight.Direction;
-
-				++lightIndex;
-			}
-
-			foreach (var pointLight in _context.PointLights)
-			{
-				if (lightIndex >= Constants.MaxLights)
-				{
-					break;
-				}
-
-				_effectLightType[lightIndex] = 1;
-				_effectLightColor[lightIndex] = pointLight.Color.ToVector3();
-				_effectLightPosition[lightIndex] = pointLight.Position;
-
-				++lightIndex;
-			}
-
-			effect.Parameters["_lightType"].SetValue(_effectLightType);
-			effect.Parameters["_lightPosition"].SetValue(_effectLightPosition);
-			effect.Parameters["_lightDirection"].SetValue(_effectLightDirection);
-			effect.Parameters["_lightColor"].SetValue(_effectLightColor);
-			effect.Parameters["_lightCount"].SetValue(lightIndex);
-		}
-
 		private void DrawMesh(Effect effect, Mesh mesh, ref Matrix worldTransform)
 		{
 			if (mesh == null || mesh.VertexBuffer == null || mesh.IndexBuffer == null || mesh.Material == null)
@@ -81,7 +38,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				SetLights(effect);
+				_context.SetLights(effect);
 			}
 
 			switch (_context.RenderPassType)
@@ -127,7 +84,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(worldTransform));
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
-				SetLights(effect);
+				_context.SetLights(effect);
 			}
 
 			switch (_context.RenderPassType)

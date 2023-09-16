@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.Graphics3D.Lights;
 
 namespace Nursia.Graphics3D
@@ -12,6 +13,11 @@ namespace Nursia.Graphics3D
 
 	internal class RenderContext
 	{
+		private int[] _effectLightType = new int[Constants.MaxLights];
+		private Vector3[] _effectLightPosition = new Vector3[Constants.MaxLights];
+		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
+		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
+
 		private readonly RenderStatistics _statistics = new RenderStatistics();
 		private Matrix? _viewProjection;
 		private BoundingFrustum _frustrum;
@@ -91,7 +97,13 @@ namespace Nursia.Graphics3D
 			}
 		}
 
+		public float NearPlaneDistance = 0.1f;
+		public float FarPlaneDistance = 1000.0f;
+
 		public RenderPassType RenderPassType { get; set; }
+
+		public RenderTarget2D Screen;
+		public RenderTarget2D Depth;
 
 		public RenderStatistics Statistics
 		{
@@ -109,6 +121,44 @@ namespace Nursia.Graphics3D
 
 		public RenderContext()
 		{
+		}
+
+		public void SetLights(Effect effect)
+		{
+			var lightIndex = 0;
+			foreach (var directLight in DirectLights)
+			{
+				if (lightIndex >= Constants.MaxLights)
+				{
+					break;
+				}
+
+				_effectLightType[lightIndex] = 0;
+				_effectLightColor[lightIndex] = directLight.Color.ToVector3();
+				_effectLightDirection[lightIndex] = directLight.Direction;
+
+				++lightIndex;
+			}
+
+			foreach (var pointLight in PointLights)
+			{
+				if (lightIndex >= Constants.MaxLights)
+				{
+					break;
+				}
+
+				_effectLightType[lightIndex] = 1;
+				_effectLightColor[lightIndex] = pointLight.Color.ToVector3();
+				_effectLightPosition[lightIndex] = pointLight.Position;
+
+				++lightIndex;
+			}
+
+			effect.Parameters["_lightType"].SetValue(_effectLightType);
+			effect.Parameters["_lightPosition"].SetValue(_effectLightPosition);
+			effect.Parameters["_lightDirection"].SetValue(_effectLightDirection);
+			effect.Parameters["_lightColor"].SetValue(_effectLightColor);
+			effect.Parameters["_lightCount"].SetValue(lightIndex);
 		}
 	}
 }

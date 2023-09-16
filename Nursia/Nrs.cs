@@ -45,6 +45,10 @@ namespace Nursia
 			}
 		}
 
+		public static float TotalGameTimeInSeconds { get; set; }
+
+		public static bool DepthBufferEnabled { get; set; } = true;
+
 		public static bool DrawBoundingBoxes { get; set; } = false;
 
 		public static Action<string> InfoLogHandler = Console.WriteLine;

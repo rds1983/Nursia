@@ -84,6 +84,16 @@ namespace Nursia.Graphics3D.ForwardRendering
 				SetLights(effect);
 			}
 
+			switch (_context.RenderPassType)
+			{
+				case RenderPassType.Color:
+					effect.CurrentTechnique = effect.Techniques["Color"];
+					break;
+				case RenderPassType.Depth:
+					effect.CurrentTechnique = effect.Techniques["Depth"];
+					break;
+			}
+
 			device.DrawIndexedPrimitives(effect, mesh.MeshData);
 
 			++_context.Statistics.MeshesDrawn;
@@ -118,6 +128,16 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
 				SetLights(effect);
+			}
+
+			switch (_context.RenderPassType)
+			{
+				case RenderPassType.Color:
+					effect.CurrentTechnique = effect.Techniques["Color"];
+					break;
+				case RenderPassType.Depth:
+					effect.CurrentTechnique = effect.Techniques["Depth"];
+					break;
 			}
 
 			device.DrawIndexedPrimitives(effect, tile.MeshData);

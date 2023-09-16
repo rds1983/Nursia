@@ -129,10 +129,6 @@ namespace Nursia.Samples.LevelEditor
 			_fpsCounter.Draw(gameTime);
 
 			_spriteBatch.Begin();
-			var tex = Renderer.WaterRefraction;
-			// _spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
-			var tex2 = Renderer.WaterReflection;
-			// _spriteBatch.Draw(tex2, new Rectangle(0, 0, tex2.Width, tex2.Height), Color.White);
 			_spriteBatch.End();
 		}
 	}

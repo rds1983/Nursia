@@ -18,7 +18,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
-		public BlendState BlendState { get; set; } = BlendState.AlphaBlend;
+		public BlendState BlendState { get; set; } = BlendState.NonPremultiplied;
 		
 		public RenderStatistics Statistics => _context.Statistics;
 
@@ -34,10 +34,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 				return _waterRenderer;
 			}
 		}
-
-		public RenderTarget2D WaterReflection => WaterRenderer.TargetReflection;
-
-		public RenderTarget2D WaterRefraction => WaterRenderer.TargetRefraction;
 
 		public Matrix Projection => _context.Projection;
 		public Matrix View => _context.View;
@@ -149,7 +145,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 		private void RenderPass(Scene scene)
 		{
 			var skybox = scene.Skybox;
-			if (skybox != null && skybox.Texture != null)
+			if (_context.RenderPassType == RenderPassType.Color && skybox != null && skybox.Texture != null)
 			{
 				var device = Nrs.GraphicsDevice;
 
@@ -279,6 +275,23 @@ namespace Nursia.Graphics3D.ForwardRendering
 			DrawModel(model);
 		}
 
+		private static void UpdateRenderTarget(ref RenderTarget2D renderTarget, SurfaceFormat format = SurfaceFormat.Color)
+		{
+			if (renderTarget != null &&
+				renderTarget.Width == Nrs.GraphicsDevice.Viewport.Width &&
+				renderTarget.Height == Nrs.GraphicsDevice.Viewport.Height)
+			{
+				return;
+			}
+
+			renderTarget = new RenderTarget2D(Nrs.GraphicsDevice,
+				Nrs.GraphicsDevice.Viewport.Width,
+				Nrs.GraphicsDevice.Viewport.Height,
+				false,
+				format,
+				DepthFormat.Depth24);
+		}
+
 		public void DrawScene(Scene scene)
 		{
 			if (!PrepareDraw(scene.Camera))
@@ -290,49 +303,63 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			if (scene.WaterTiles.Count > 0)
 			{
-				// Render reflection texture
 				var waterRenderer = WaterRenderer;
 				var device = Nrs.GraphicsDevice;
 				var oldViewport = device.Viewport;
 				try
 				{
-					var waterTile = scene.WaterTiles[0];
-					device.SetRenderTarget(waterRenderer.TargetRefraction);
-					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+					// Depth pass
+					foreach (var waterTile in scene.WaterTiles)
+					{
+						_context.RenderPassType = RenderPassType.Depth;
+						UpdateRenderTarget(ref waterTile.TargetDepth, SurfaceFormat.Single);
+						device.SetRenderTarget(waterTile.TargetDepth);
+						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+						_context.ClipPlane = Mathematics.CreatePlane(
+							waterTile.Height + 1.5f,
+							-Vector3.Up,
+							_context.ViewProjection,
+							false);
 
-					_context.ClipPlane = Mathematics.CreatePlane(
-						waterTile.Height + 1.5f,
-						-Vector3.Up,
-						_context.ViewProjection,
-						false);
-					RenderPass(scene);
+						RenderPass(scene);
+						_context.RenderPassType = RenderPassType.Color;
 
-					device.SetRenderTarget(waterRenderer.TargetReflection);
-					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+						// Refraction pass
+						UpdateRenderTarget(ref waterTile.TargetRefraction);
+						device.SetRenderTarget(waterTile.TargetRefraction);
+						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
-					var camera = scene.Camera;
-					var distance = 2 * (camera.Position.Y - waterTile.Height);
-					var oldPos = camera.Position;
-					var pos = oldPos;
-					pos.Y -= distance;
-					camera.Position = pos;
-					camera.PitchAngle = -camera.PitchAngle;
-					_context.View = camera.View;
+						RenderPass(scene);
 
-					_context.ClipPlane = Mathematics.CreatePlane(
-						waterTile.Height - 0.5f,
-						-Vector3.Up,
-						_context.ViewProjection,
-						true);
+						UpdateRenderTarget(ref waterTile.TargetReflection);
+						device.SetRenderTarget(waterTile.TargetReflection);
+						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
 
-					RenderPass(scene);
+						var camera = scene.Camera;
+						var distance = 2 * (camera.Position.Y - waterTile.Height);
+						var oldPos = camera.Position;
+						var pos = oldPos;
+						pos.Y -= distance;
+						camera.Position = pos;
+						camera.PitchAngle = -camera.PitchAngle;
+						_context.View = camera.View;
 
-					camera.Position = oldPos;
-					camera.PitchAngle = -camera.PitchAngle;
-					_context.View = camera.View;
+						_context.ClipPlane = Mathematics.CreatePlane(
+							waterTile.Height - 0.5f,
+							-Vector3.Up,
+							_context.ViewProjection,
+							true);
+
+						RenderPass(scene);
+
+						camera.Position = oldPos;
+						camera.PitchAngle = -camera.PitchAngle;
+						_context.View = camera.View;
+					}
 				}
 				finally
 				{
+					_context.RenderPassType = RenderPassType.Color;
 					device.SetRenderTarget(null);
 					device.Viewport = oldViewport;
 				}

@@ -4,6 +4,12 @@ using Nursia.Graphics3D.Lights;
 
 namespace Nursia.Graphics3D
 {
+	internal enum RenderPassType
+	{
+		Color,
+		Depth
+	}
+
 	internal class RenderContext
 	{
 		private readonly RenderStatistics _statistics = new RenderStatistics();
@@ -84,6 +90,8 @@ namespace Nursia.Graphics3D
 				return _frustrum;
 			}
 		}
+
+		public RenderPassType RenderPassType { get; set; }
 
 		public RenderStatistics Statistics
 		{

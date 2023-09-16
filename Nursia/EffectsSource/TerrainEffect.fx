@@ -85,15 +85,20 @@ struct VSOutput
 #if LIGHTNING || MARKER
 	float4 SourcePosition: TEXCOORD4;
 #endif
+
+	float2 Depth: TEXCOORD5;
 };
 
-VSOutput Vertex(VSInput input)
+VSOutput VS(VSInput input)
 {
     // Zero out our output.
 	VSOutput output = (VSOutput)0;
-
+	
 	output.TexCoord = input.TexCoord;
+
 	output.Position = mul(input.Position, _worldViewProjection);
+	output.Depth.x = output.Position.z;
+	output.Depth.y = output.Position.w;
 
 #ifdef LIGHTNING
 	output.WorldNormal = mul(input.Normal, _worldInverseTranspose);
@@ -112,7 +117,7 @@ VSOutput Vertex(VSInput input)
 	return output;
 }
 
-float4 Pixel(VSOutput input) : COLOR
+float4 PSColor(VSOutput input) : COLOR
 {
 #ifdef CLIP_PLANE
     clip(input.ClipDistances.x);
@@ -166,4 +171,15 @@ float4 Pixel(VSOutput input) : COLOR
 	return c;
 }
 
-TECHNIQUE(Default, Vertex, Pixel);
+float4 PSDepth(VSOutput input) : COLOR
+{
+#ifdef CLIP_PLANE
+    clip(input.ClipDistances.x); 
+#endif
+
+	float depth = input.Depth.x / input.Depth.y;
+	return float4(depth, 0.0f, 0.0f, 1.0f);
+}
+
+TECHNIQUE(Color, VS, PSColor);
+TECHNIQUE(Depth, VS, PSDepth);

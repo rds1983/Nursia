@@ -1,14 +1,16 @@
 ﻿using System.ComponentModel;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
 
 namespace Nursia.Graphics3D
 {
 	public enum WaterRenderMode
 	{
-		Standard,
+		Color,
 		RefractionTexture,
-		ReflectionTexture
+		ReflectionTexture,
+		DepthTexture
 	}
 
 	public class WaterTile: ItemWithId
@@ -59,6 +61,9 @@ namespace Nursia.Graphics3D
 		public float FresnelFactor { get; set; } = 1.0f;
 
 		[Category("Behavior")]
+		public float EdgeFactor { get; set; } = 1.0f;
+
+		[Category("Behavior")]
 		public Vector2 WaveVelocity0 { get; set; } = new Vector2(0.01f, 0.03f);
 
 		[Category("Behavior")]
@@ -69,6 +74,11 @@ namespace Nursia.Graphics3D
 
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }
+
+		internal RenderTarget2D TargetRefraction;
+		internal RenderTarget2D TargetReflection;
+		internal RenderTarget2D TargetDepth;
+
 
 
 		public WaterTile(float x, float z, float height, float sizeX = 40.0f, float sizeZ = 40.0f)

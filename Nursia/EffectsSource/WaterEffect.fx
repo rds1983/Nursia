@@ -6,6 +6,7 @@ DECLARE_TEXTURE_LINEAR_WRAP(_textureWave0);
 DECLARE_TEXTURE_LINEAR_WRAP(_textureWave1);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureRefraction);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
+DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
 
 float2 _waveMapOffset0;
 float2 _waveMapOffset1;
@@ -19,6 +20,7 @@ float _reflectivity;
 float _shininess;
 
 float _fresnelFactor;
+float _edgeFactor;
 
 float4x4 _world;
 float4x4 _worldViewProj;
@@ -70,7 +72,6 @@ VSOutput VS(VSInput input)
 	input.Position.w = 1.0f;
 
     output.Position = mul(input.Position, _worldViewProj);
-	
 	float4 worldPos = mul(input.Position, _world);
 	output.ToCamera = _cameraPosition - worldPos.xyz;
 	output.ReflectionPosition = mul(input.Position, _reflectViewProj);
@@ -81,11 +82,22 @@ VSOutput VS(VSInput input)
 	return output;
 }
 
-float4 PSStandard(VSOutput input) : SV_Target0
+float4 PSColor(VSOutput input) : SV_Target0
 {
 	float3 lightVector = normalize(-_lightDirection);
 	input.ToCamera = normalize(input.ToCamera);
-	
+
+	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
+
+	/* Soft Edges */
+	float near = 0.1f; // this should be loaded up from master renderer, hard coded for laziness
+	float far = 1000.0f; // this should be loaded up from master renderer, hard coded for laziness
+	float depth = SAMPLE_TEXTURE(_textureDepth, refractionTexCoord).r;
+	float floorDistance = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
+	depth = input.RefractionPosition.z / input.RefractionPosition.w;
+	float waterDistance = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
+	float waterDepth = floorDistance - waterDistance;
+
 #ifdef WAVES
 	// Sample wave normal map
 	float3 normalT0 = ColorToNormal(SAMPLE_TEXTURE(_textureWave0, input.WavePosition0));
@@ -98,7 +110,7 @@ float4 PSStandard(VSOutput input) : SV_Target0
 
 #ifdef SPECULAR
 	// Compute the reflection from sunlight
-	float3 n = normalize(float3(normalT.x, normalT.y * 3, normalT.z));
+	float3 n = normalize(float3(normalT.x, normalT.y * 2, normalT.z));
 	float3 R = normalize(reflect(-input.ToCamera, n));
 	float3 sunLight = _reflectivity * pow(saturate(dot(R, lightVector)), _shininess) * _lightColor;
 #else
@@ -112,19 +124,15 @@ float4 color = 0;
 #else
 
 #ifdef REFRACTION
-	// Transform the projective refraction texcoords to NDC space
-	// and scale and offset xy to correctly sample a DX texture
-	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
 #ifdef WAVES
 	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy - refractionTexCoord.z * normalT.xz);
 #else
 	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy);
 #endif
+
 #endif
 
 #ifdef REFLECTION
-	// Transform the projective reflection texcoords to NDC space
-	// and scale and offset xy to correctly sample a DX texture
 	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
 #ifdef WAVES
 	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy + reflectionTexCoord.z * normalT.xz);
@@ -146,13 +154,14 @@ float4 color = 0;
 	color.rgb = _waterColor * lerp(reflectionColor, refractionColor, refractiveFactor) + sunLight;
 #elif REFRACTION
 	color.rgb = _waterColor * refractionColor + sunLight;
+#elif REFLECTION
+	color.rgb = _waterColor * reflectionColor + sunLight;
 #endif
 #endif
-
-	// color = float4(refractiveFactor, refractiveFactor, refractiveFactor, 1);
 
 	// alpha canal
-	color.a = 1;
+//	color = float4(waterDepth / 100.0f, 0, 0, 1);
+	color.a = clamp(waterDepth / _edgeFactor, 0.0f, 1.0f); // increase the soft edges by increasing denominator
 
 	return color;
 }
@@ -174,6 +183,16 @@ float4 PSReflectionTexture(VSOutput input) : SV_Target0
 	return SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
 }
 
-TECHNIQUE(Standard, VS, PSStandard);
+float4 PSDepthTexture(VSOutput input) : SV_Target0
+{
+	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
+
+	float4 c = SAMPLE_TEXTURE(_textureDepth, refractionTexCoord.xy);
+
+	return c;
+}
+
+TECHNIQUE(Color, VS, PSColor);
 TECHNIQUE(RefractionTexture, VS, PSRefractionTexture);
 TECHNIQUE(ReflectionTexture, VS, PSReflectionTexture);
+TECHNIQUE(DepthTexture, VS, PSDepthTexture);

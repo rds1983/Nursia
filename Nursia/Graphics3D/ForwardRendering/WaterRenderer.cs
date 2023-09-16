@@ -6,33 +6,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	internal class WaterRenderer
 	{
-		private readonly Point TargetRefractionSize = new Point(1280, 720);
-		private readonly Point TargetReflectionSize = new Point(640, 360);
-
 		private readonly MeshData _waterMesh;
 		private DateTime? _lastRenderTime;
-
-		public RenderTarget2D TargetRefraction { get; }
-
-		public RenderTarget2D TargetReflection { get; }
 
 		public WaterRenderer()
 		{
 			_waterMesh = PrimitiveMeshes.SquarePositionTextureFromZeroToOne;
-
-			TargetRefraction = new RenderTarget2D(Nrs.GraphicsDevice,
-				TargetRefractionSize.X,
-				TargetRefractionSize.Y,
-				false,
-				SurfaceFormat.Color,
-				DepthFormat.Depth24);
-
-			TargetReflection = new RenderTarget2D(Nrs.GraphicsDevice,
-				TargetReflectionSize.X,
-				TargetReflectionSize.Y,
-				false,
-				SurfaceFormat.Color,
-				DepthFormat.Depth24);
 		}
 
 		public void DrawWater(RenderContext context)
@@ -58,8 +37,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
 				effect.Parameters["_textureWave1"].SetValue(Resources.WaterWave1);
 
-				effect.Parameters["_textureRefraction"].SetValue(TargetRefraction);
-				effect.Parameters["_textureReflection"].SetValue(TargetReflection);
+				effect.Parameters["_textureRefraction"].SetValue(waterTile.TargetRefraction);
+				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
+				effect.Parameters["_textureDepth"].SetValue(waterTile.TargetDepth);
 
 				// Offsets
 				waterTile.WaveMapOffset0 += waterTile.WaveVelocity0 * deltaTime;
@@ -86,12 +66,28 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_shininess"].SetValue(waterTile.Shininess);
 				effect.Parameters["_reflectivity"].SetValue(waterTile.Reflectivity);
 				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
+				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 
 				// World view proj
 				var world = Matrix.CreateScale(waterTile.SizeX, 1, waterTile.SizeZ) *
 					Matrix.CreateTranslation(waterTile.X, waterTile.Height, waterTile.Z);
 				effect.Parameters["_world"].SetValue(world);
 				var worldViewProj = world * context.ViewProjection;
+
+/*				var rrr = new float[2001];
+				for(var i = -500; i <= 1500; ++i)
+				{
+					var v = new Vector4(500, 500, -i, 1);
+					var r = Vector4.Transform(v, context.Projection);
+					var zw = r.Z / r.W;
+
+					float near = 0.1f; // this should be loaded up from master renderer, hard coded for laziness
+					float far = 1000.0f; // this should be loaded up from master renderer, hard coded for laziness
+
+
+					rrr[i + 500] = 2.0f * near * far / (far + near - (2.0f * zw - 1.0f) * (far - near));
+				}*/
+
 				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 
 				// Compute reflection view matrix

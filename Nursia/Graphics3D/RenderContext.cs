@@ -135,7 +135,7 @@ namespace Nursia.Graphics3D
 
 				_effectLightType[lightIndex] = 0;
 				_effectLightColor[lightIndex] = directLight.Color.ToVector3();
-				_effectLightDirection[lightIndex] = directLight.Direction;
+				_effectLightDirection[lightIndex] = directLight.NormalizedDirection;
 
 				++lightIndex;
 			}

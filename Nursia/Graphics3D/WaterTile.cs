@@ -34,9 +34,6 @@ namespace Nursia.Graphics3D
 		public bool Waves { get; set; } = true;
 
 		[Category("Behavior")]
-		public bool Specular { get; set; } = true;
-
-		[Category("Behavior")]
 		public bool SoftEdges { get; set; } = true;
 
 		[Category("Behavior")]
@@ -46,11 +43,11 @@ namespace Nursia.Graphics3D
 		public float WaveTextureScale { get; set; } = 2.5f;
 
 		[Category("Behavior")]
-		public float Shininess { get; set; } = 250.0f;
+		public float SpecularFactor { get; set; } = 0.0f;
 
 		[Category("Behavior")]
-		public float Reflectivity { get; set; } = 1.5f;
-		
+		public float SpecularPower { get; set; } = 250.0f;
+
 		[Category("Behavior")]
 		public float FresnelFactor { get; set; } = 1.0f;
 

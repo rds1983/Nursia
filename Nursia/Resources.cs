@@ -14,7 +14,7 @@ namespace Nursia
 		private static Effect _colorEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
-		private static Effect[] _waterEffects = new Effect[8];
+		private static Effect[] _waterEffects = new Effect[4];
 		private static Texture2D _white, _waterWave0, _waterWave1;
 
 		private static Assembly Assembly
@@ -213,7 +213,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool waves, bool specular, bool softEdges)
+		public static Effect GetWaterEffect(bool waves, bool softEdges)
 		{
 			var key = 0;
 			if (waves)
@@ -221,14 +221,9 @@ namespace Nursia
 				key |= 1;
 			}
 
-			if (specular)
-			{
-				key |= 2;
-			}
-
 			if (softEdges)
 			{
-				key |= 4;
+				key |= 2;
 			}
 
 			if (_waterEffects[key] != null)
@@ -240,11 +235,6 @@ namespace Nursia
 			if (waves)
 			{
 				defines["WAVES"] = "1";
-			}
-
-			if (specular)
-			{
-				defines["SPECULAR"] = "1";
 			}
 
 			if (softEdges)

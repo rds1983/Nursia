@@ -11,8 +11,6 @@ float4 _waterColor;
 float2 _waveMapOffset0;
 float2 _waveMapOffset1;
 float _waveTextureScale;
-float _reflectivity;
-float _shininess;
 float _fresnelFactor;
 float _edgeFactor;
 
@@ -36,6 +34,7 @@ struct VSOutput
     float2 WavePosition1: TEXCOORD2;
 	float4 ReflectionPosition: TEXCOORD3;
 	float4 RefractionPosition: TEXCOORD4;
+	float3 SourcePosition: TEXCOORD5;
 };
 
 // Transform the projective refraction texcoords to NDC space
@@ -70,6 +69,7 @@ VSOutput VS(VSInput input)
 	// Change the position vector to be 4 units for proper matrix calculations.
 	input.Position.w = 1.0f;
 
+	output.SourcePosition = input.Position.xyz;
     output.Position = mul(input.Position, _worldViewProj);
 	float4 worldPos = mul(input.Position, _world);
 	output.ToCamera = _cameraPosition - worldPos.xyz;
@@ -98,8 +98,8 @@ float4 PSColor(VSOutput input) : SV_Target0
 
 #ifdef WAVES
 	// Sample wave normal map
-	float3 normalT0 = ColorToNormal(SAMPLE_TEXTURE(_textureWave0, input.WavePosition0));
-	float3 normalT1 = ColorToNormal(SAMPLE_TEXTURE(_textureWave1, input.WavePosition1));
+	float3 normalT0 = ColorToNormal(SAMPLE_TEXTURE(_textureWave0, input.WavePosition0).rgb);
+	float3 normalT1 = ColorToNormal(SAMPLE_TEXTURE(_textureWave1, input.WavePosition1).rgb);
 
 	float3 normalT = normalize(0.5f * (normalT0 + normalT1));
 	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy - refractionTexCoord.z * normalT.xz);
@@ -110,31 +110,21 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
 #endif
 
-#ifdef SPECULAR
-	// Compute the reflection from sunlight
-	float3 lightVector = normalize(-_lightDirection[0]);
-	float3 n = normalize(float3(normalT.x, normalT.y * 3, normalT.z));
-	float3 R = normalize(reflect(-input.ToCamera, n));
-	float3 sunLight = _reflectivity * pow(saturate(dot(R, lightVector)), _shininess) * _lightColor[0];
-#else
-	float3 sunLight = 0;
-#endif
-
 	float4 color = 0;
 	
 	/* Fresnel Effect */
-	float refractiveFactor = dot(input.ToCamera, normalT); // the distance between vectors camera and pointing straight up
+	float refractiveFactor = abs(dot(input.ToCamera, normalT)); // the distance between vectors camera and pointing straight up
 	refractiveFactor = pow(refractiveFactor, _fresnelFactor); // the greater the power the more reflective it is
 	refractiveFactor = clamp(refractiveFactor, 0.0f, 1.0f); // rids of black artifacts	
 
-	color.rgb = _waterColor * lerp(reflectionColor, refractionColor, refractiveFactor) + sunLight;
+	color = _waterColor * lerp(reflectionColor, refractionColor, refractiveFactor);
+	
+	LightPower lightPower = CalculateLightPower(normalize(float3(normalT.x, normalT.y * 3, normalT.z)), input.SourcePosition, input.ToCamera);
+	color.rgb *= lightPower.Diffuse;
+	color.rgb += lightPower.Specular;
 
-	// alpha canal
-//	color = float4(waterDepth / 100.0f, 0, 0, 1);
 #ifdef SOFT_EDGES
-	color.a = clamp(waterDepth / _edgeFactor, 0.0f, 1.0f); // increase the soft edges by increasing denominator
-#else
-	color.a = 1.0;
+	color.a *= clamp(waterDepth / _edgeFactor, 0.0f, 1.0f); // increase the soft edges by increasing denominator
 #endif
 
 	return color;

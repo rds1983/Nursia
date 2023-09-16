@@ -7,9 +7,20 @@ float3 _lightDirection[MAX_LIGHTS];
 float3 _lightColor[MAX_LIGHTS];
 int _lightCount;
 
-float3 CalculateLightPower(float3 normal, float3 sourcePosition)
+float _specularFactor;
+float _specularPower;
+
+struct LightPower
 {
-	float3 result = float3(0, 0, 0);
+	float3 Diffuse;
+	float3 Specular;
+};
+
+LightPower CalculateLightPower(float3 normal, float3 sourcePosition, float3 toCamera)
+{
+	LightPower result;
+	result.Diffuse = float3(0, 0, 0);
+	result.Specular = float3(0, 0, 0);
 
 	int lightCount = min(_lightCount, MAX_LIGHTS);
 	for(int i = 0; i < lightCount; ++i)
@@ -35,8 +46,11 @@ float3 CalculateLightPower(float3 normal, float3 sourcePosition)
 
 		// Blinn-Phong
 		float diffuseFactor = max(dot(normal, lightDirection), 0.0);
-		float3 value = diffuseFactor * lightColor;
-		result += value;
+		result.Diffuse += diffuseFactor * lightColor;
+
+		// Compute the reflection from sunlight
+		float3 R = normalize(reflect(-toCamera, normal));
+		result.Specular = _specularFactor * pow(saturate(dot(R, lightDirection)), _specularPower) * _lightColor[0];
 	}
 	
 	return result;

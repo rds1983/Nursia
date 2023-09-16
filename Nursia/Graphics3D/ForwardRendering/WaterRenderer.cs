@@ -31,7 +31,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
 			{
-				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.Specular, waterTile.SoftEdges);
+				if (context.Frustrum.Contains(waterTile.BoundingBox) == ContainmentType.Disjoint)
+				{
+					continue;
+				}
+
+				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.SoftEdges);
 
 				// Textures
 				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
@@ -58,13 +63,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 				effect.Parameters["_waveTextureScale"].SetValue(waterTile.WaveTextureScale);
 
-				// Light
-				effect.Parameters["_lightDirection"].SetValue(context.DirectLights[0].NormalizedDirection);
-				effect.Parameters["_lightColor"].SetValue(context.DirectLights[0].Color.ToVector4());
+				// Lights
+				context.SetLights(effect);
 				
 				// Material specular parameters
-				effect.Parameters["_shininess"].SetValue(waterTile.Shininess);
-				effect.Parameters["_reflectivity"].SetValue(waterTile.Reflectivity);
+				effect.Parameters["_specularPower"].SetValue(waterTile.SpecularPower);
+				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
 				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 

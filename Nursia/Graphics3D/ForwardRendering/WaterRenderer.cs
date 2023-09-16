@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 
 namespace Nursia.Graphics3D.ForwardRendering
@@ -36,7 +35,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					continue;
 				}
 
-				var effect = Resources.GetWaterEffect(waterTile.Waves, waterTile.SoftEdges);
+				var effect = Resources.GetWaterEffect(waterTile.Waves, Nrs.DepthBufferEnabled);
 
 				// Textures
 				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
@@ -71,6 +70,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
 				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
+				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);
+				effect.Parameters["_murkinessFactor"].SetValue(waterTile.MurkinessFactor);
 
 				// World view proj
 				var world = Matrix.CreateScale(waterTile.SizeX, 1, waterTile.SizeZ) *

@@ -1,4 +1,4 @@
 <Root>
-	<MultiCompile>SOFT_EDGES;_</MultiCompile>
+	<MultiCompile>DEPTH_BUFFER;_</MultiCompile>
 	<MultiCompile>WAVES;_</MultiCompile>
 </Root>

@@ -213,7 +213,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool waves, bool softEdges)
+		public static Effect GetWaterEffect(bool waves, bool depthBuffer)
 		{
 			var key = 0;
 			if (waves)
@@ -221,7 +221,7 @@ namespace Nursia
 				key |= 1;
 			}
 
-			if (softEdges)
+			if (depthBuffer)
 			{
 				key |= 2;
 			}
@@ -237,9 +237,9 @@ namespace Nursia
 				defines["WAVES"] = "1";
 			}
 
-			if (softEdges)
+			if (depthBuffer)
 			{
-				defines["SOFT_EDGES"] = "1";
+				defines["DEPTH_BUFFER"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb", defines);

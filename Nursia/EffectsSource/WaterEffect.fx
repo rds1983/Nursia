@@ -13,6 +13,8 @@ float2 _waveMapOffset1;
 float _waveTextureScale;
 float _fresnelFactor;
 float _edgeFactor;
+float _murkinessStart;
+float _murkinessFactor;
 
 float4x4 _world;
 float4x4 _worldViewProj;
@@ -88,12 +90,17 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
 	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
 
-#ifdef SOFT_EDGES
+#ifdef DEPTH_BUFFER
 	/* Soft Edges */
 	float depth = SAMPLE_TEXTURE(_textureDepth, refractionTexCoord).r;
 	float floorDistance = edge(SAMPLE_TEXTURE(_textureDepth, refractionTexCoord).r);
 	float waterDistance = edge(input.RefractionPosition.z / input.RefractionPosition.w);
 	float waterDepth = floorDistance - waterDistance;
+
+	float depth_blend = exp((waterDepth - _murkinessStart) * -(_murkinessFactor / 10));
+	float depth_blend_pow = 1.0 - clamp(depth_blend, 0.0, 1.0);
+#else
+	float depth_blend_pow = 0.5;
 #endif
 
 #ifdef WAVES
@@ -117,15 +124,19 @@ float4 PSColor(VSOutput input) : SV_Target0
 	refractiveFactor = pow(refractiveFactor, _fresnelFactor); // the greater the power the more reflective it is
 	refractiveFactor = clamp(refractiveFactor, 0.0f, 1.0f); // rids of black artifacts	
 
-	color = _waterColor * lerp(reflectionColor, refractionColor, refractiveFactor);
+	color = _waterColor * lerp(refractionColor, reflectionColor, depth_blend_pow);
 	
 	LightPower lightPower = CalculateLightPower(normalize(float3(normalT.x, normalT.y * 3, normalT.z)), input.SourcePosition, input.ToCamera);
 	color.rgb *= lightPower.Diffuse;
 	color.rgb += lightPower.Specular;
 
-#ifdef SOFT_EDGES
+#ifdef DEPTH_BUFFER
 	color.a *= clamp(waterDepth / _edgeFactor, 0.0f, 1.0f); // increase the soft edges by increasing denominator
+#else
+	color.a = 1.0;
 #endif
+
+	// color = float4(depth_blend_pow, depth_blend_pow, depth_blend_pow, 1.0);
 
 	return color;
 }

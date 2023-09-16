@@ -34,9 +34,6 @@ namespace Nursia.Graphics3D
 		public bool Waves { get; set; } = true;
 
 		[Category("Behavior")]
-		public bool SoftEdges { get; set; } = true;
-
-		[Category("Behavior")]
 		public Color Color { get; set; } = new Vector4(0.5f, 0.79f, 0.75f, 1.0f).ToColor();
 
 		[Category("Behavior")]
@@ -53,6 +50,12 @@ namespace Nursia.Graphics3D
 
 		[Category("Behavior")]
 		public float EdgeFactor { get; set; } = 1.0f;
+
+		[Category("Behavior")]
+		public float MurkinessStart { get; set; } = 0.0f;
+
+		[Category("Behavior")]
+		public float MurkinessFactor { get; set; } = 5.0f;
 
 		[Category("Behavior")]
 		public Vector2 WaveVelocity0 { get; set; } = new Vector2(0.01f, 0.03f);

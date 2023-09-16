@@ -8,6 +8,7 @@ DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
 
 float4 _waterColor;
+float _reflectionFactor;
 float2 _waveMapOffset0;
 float2 _waveMapOffset1;
 float _waveTextureScale;
@@ -116,15 +117,14 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy);
 	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
 #endif
+	reflectionColor = lerp(_waterColor, reflectionColor, _reflectionFactor);
 
-	float4 color = 0;
-	
 	/* Fresnel Effect */
 	float refractiveFactor = abs(dot(input.ToCamera, normalT)); // the distance between vectors camera and pointing straight up
 	refractiveFactor = pow(refractiveFactor, _fresnelFactor); // the greater the power the more reflective it is
 	refractiveFactor = clamp(refractiveFactor, 0.0f, 1.0f); // rids of black artifacts	
 
-	color = _waterColor * lerp(refractionColor, reflectionColor, depth_blend_pow);
+	float4 color = _waterColor * lerp(refractionColor, reflectionColor, depth_blend_pow);
 	
 	LightPower lightPower = CalculateLightPower(normalize(float3(normalT.x, normalT.y * 3, normalT.z)), input.SourcePosition, input.ToCamera);
 	color.rgb *= lightPower.Diffuse;

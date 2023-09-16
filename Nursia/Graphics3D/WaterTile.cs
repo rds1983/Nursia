@@ -37,6 +37,9 @@ namespace Nursia.Graphics3D
 		public Color Color { get; set; } = new Vector4(0.5f, 0.79f, 0.75f, 1.0f).ToColor();
 
 		[Category("Behavior")]
+		public float ReflectionFactor { get; set; } = 0.5f;
+
+		[Category("Behavior")]
 		public float WaveTextureScale { get; set; } = 2.5f;
 
 		[Category("Behavior")]

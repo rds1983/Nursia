@@ -60,20 +60,22 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_waveMapOffset0"].SetValue(waterTile.WaveMapOffset0);
 				effect.Parameters["_waveMapOffset1"].SetValue(waterTile.WaveMapOffset1);
 
-				effect.Parameters["_waveTextureScale"].SetValue(waterTile.WaveTextureScale);
 
 				// Lights
 				context.SetLights(effect);
-				
-				// Material specular parameters
 				effect.Parameters["_specularPower"].SetValue(waterTile.SpecularPower);
 				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
+
+				// Water parameters
+				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
+				effect.Parameters["_reflectionFactor"].SetValue(waterTile.ReflectionFactor);
+				effect.Parameters["_waveTextureScale"].SetValue(waterTile.WaveTextureScale);
 				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);
 				effect.Parameters["_murkinessFactor"].SetValue(waterTile.MurkinessFactor);
 
-				// World view proj
+				// Render parameters
 				var world = Matrix.CreateScale(waterTile.SizeX, 1, waterTile.SizeZ) *
 					Matrix.CreateTranslation(waterTile.X, waterTile.Height, waterTile.Z);
 				effect.Parameters["_world"].SetValue(world);
@@ -81,21 +83,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 				effect.Parameters["_far"].SetValue(context.FarPlaneDistance);
 				effect.Parameters["_near"].SetValue(context.NearPlaneDistance);
-
-				/*				var rrr = new float[2001];
-								for(var i = -500; i <= 1500; ++i)
-								{
-									var v = new Vector4(500, 500, -i, 1);
-									var r = Vector4.Transform(v, context.Projection);
-									var zw = r.Z / r.W;
-
-									float near = 0.1f; // this should be loaded up from master renderer, hard coded for laziness
-									float far = 1000.0f; // this should be loaded up from master renderer, hard coded for laziness
-
-
-									rrr[i + 500] = 2.0f * near * far / (far + near - (2.0f * zw - 1.0f) * (far - near));
-								}*/
-
+				effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
 
 				// Compute reflection view matrix
 				Vector3 reflCameraPosition = context.Scene.Camera.Position;
@@ -106,10 +94,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var reflectionViewMatrix = Matrix.CreateLookAt(reflCameraPosition, reflTargetPos, invUpVector);
 				var reflectProjectWorld = world * reflectionViewMatrix * context.Projection;
 				effect.Parameters["_reflectViewProj"].SetValue(reflectProjectWorld);
-
-				// Rest
-				effect.Parameters["_cameraPosition"].SetValue(context.Scene.Camera.Position);
-				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
 
 				device.Apply(_waterMesh);
 

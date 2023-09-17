@@ -41,9 +41,9 @@ namespace Nursia.Graphics3D.ForwardRendering
 				// Textures
 				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals2);
 				effect.Parameters["_textureNormals2"].SetValue(Resources.WaterNormals2);
-				effect.Parameters["_textureRefraction"].SetValue(waterTile.TargetRefraction);
+				effect.Parameters["_textureScreen"].SetValue(context.Screen);
 				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
-				effect.Parameters["_textureDepth"].SetValue(waterTile.TargetDepth);
+				effect.Parameters["_textureDepth"].SetValue(context.Depth);
 				effect.Parameters["_textureSkybox"].SetValue(context.Scene.Skybox.Texture);
 
 				// Offsets
@@ -55,7 +55,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
 
 				// Water parameters
-				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
+				effect.Parameters["_color1"].SetValue(waterTile.Color1.ToVector4());
+				effect.Parameters["_color2"].SetValue(waterTile.Color2.ToVector4());
+				effect.Parameters["_colorDeep"].SetValue(waterTile.ColorDeep.ToVector4());
+				effect.Parameters["_colorShallow"].SetValue(waterTile.ColorShallow.ToVector4());
 				effect.Parameters["_waveDirection1"].SetValue(waterTile.WaveDirection1);
 				effect.Parameters["_waveDirection2"].SetValue(waterTile.WaveDirection2);
 				effect.Parameters["_timeScale"].SetValue(waterTile.TimeScale);

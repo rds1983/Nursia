@@ -309,32 +309,26 @@ namespace Nursia.Graphics3D.ForwardRendering
 				try
 				{
 					// Depth pass
+					_context.RenderPassType = RenderPassType.Depth;
+					UpdateRenderTarget(ref _context.Depth, SurfaceFormat.Single);
+					device.SetRenderTarget(_context.Depth);
+					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+					RenderPass(scene, false);
+					_context.RenderPassType = RenderPassType.Color;
+
+					// Screen pass
+					UpdateRenderTarget(ref _context.Screen);
+					device.SetRenderTarget(_context.Screen);
+					device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+
+					RenderPass(scene, false);
+
 					foreach (var waterTile in scene.WaterTiles)
 					{
 						if (_context.Frustrum.Contains(waterTile.BoundingBox) == ContainmentType.Disjoint)
 						{
 							continue;
 						}
-
-						_context.RenderPassType = RenderPassType.Depth;
-						UpdateRenderTarget(ref waterTile.TargetDepth, SurfaceFormat.Single);
-						device.SetRenderTarget(waterTile.TargetDepth);
-						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
-						_context.ClipPlane = Mathematics.CreatePlane(
-							waterTile.Height + 1.5f,
-							-Vector3.Up,
-							_context.ViewProjection,
-							false);
-
-						RenderPass(scene, false);
-						_context.RenderPassType = RenderPassType.Color;
-
-						// Refraction pass
-						UpdateRenderTarget(ref waterTile.TargetRefraction);
-						device.SetRenderTarget(waterTile.TargetRefraction);
-						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
-
-						RenderPass(scene);
 
 						UpdateRenderTarget(ref waterTile.TargetReflection);
 						device.SetRenderTarget(waterTile.TargetReflection);
@@ -350,7 +344,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						_context.View = camera.View;
 
 						_context.ClipPlane = Mathematics.CreatePlane(
-							waterTile.Height - 0.5f,
+							waterTile.Height,
 							-Vector3.Up,
 							_context.ViewProjection,
 							true);
@@ -364,13 +358,12 @@ namespace Nursia.Graphics3D.ForwardRendering
 				}
 				finally
 				{
+					_context.ClipPlane = null;
 					_context.RenderPassType = RenderPassType.Color;
 					device.SetRenderTarget(null);
 					device.Viewport = oldViewport;
 				}
 			}
-
-			_context.ClipPlane = null;
 
 			RenderPass(scene);
 

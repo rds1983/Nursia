@@ -34,7 +34,16 @@ namespace Nursia.Graphics3D
 		public bool Waves { get; set; } = true;
 
 		[Category("Behavior")]
-		public Color Color { get; set; } = new Color(0, 82, 110);
+		public Color Color1 { get; set; } = new Color(0, 82, 110);
+
+		[Category("Behavior")]
+		public Color Color2 { get; set; } = new Color(0, 121, 195);
+
+		[Category("Behavior")]
+		public Color ColorDeep { get; set; } = new Color(27, 75, 84);
+
+		[Category("Behavior")]
+		public Color ColorShallow { get; set; } = new Color(0, 141, 166);
 
 		[Category("Behavior")]
 		public Vector2 WaveDirection1 { get; set; } = new Vector2(2, 0);
@@ -46,7 +55,7 @@ namespace Nursia.Graphics3D
 		public float TimeScale { get; set; } = 0.025f;
 
 		[Category("Behavior")]
-		public float ReflectionFactor { get; set; } = 0.5f;
+		public float ReflectionFactor { get; set; } = 0.3f;
 
 		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;
@@ -69,13 +78,10 @@ namespace Nursia.Graphics3D
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }
 
+		[Browsable(false)]
 		public BoundingBox BoundingBox => new BoundingBox(new Vector3(X, Height, Z), new Vector3(X + SizeX, Height, Z + SizeZ));
 
-		internal RenderTarget2D TargetRefraction;
 		internal RenderTarget2D TargetReflection;
-		internal RenderTarget2D TargetDepth;
-
-
 
 		public WaterTile(float x, float z, float height, float sizeX = 40.0f, float sizeZ = 40.0f)
 		{

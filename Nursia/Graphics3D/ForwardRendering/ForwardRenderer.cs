@@ -142,10 +142,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 			DrawMeshNode(model.RootNode, ref model.Transform);
 		}
 
-		private void RenderPass(Scene scene)
+		private void RenderPass(Scene scene, bool drawSkybox = true)
 		{
 			var skybox = scene.Skybox;
-			if (_context.RenderPassType == RenderPassType.Color && skybox != null && skybox.Texture != null)
+			if (drawSkybox && skybox != null && skybox.Texture != null)
 			{
 				var device = Nrs.GraphicsDevice;
 
@@ -326,7 +326,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 							_context.ViewProjection,
 							false);
 
-						RenderPass(scene);
+						RenderPass(scene, false);
 						_context.RenderPassType = RenderPassType.Color;
 
 						// Refraction pass
@@ -338,7 +338,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 						UpdateRenderTarget(ref waterTile.TargetReflection);
 						device.SetRenderTarget(waterTile.TargetReflection);
-						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
+						device.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Transparent, 1.0f, 0);
 
 						var camera = scene.Camera;
 						var distance = 2 * (camera.Position.Y - waterTile.Height);
@@ -355,7 +355,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 							_context.ViewProjection,
 							true);
 
-						RenderPass(scene);
+						RenderPass(scene, false);
 
 						camera.Position = oldPos;
 						camera.PitchAngle = -camera.PitchAngle;

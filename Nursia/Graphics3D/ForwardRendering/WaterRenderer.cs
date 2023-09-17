@@ -23,9 +23,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (_lastRenderTime != null)
 			{
 				deltaTime = (float)(now - _lastRenderTime.Value).TotalSeconds;
+			} else
+			{
+				_lastRenderTime = now;
 			}
-
-			_lastRenderTime = now;
 
 			var scene = context.Scene;
 			foreach (var waterTile in scene.WaterTiles)
@@ -38,28 +39,15 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var effect = Resources.GetWaterEffect(waterTile.Waves, Nrs.DepthBufferEnabled);
 
 				// Textures
-				effect.Parameters["_textureWave0"].SetValue(Resources.WaterWave0);
-				effect.Parameters["_textureWave1"].SetValue(Resources.WaterWave1);
-
+				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals2);
+				effect.Parameters["_textureNormals2"].SetValue(Resources.WaterNormals2);
 				effect.Parameters["_textureRefraction"].SetValue(waterTile.TargetRefraction);
 				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
 				effect.Parameters["_textureDepth"].SetValue(waterTile.TargetDepth);
+				effect.Parameters["_textureSkybox"].SetValue(context.Scene.Skybox.Texture);
 
 				// Offsets
-				waterTile.WaveMapOffset0 += waterTile.WaveVelocity0 * deltaTime;
-				waterTile.WaveMapOffset1 += waterTile.WaveVelocity1 * deltaTime;
-
-				if (waterTile.WaveMapOffset0.X >= 1.0f || waterTile.WaveMapOffset0.X <= -1.0f)
-					waterTile.WaveMapOffset0.X = 0.0f;
-				if (waterTile.WaveMapOffset1.X >= 1.0f || waterTile.WaveMapOffset1.X <= -1.0f)
-					waterTile.WaveMapOffset1.X = 0.0f;
-				if (waterTile.WaveMapOffset0.Y >= 1.0f || waterTile.WaveMapOffset0.Y <= -1.0f)
-					waterTile.WaveMapOffset0.Y = 0.0f;
-				if (waterTile.WaveMapOffset1.Y >= 1.0f || waterTile.WaveMapOffset1.Y <= -1.0f)
-					waterTile.WaveMapOffset1.Y = 0.0f;
-				effect.Parameters["_waveMapOffset0"].SetValue(waterTile.WaveMapOffset0);
-				effect.Parameters["_waveMapOffset1"].SetValue(waterTile.WaveMapOffset1);
-
+				effect.Parameters["_time"].SetValue(deltaTime);
 
 				// Lights
 				context.SetLights(effect);
@@ -68,8 +56,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 				// Water parameters
 				effect.Parameters["_waterColor"].SetValue(waterTile.Color.ToVector4());
+				effect.Parameters["_waveDirection1"].SetValue(waterTile.WaveDirection1);
+				effect.Parameters["_waveDirection2"].SetValue(waterTile.WaveDirection2);
+				effect.Parameters["_timeScale"].SetValue(waterTile.TimeScale);
 				effect.Parameters["_reflectionFactor"].SetValue(waterTile.ReflectionFactor);
-				effect.Parameters["_waveTextureScale"].SetValue(waterTile.WaveTextureScale);
 				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);

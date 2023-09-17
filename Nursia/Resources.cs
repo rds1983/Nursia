@@ -15,7 +15,7 @@ namespace Nursia
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
 		private static Effect[] _waterEffects = new Effect[4];
-		private static Texture2D _white, _waterWave0, _waterWave1;
+		private static Texture2D _white, _waterNormals1, _waterNormals2;
 
 		private static Assembly Assembly
 		{
@@ -67,35 +67,35 @@ namespace Nursia
 			}
 		}
 
-		public static Texture2D WaterWave0
+		public static Texture2D WaterNormals1
 		{
 			get
 			{
-				if (_waterWave0 == null)
+				if (_waterNormals1 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterWave0.png"))
+					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals1.png"))
 					{
-						_waterWave0 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+						_waterNormals1 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
 					}
 				}
 
-				return _waterWave0;
+				return _waterNormals1;
 			}
 		}
 
-		public static Texture2D WaterWave1
+		public static Texture2D WaterNormals2
 		{
 			get
 			{
-				if (_waterWave1 == null)
+				if (_waterNormals2 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterWave0.png"))
+					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals2.png"))
 					{
-						_waterWave1 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
+						_waterNormals2 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
 					}
 				}
 
-				return _waterWave1;
+				return _waterNormals2;
 			}
 		}
 

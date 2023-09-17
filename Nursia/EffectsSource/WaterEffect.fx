@@ -1,25 +1,29 @@
 #include "Macros.fxh"
 #include "Lightning.fxh"
 
-DECLARE_TEXTURE_LINEAR_WRAP(_textureWave0);
-DECLARE_TEXTURE_LINEAR_WRAP(_textureWave1);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals1);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals2);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureRefraction);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
+DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
 
 float4 _waterColor;
+float2 _waveDirection1;
+float2 _waveDirection2;
+float _timeScale;
 float _reflectionFactor;
-float2 _waveMapOffset0;
-float2 _waveMapOffset1;
-float _waveTextureScale;
 float _fresnelFactor;
 float _edgeFactor;
 float _murkinessStart;
 float _murkinessFactor;
 
+float _time;
+
 float4x4 _world;
 float4x4 _worldViewProj;
 float4x4 _reflectViewProj;
+float3x3 _worldInverseTranspose;
 float3 _cameraPosition;
 float _far, _near;
 
@@ -33,11 +37,11 @@ struct VSOutput
 {
     float4 Position: SV_POSITION;
     float3 ToCamera: TEXCOORD0;
-    float2 WavePosition0: TEXCOORD1;
-    float2 WavePosition1: TEXCOORD2;
-	float4 ReflectionPosition: TEXCOORD3;
-	float4 RefractionPosition: TEXCOORD4;
-	float3 SourcePosition: TEXCOORD5;
+	float4 ReflectionPosition: TEXCOORD1;
+	float4 RefractionPosition: TEXCOORD2;
+	float3 SourcePosition: TEXCOORD3;
+	float2 TexCoord: TEXCOORD4;
+	float3 WorldPosition: TEXCOORD5;
 };
 
 // Transform the projective refraction texcoords to NDC space
@@ -57,7 +61,7 @@ float4 ToNDC(float4 input)
 
 float3 ColorToNormal(float3 c)
 {
-	return float3(c.r * 2.0f - 1.0f, c.b * 3.0f, c.g * 2.0f - 1.0f);
+	return float3(c.r * 2.0f - 1.0f, c.b * 2.0f - 1.0f, c.g * 2.0f - 1.0f);
 }
 
 float edge(float depth)
@@ -73,12 +77,11 @@ VSOutput VS(VSInput input)
 	input.Position.w = 1.0f;
 
 	output.SourcePosition = input.Position.xyz;
+	output.TexCoord = input.TexCoord;
     output.Position = mul(input.Position, _worldViewProj);
-	float4 worldPos = mul(input.Position, _world);
-	output.ToCamera = _cameraPosition - worldPos.xyz;
+	output.WorldPosition = mul(input.Position, _world);
+	output.ToCamera = _cameraPosition - output.WorldPosition.xyz;
 	output.ReflectionPosition = mul(input.Position, _reflectViewProj);
-	output.WavePosition0 = (input.TexCoord * _waveTextureScale) + _waveMapOffset0;
-	output.WavePosition1 = (input.TexCoord * _waveTextureScale) + _waveMapOffset1;
 	output.RefractionPosition = output.Position;
 
 	return output;
@@ -90,6 +93,15 @@ float4 PSColor(VSOutput input) : SV_Target0
 
 	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
 	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
+	
+	// Time calculations for wave (normal map) movement
+	float2 time = (_time * _waveDirection1) * _timeScale; // Movement rate of first wave
+	float2 time2 = (_time * _waveDirection2) * _timeScale; // Movement rate of second wave
+	
+	// Blend normal maps into one
+	float3 normal1 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals1, input.TexCoord + time).rgb);
+	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, input.TexCoord + time2).rgb);
+	float3 normal = lerp(normal1, normal2, 0.5);
 
 #ifdef DEPTH_BUFFER
 	/* Soft Edges */
@@ -104,29 +116,18 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float depth_blend_pow = 0.5;
 #endif
 
-#ifdef WAVES
-	// Sample wave normal map
-	float3 normalT0 = ColorToNormal(SAMPLE_TEXTURE(_textureWave0, input.WavePosition0).rgb);
-	float3 normalT1 = ColorToNormal(SAMPLE_TEXTURE(_textureWave1, input.WavePosition1).rgb);
-
-	float3 normalT = normalize(0.5f * (normalT0 + normalT1));
-	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy - refractionTexCoord.z * normalT.xz);
-	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy + reflectionTexCoord.z * normalT.xz);
-#else
-	float3 normalT = float3(0, 1.0f, 0);
 	float4 refractionColor = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy);
-	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
-#endif
-	reflectionColor = lerp(_waterColor, reflectionColor, _reflectionFactor);
 
-	/* Fresnel Effect */
-	float refractiveFactor = abs(dot(input.ToCamera, normalT)); // the distance between vectors camera and pointing straight up
-	refractiveFactor = pow(refractiveFactor, _fresnelFactor); // the greater the power the more reflective it is
-	refractiveFactor = clamp(refractiveFactor, 0.0f, 1.0f); // rids of black artifacts	
-
-	float4 color = _waterColor * lerp(refractionColor, reflectionColor, depth_blend_pow);
+	float3 R = reflect(input.WorldPosition - _cameraPosition, normal);
+	float4 reflectedSkyColor = SAMPLE_CUBEMAP(_textureSkybox, R);
 	
-	LightPower lightPower = CalculateLightPower(normalize(float3(normalT.x, normalT.y * 3, normalT.z)), input.SourcePosition, input.ToCamera);
+	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
+	reflectionColor = lerp(_waterColor, reflectionColor, _reflectionFactor) + (1 - reflectionColor.a) * reflectedSkyColor;
+	
+	float4 color = _waterColor;
+	color *= lerp(refractionColor, reflectionColor, depth_blend_pow);
+	
+	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
 	color.rgb *= lightPower.Diffuse;
 	color.rgb += lightPower.Specular;
 
@@ -137,6 +138,7 @@ float4 PSColor(VSOutput input) : SV_Target0
 #endif
 
 	// color = float4(depth_blend_pow, depth_blend_pow, depth_blend_pow, 1.0);
+	// color = float4(normal.x, normal.y, normal.z, 1.0);
 
 	return color;
 }
@@ -145,10 +147,7 @@ float4 PSRefractionTexture(VSOutput input) : SV_Target0
 {
 	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
 
-	float4 c = SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy);
-	c.r *= 0.5;
-
-	return c;
+	return SAMPLE_TEXTURE(_textureRefraction, refractionTexCoord.xy);
 }
 
 float4 PSReflectionTexture(VSOutput input) : SV_Target0
@@ -162,9 +161,7 @@ float4 PSDepthTexture(VSOutput input) : SV_Target0
 {
 	float4 refractionTexCoord = ToNDC(input.RefractionPosition);
 
-	float4 c = SAMPLE_TEXTURE(_textureDepth, refractionTexCoord.xy);
-
-	return c;
+	return SAMPLE_TEXTURE(_textureDepth, refractionTexCoord.xy);
 }
 
 TECHNIQUE(Color, VS, PSColor);

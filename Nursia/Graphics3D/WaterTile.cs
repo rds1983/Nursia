@@ -34,13 +34,19 @@ namespace Nursia.Graphics3D
 		public bool Waves { get; set; } = true;
 
 		[Category("Behavior")]
-		public Color Color { get; set; } = new Vector4(0.5f, 0.79f, 0.75f, 1.0f).ToColor();
+		public Color Color { get; set; } = new Color(0, 82, 110);
+
+		[Category("Behavior")]
+		public Vector2 WaveDirection1 { get; set; } = new Vector2(2, 0);
+
+		[Category("Behavior")]
+		public Vector2 WaveDirection2 { get; set; } = new Vector2(0, 1);
+
+		[Category("Behavior")]
+		public float TimeScale { get; set; } = 0.025f;
 
 		[Category("Behavior")]
 		public float ReflectionFactor { get; set; } = 0.5f;
-
-		[Category("Behavior")]
-		public float WaveTextureScale { get; set; } = 2.5f;
 
 		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;
@@ -59,15 +65,6 @@ namespace Nursia.Graphics3D
 
 		[Category("Behavior")]
 		public float MurkinessFactor { get; set; } = 5.0f;
-
-		[Category("Behavior")]
-		public Vector2 WaveVelocity0 { get; set; } = new Vector2(0.01f, 0.03f);
-
-		[Category("Behavior")]
-		public Vector2 WaveVelocity1 { get; set; } = new Vector2(-0.01f, 0.03f);
-
-		internal Vector2 WaveMapOffset0;
-		internal Vector2 WaveMapOffset1;
 
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }

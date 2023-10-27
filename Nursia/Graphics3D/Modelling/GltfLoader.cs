@@ -73,13 +73,13 @@ namespace Nursia.Graphics3D.Modelling
 		{
 			if (string.IsNullOrEmpty(path))
 			{
-				using (var stream = _assetManager.OpenAssetStream(_assetName))
+				using (var stream = _assetManager.Open(_assetName))
 				{
 					return Interface.LoadBinaryBuffer(stream);
 				}
 			}
 
-			return _assetManager.ReadAssetAsByteArray(path);
+			return _assetManager.ReadAsByteArray(path);
 		}
 
 		private byte[] GetBuffer(int index)
@@ -492,7 +492,7 @@ namespace Nursia.Graphics3D.Modelling
 
 			_assetManager = manager;
 			_assetName = assetName;
-			using (var stream = manager.OpenAssetStream(assetName))
+			using (var stream = manager.Open(assetName))
 			{
 				_gltf = Interface.LoadModel(stream);
 			}

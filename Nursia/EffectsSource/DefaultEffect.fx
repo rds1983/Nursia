@@ -27,6 +27,7 @@ float4 _clipPlane;
 #endif
 
 float4 _diffuseColor;
+float3 _cameraPosition;
 
 MATRIX_CONSTANTS
 
@@ -39,6 +40,7 @@ float4x3 _bones[MAX_BONES];
 #endif
 
 float4x4 _worldViewProj;
+float4x4 _world;
 
 END_CONSTANTS
 
@@ -63,18 +65,19 @@ struct VSInput
 struct VSOutput
 {
 	float4 Position: SV_POSITION;
+    float3 ToCamera: TEXCOORD0;
 
 #ifdef TEXTURE
-    float2 TexCoord: TEXCOORD0;
+    float2 TexCoord: TEXCOORD1;
 #endif
 
 #ifdef LIGHTNING
-	float3 WorldNormal: TEXCOORD1;
-	float4 SourcePosition: TEXCOORD2;
+	float3 WorldNormal: TEXCOORD2;
+	float4 SourcePosition: TEXCOORD3;
 #endif
 
 #ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD3;
+	float4 ClipDistances: TEXCOORD4;
 #endif
 
 	float2 Depth: TEXCOORD5;
@@ -84,6 +87,9 @@ VSOutput VS(VSInput input)
 {
     VSOutput output = (VSOutput)0;
     
+	float3 worldPosition = mul(input.Position, _world).xyz;
+	output.ToCamera = _cameraPosition - worldPosition;
+
 #ifdef SKINNING
 	float4x3 skinning = 0;
 	skinning += _bones[(int)input.Indices[0]] * input.Weights[0];
@@ -138,8 +144,9 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float3 normal = normalize(input.WorldNormal);
 	float3 src = input.SourcePosition.xyz;
 
-	float3 lightPower = CalculateLightPower(normal, src);
-	color *= float4(lightPower, 1);
+	LightPower lightPower = CalculateLightPower(normal, src, input.ToCamera);
+	color *= float4(lightPower.Diffuse, 1);
+	color += float4(lightPower.Specular, 0);
 #endif
 
 	clip(color.a < 0.1?-1:1);

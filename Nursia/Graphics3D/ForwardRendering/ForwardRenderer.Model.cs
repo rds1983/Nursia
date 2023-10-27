@@ -15,10 +15,13 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 			var device = Nrs.GraphicsDevice;
 
-			var worldViewProj = mesh.Transform * worldTransform * _context.ViewProjection;
+			var world = mesh.Transform * worldTransform;
+			var worldViewProj = worldTransform * _context.ViewProjection;
 
 			effect.Parameters["_worldViewProj"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(mesh.Material.DiffuseColor.ToVector4());
+			effect.Parameters["_world"].SetValue(world);
+			effect.Parameters["_cameraPosition"].SetValue(_context.Scene.Camera.Position);
 
 			if (mesh.Material.Texture != null)
 			{
@@ -64,6 +67,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 			effect.Parameters["_worldViewProjection"].SetValue(worldViewProj);
 			effect.Parameters["_diffuseColor"].SetValue(tile.Terrain.DiffuseColor.ToVector4());
 			effect.Parameters["_textureBase"].SetValue(tile.Terrain.TextureBase);
+			effect.Parameters["_world"].SetValue(tile.Transform);
+			effect.Parameters["_cameraPosition"].SetValue(_context.Scene.Camera.Position);
 
 			if (tile.Terrain.TexturesCount > 1)
 			{

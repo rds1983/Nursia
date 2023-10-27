@@ -53,7 +53,7 @@ namespace SampleScene
 		private byte[] LoadSkyboxImage(AssetManager assetManager, string name)
 		{
 			ImageResult image;
-			using (var stream = assetManager.OpenAssetStream("skybox/" + name))
+			using (var stream = assetManager.Open("skybox/" + name))
 			{
 				image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 			}

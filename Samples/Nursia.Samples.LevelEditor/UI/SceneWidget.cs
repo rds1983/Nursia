@@ -331,13 +331,13 @@ namespace Nursia.Samples.LevelEditor.UI
 			_modelMarker = null;
 		}
 
-		public override bool OnTouchDown()
+		public override void OnTouchDown()
 		{
-			var result = base.OnTouchDown();
+			base.OnTouchDown();
 
 			if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
 			{
-				return result;
+				return;
 			}
 
 			if (Instrument.IsPaintInstrument)
@@ -360,8 +360,6 @@ namespace Nursia.Samples.LevelEditor.UI
 
 				Scene.Models.Add(model);
 			}
-
-			return result;
 		}
 
 		private void GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ)

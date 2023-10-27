@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\*.*" />
-    <EmbeddedResource Include="EffectsSource\FNA\*.*" />
+    <EmbeddedResource Include="EffectsSource\FNA\bin\*.*" />
   </ItemGroup>
 
   <ItemGroup>

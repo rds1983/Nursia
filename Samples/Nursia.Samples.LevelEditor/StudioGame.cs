@@ -45,17 +45,6 @@ namespace Nursia.Samples.LevelEditor
 			}
 		}
 
-		private byte[] LoadSkyboxImage(AssetManager assetManager, string name)
-		{
-			ImageResult image;
-			using (var stream = assetManager.OpenAssetStream("../../skybox/" + name))
-			{
-				image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-			}
-
-			return image.Data;
-		}
-
 		protected override void LoadContent()
 		{
 			base.LoadContent();
@@ -79,21 +68,7 @@ namespace Nursia.Samples.LevelEditor
 			_mainForm.AssetManager = assetManager;
 
 			// Skybox
-			var texture = new TextureCube(GraphicsDevice, 1024, false, SurfaceFormat.Color);
-
-			var data = LoadSkyboxImage(assetManager, @"negX.png");
-			texture.SetData(CubeMapFace.NegativeX, data);
-			data = LoadSkyboxImage(assetManager, @"negY.png");
-			texture.SetData(CubeMapFace.NegativeY, data);
-			data = LoadSkyboxImage(assetManager, @"negZ.png");
-			texture.SetData(CubeMapFace.NegativeZ, data);
-			data = LoadSkyboxImage(assetManager, @"posX.png");
-			texture.SetData(CubeMapFace.PositiveX, data);
-			data = LoadSkyboxImage(assetManager, @"posY.png");
-			texture.SetData(CubeMapFace.PositiveY, data);
-			data = LoadSkyboxImage(assetManager, @"posZ.png");
-			texture.SetData(CubeMapFace.PositiveZ, data);
-
+			var texture = assetManager.LoadTextureCube(GraphicsDevice, "../../skybox/SkyBox.dds");
 			scene.Skybox = new Skybox(100)
 			{
 				Texture = texture

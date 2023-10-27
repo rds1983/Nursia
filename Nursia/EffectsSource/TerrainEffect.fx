@@ -32,6 +32,8 @@ float4 _diffuseColor;
 float _textureScaleX;
 float _textureScaleY;
 
+float3 _cameraPosition;
+
 #ifdef CLIP_PLANE
 
 float4 _clipPlane;
@@ -49,10 +51,7 @@ MATRIX_CONSTANTS
 
 float4x4 _worldViewProjection;
 float3x3 _worldInverseTranspose;
-
-#if LIGHTNING || MARKER
 float4x4 _world;
-#endif
 
 END_CONSTANTS
 
@@ -70,23 +69,23 @@ struct VSInput
 struct VSOutput
 {
 	float4 Position: SV_POSITION;
-
-	float2 TexCoord: TEXCOORD0;
-	float2 SplatTexCoord: TEXCOORD3;
+    float3 ToCamera: TEXCOORD0;
+	float2 TexCoord: TEXCOORD1;
+	float2 SplatTexCoord: TEXCOORD2;
 
 #ifdef LIGHTNING
-	float3 WorldNormal: TEXCOORD1;
+	float3 WorldNormal: TEXCOORD3;
 #endif
 
 #ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD2;
+	float4 ClipDistances: TEXCOORD4;
 #endif
 
 #if LIGHTNING || MARKER
-	float4 SourcePosition: TEXCOORD4;
+	float4 SourcePosition: TEXCOORD5;
 #endif
 
-	float2 Depth: TEXCOORD5;
+	float2 Depth: TEXCOORD6;
 };
 
 VSOutput VS(VSInput input)
@@ -97,6 +96,9 @@ VSOutput VS(VSInput input)
 	output.TexCoord = input.TexCoord;
 
 	output.Position = mul(input.Position, _worldViewProjection);
+
+	float3 worldPosition = mul(input.Position, _world).xyz;
+	output.ToCamera = _cameraPosition - worldPosition;
 	output.Depth.x = output.Position.z;
 	output.Depth.y = output.Position.w;
 
@@ -149,9 +151,9 @@ float4 PSColor(VSOutput input) : COLOR
 
 #ifdef LIGHTNING
 	float3 normal = normalize(input.WorldNormal);
-	float3 lightPower = CalculateLightPower(normal, input.SourcePosition.xyz);
+	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition.xyz, input.ToCamera);
 
-	float4 c = float4(color, 1) * float4(lightPower, 1) * _diffuseColor;
+	float4 c = float4(color, 1) * float4(lightPower.Diffuse, 1) * _diffuseColor + float4(lightPower.Specular, 0);
 #else
 	float4 c = float4(color, 1) * _diffuseColor;
 #endif

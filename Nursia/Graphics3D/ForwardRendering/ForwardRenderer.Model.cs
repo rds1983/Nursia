@@ -42,6 +42,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_worldInverseTranspose"].SetValue(worldInverseTranspose);
 
 				_context.SetLights(effect);
+				effect.Parameters["_specularPower"].SetValue(mesh.Material.SpecularPower);
+				effect.Parameters["_specularFactor"].SetValue(mesh.Material.SpecularFactor);
 			}
 
 			switch (_context.RenderPassType)

@@ -216,10 +216,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 							continue;
 						}
 
-						if (scene.HasMarker || scene.HasLights)
-						{
-							effect.Parameters["_world"].SetValue(terrainTile.Transform);
-						}
+						effect.Parameters["_world"].SetValue(terrainTile.Transform);
+
+						effect.Parameters["_specularPower"].SetValue(terrain.SpecularPower);
+						effect.Parameters["_specularFactor"].SetValue(terrain.SpecularFactor);
+
 
 						DrawTerrain(effect, terrainTile);
 					}

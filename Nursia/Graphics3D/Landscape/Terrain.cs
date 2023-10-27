@@ -82,6 +82,13 @@ namespace Nursia.Graphics3D.Landscape
 		public Texture2D TexturePaint2 { get; set; }
 		public Texture2D TexturePaint3 { get; set; }
 		public Texture2D TexturePaint4 { get; set; }
+		
+		[Category("Behavior")]
+		public float SpecularFactor { get; set; } = 0.0f;
+
+		[Category("Behavior")]
+		public float SpecularPower { get; set; } = 250.0f;
+
 
 		[Browsable(false)]
 		public int TexturesCount

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.ComponentModel;
 
 namespace Nursia.Graphics3D
 {
@@ -7,6 +8,12 @@ namespace Nursia.Graphics3D
 	{
 		public Color DiffuseColor;
 		public Texture2D Texture;
+
+		[Category("Behavior")]
+		public float SpecularFactor { get; set; } = 0.0f;
+
+		[Category("Behavior")]
+		public float SpecularPower { get; set; } = 250.0f;
 
 		public Material(Color diffuseColor, Texture2D texture = null)
 		{

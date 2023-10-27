@@ -76,6 +76,9 @@ namespace Nursia.Graphics3D
 		public float MurkinessFactor { get; set; } = 5.0f;
 
 		[Category("Behavior")]
+		public bool CubeMapReflection { get; set; } = true;
+
+		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }
 
 		[Browsable(false)]

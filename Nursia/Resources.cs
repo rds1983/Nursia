@@ -14,7 +14,7 @@ namespace Nursia
 		private static Effect _colorEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
-		private static Effect[] _waterEffects = new Effect[4];
+		private static Effect[] _waterEffects = new Effect[8];
 		private static Texture2D _white, _waterNormals1, _waterNormals2;
 
 		private static Assembly Assembly
@@ -213,7 +213,7 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool waves, bool depthBuffer)
+		public static Effect GetWaterEffect(bool waves, bool depthBuffer, bool cubeMapReflection)
 		{
 			var key = 0;
 			if (waves)
@@ -224,6 +224,11 @@ namespace Nursia
 			if (depthBuffer)
 			{
 				key |= 2;
+			}
+
+			if (cubeMapReflection)
+			{
+				key |= 4;
 			}
 
 			if (_waterEffects[key] != null)
@@ -240,6 +245,14 @@ namespace Nursia
 			if (depthBuffer)
 			{
 				defines["DEPTH_BUFFER"] = "1";
+			}
+
+			if (cubeMapReflection)
+			{
+				defines["CUBEMAP_REFLECTION"] = "1";
+			} else
+			{
+				defines["PLANAR_REFLECTION"] = "1";
 			}
 
 			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb", defines);

@@ -99,7 +99,6 @@ float4 PSColor(VSOutput input) : SV_Target0
 	input.ToCamera = normalize(input.ToCamera);
 	
 	float4 screenTexCoord = ToNDC(input.PositionCopy);
-	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
 
 	// Depth variables and calc
 #ifdef DEPTH_BUFFER
@@ -117,7 +116,12 @@ float4 PSColor(VSOutput input) : SV_Target0
 	// Retrieving depth color and applying the deep and shallow colors
 	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord).rgb;
 	float3 depthColor = lerp(_colorShallow.rgb, _colorDeep.rgb, depthBlend * 2);
-	float3 color = lerp(screenColor * depthColor, depthColor * 0.5, depthBlend);
+	float3 refractionColor = lerp(screenColor * depthColor, depthColor * 0.5, depthBlend);
+
+	// Calculate Fresnel
+	float fresnel = Fresnel(5.0, float3(0, 1, 0), input.ToCamera);
+	float3 surfaceColor = lerp(_color1, _color2, fresnel); // Interpolate albedo values by frensel
+	refractionColor += surfaceColor;
 
 	// Time calculations for wave (normal map) movement
 	float2 time = (_time * _waveDirection1) * _timeScale; // Movement rate of first wave
@@ -128,19 +132,16 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, input.TexCoord + time2).rgb);
 	float3 normal = lerp(normal1, normal2, 0.5);
 	
-	// Calculate Fresnel
-	float fresnel = Fresnel(5.0, float3(0, 1, 0), input.ToCamera);
-	float3 surfaceColor = lerp(_color1, _color2, fresnel); // Interpolate albedo values by frensel
-
 	// Calculate reflection color
-	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
+#if CUBEMAP_REFLECTION
 	float3 R = reflect(-input.ToCamera, normal);
-	float4 reflectedSkyColor = SAMPLE_CUBEMAP(_textureSkybox, R);
-	reflectionColor += (1 - reflectionColor.a) * reflectedSkyColor;
+	float4 reflectionColor = SAMPLE_CUBEMAP(_textureSkybox, R);
+#else
+	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
+	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
+#endif
 	
-	color += surfaceColor;
-	
-	color = lerp(color, reflectionColor, _reflectionFactor);
+	float3 color = lerp(refractionColor, reflectionColor, _reflectionFactor);
 
 	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
 	color *= lightPower.Diffuse;

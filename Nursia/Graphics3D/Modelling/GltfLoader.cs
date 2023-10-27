@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using Nursia.Utilities;
-using StbImageSharp;
 using static glTFLoader.Schema.AnimationChannelTarget;
 
 namespace Nursia.Graphics3D.Modelling
@@ -20,13 +19,15 @@ namespace Nursia.Graphics3D.Modelling
 		{
 			public VertexElementFormat Format;
 			public VertexElementUsage Usage;
+			public int UsageIndex;
 			public int AccessorIndex;
 
-			public VertexElementInfo(VertexElementFormat format, VertexElementUsage usage, int accessorIndex)
+			public VertexElementInfo(VertexElementFormat format, VertexElementUsage usage, int accessorIndex, int usageIndex)
 			{
 				Format = format;
 				Usage = usage;
 				AccessorIndex = accessorIndex;
+				UsageIndex = usageIndex;
 			}
 		}
 
@@ -261,26 +262,45 @@ namespace Nursia.Graphics3D.Modelling
 						vertexCount = newVertexCount;
 
 						var element = new VertexElementInfo();
-						switch (pair.Key)
+						if (pair.Key == "POSITION")
 						{
-							case "POSITION":
-								element.Usage = VertexElementUsage.Position;
-								break;
-							case "NORMAL":
-								element.Usage = VertexElementUsage.Normal;
-								break;
-							case "TEXCOORD_0":
-								element.Usage = VertexElementUsage.TextureCoordinate;
-								break;
-							case "TANGENT":
-								element.Usage = VertexElementUsage.Tangent;
-								break;
-							case "JOINTS_0":
-								element.Usage = VertexElementUsage.BlendIndices;
-								break;
-							case "WEIGHTS_0":
-								element.Usage = VertexElementUsage.BlendWeight;
-								break;
+							element.Usage = VertexElementUsage.Position;
+						}
+						else if (pair.Key == "NORMAL")
+						{
+							element.Usage = VertexElementUsage.Normal;
+						}
+						else if (pair.Key == "_TANGENT")
+						{
+							element.Usage = VertexElementUsage.Tangent;
+						}
+						else if (pair.Key == "_BINORMAL")
+						{
+							element.Usage = VertexElementUsage.Binormal;
+						}
+						else if (pair.Key.StartsWith("TEXCOORD_"))
+						{
+							element.Usage = VertexElementUsage.TextureCoordinate;
+							element.UsageIndex = int.Parse(pair.Key.Substring(9));
+						}
+						else if (pair.Key.StartsWith("JOINTS_"))
+						{
+							element.Usage = VertexElementUsage.BlendIndices;
+							element.UsageIndex = int.Parse(pair.Key.Substring(7));
+						}
+						else if (pair.Key.StartsWith("WEIGHTS_"))
+						{
+							element.Usage = VertexElementUsage.BlendWeight;
+							element.UsageIndex = int.Parse(pair.Key.Substring(8));
+						}
+						else if (pair.Key.StartsWith("COLOR_"))
+						{
+							element.Usage = VertexElementUsage.Color;
+							element.UsageIndex = int.Parse(pair.Key.Substring(6));
+						}
+						else
+						{
+							throw new Exception($"Attribute of type '{pair.Key}' isn't supported.");
 						}
 
 						element.Format = GetAccessorFormat(pair.Value);
@@ -298,7 +318,7 @@ namespace Nursia.Graphics3D.Modelling
 					var offset = 0;
 					for (var i = 0; i < vertexInfos.Count; ++i)
 					{
-						vertexElements[i] = new VertexElement(offset, vertexInfos[i].Format, vertexInfos[i].Usage, 0);
+						vertexElements[i] = new VertexElement(offset, vertexInfos[i].Format, vertexInfos[i].Usage, vertexInfos[i].UsageIndex);
 						offset += vertexInfos[i].Format.GetSize();
 					}
 
@@ -334,6 +354,15 @@ namespace Nursia.Graphics3D.Modelling
 						offset += sz;
 					}
 
+					/*					var vertices = new VertexPositionNormalTexture[vertexCount.Value];
+										unsafe
+										{
+											fixed(VertexPositionNormalTexture *ptr = vertices)
+											{
+												Marshal.Copy(vertexData, 0, new IntPtr(ptr), vertexData.Length);
+											}
+										}*/
+
 					vertexBuffer.SetData(vertexData);
 
 					if (primitive.Indices == null)
@@ -364,33 +393,41 @@ namespace Nursia.Graphics3D.Modelling
 
 					var mesh = new Mesh(vertexBuffer, indexBuffer, positions, new Material(Color.White));
 					var material = mesh.Material;
-
 					if (primitive.Material != null)
 					{
 						var gltfMaterial = _gltf.Materials[primitive.Material.Value];
 						if (gltfMaterial.PbrMetallicRoughness != null)
 						{
-							material.DiffuseColor = new Color(gltfMaterial.PbrMetallicRoughness.BaseColorFactor.ToVector4());
-
 							if (gltfMaterial.PbrMetallicRoughness.BaseColorTexture != null)
 							{
+								material.DiffuseColor = new Color(gltfMaterial.PbrMetallicRoughness.BaseColorFactor.ToVector4());
 								var gltfTexture = _gltf.Textures[gltfMaterial.PbrMetallicRoughness.BaseColorTexture.Index];
 								if (gltfTexture.Source != null)
 								{
-									using (var stream = _gltf.OpenImageFile(gltfTexture.Source.Value, path => FileResolver(path)))
-									{
-										var imageResult = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-										var texture = new Texture2D(Nrs.GraphicsDevice, imageResult.Width, imageResult.Height);
-										texture.SetData(imageResult.Data);
+									var image = _gltf.Images[gltfTexture.Source.Value];
 
-										material.Texture = texture;
+									if (image.BufferView.HasValue)
+									{
+										throw new Exception("Embedded images arent supported.");
+									}
+									else if (image.Uri.StartsWith("data:image/"))
+									{
+										throw new Exception("Embedded images with uri arent supported.");
+									}
+									else
+									{
+										// Create default material
+										material.Id = image.Uri;
+										material.SpecularFactor = 0.0f;
+										material.SpecularPower = 250.0f;
+										material.Texture = _assetManager.LoadTexture2D(Nrs.GraphicsDevice, image.Uri);
 									}
 								}
 							}
+
 						}
 					}
 
-					mesh.Material = material;
 					meshes.Add(mesh);
 				}
 

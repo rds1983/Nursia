@@ -39,7 +39,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var effect = Resources.GetWaterEffect(waterTile.Waves, Nrs.DepthBufferEnabled, waterTile.CubeMapReflection);
 
 				// Textures
-				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals2);
+				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals1);
 				effect.Parameters["_textureNormals2"].SetValue(Resources.WaterNormals2);
 				effect.Parameters["_textureScreen"].SetValue(context.Screen);
 				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);

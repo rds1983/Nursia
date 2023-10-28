@@ -8,25 +8,18 @@ DECLARE_TEXTURE_LINEAR_WRAP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_WRAP(_textureDepth);
 DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
 
-const static float WaveStrength = 0.02;
 const static int BlurSize = 2;
 const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
 const static float TexelSize = 1.0 / 360;
 
-float4 _color1;
-float4 _color2;
 float4 _colorShallow;
 float4 _colorDeep;
-float2 _waveDirection1;
-float2 _waveDirection2;
-float _timeScale;
-float _reflectionFactor;
-float _fresnelFactor;
 float _edgeFactor;
 float _murkinessStart;
 float _murkinessFactor;
-
-float _time;
+float _tiling;
+float _moveFactor;
+float _waveStrength;
 
 float4x4 _world;
 float4x4 _worldViewProj;
@@ -34,8 +27,6 @@ float4x4 _reflectViewProj;
 float3x3 _worldInverseTranspose;
 float3 _cameraPosition;
 float _far, _near;
-float _tiling = 4.0;
-float _moveFactor;
 
 END_CONSTANTS
 
@@ -96,9 +87,9 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 #endif
 
 	// Calculate distortion
-	float2 distortedTexCoords = SAMPLE_TEXTURE(_textureDudv, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg*0.1;
+	float2 distortedTexCoords = SAMPLE_TEXTURE(_textureDudv, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg * 0.1;
 	distortedTexCoords = input.TextureCoords + float2(distortedTexCoords.x, distortedTexCoords.y + _moveFactor);
-	float2 totalDistortion = (SAMPLE_TEXTURE(_textureDudv, distortedTexCoords).rg * 2.0 - 1.0) * WaveStrength;
+	float2 totalDistortion = (SAMPLE_TEXTURE(_textureDudv, distortedTexCoords).rg * 2.0 - 1.0) * _waveStrength;
 
 	// Apply distortion to coords
 	refractTexCoords += totalDistortion;
@@ -112,8 +103,7 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, refractTexCoords);
 	
 	// Beer-Lambert law
-	float4 depthColor = float4(1, 1, 1, 1);
-	colorRefraction = lerp(colorRefraction, depthColor, depthBlend);
+	colorRefraction = lerp(_colorShallow * colorRefraction, _colorDeep, depthBlend);
 
 	// Normal
 	float4 normalMapColour = SAMPLE_TEXTURE(_textureNormals, distortedTexCoords);
@@ -122,7 +112,7 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 
 #if CUBEMAP_REFLECTION
 	float3 R = reflect(-input.ToCamera, normal);
-	float4 colorReflection = SAMPLE_CUBEMAP(_textureSkybox, R);
+	float4 colorReflection = _colorDeep * SAMPLE_CUBEMAP(_textureSkybox, R);
 #else
 	// Reflection color is blurred
 	float4 colorReflection = 0;
@@ -142,7 +132,7 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
 	  
 	// Calculate result
-	float4 result = _color1 * lerp(colorReflection, colorRefraction, refractiveFactor);
+	float4 result = lerp(colorReflection, colorRefraction, refractiveFactor);
 
 	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
 	result.rgb *= lightPower.Diffuse;

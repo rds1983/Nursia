@@ -13,7 +13,7 @@ namespace Nursia.Graphics3D
 		DepthTexture
 	}
 
-	public class WaterTile: ItemWithId
+	public class WaterTile : ItemWithId
 	{
 		[Category("Position")]
 		public float X { get; set; }
@@ -31,37 +31,22 @@ namespace Nursia.Graphics3D
 		public float SizeZ { get; set; }
 
 		[Category("Behavior")]
-		public Color Color1 { get; set; } = new Color(27, 75, 84);
-
-		[Category("Behavior")]
-		public Color Color2 { get; set; } = new Color(0, 121, 195);
-
-		[Category("Behavior")]
-		public Color ColorDeep { get; set; } = new Color(27, 75, 84);
+		public Color ColorDeep { get; set; } = new Color(13, 75, 100);
 
 		[Category("Behavior")]
 		public Color ColorShallow { get; set; } = new Color(0, 141, 166);
 
 		[Category("Behavior")]
-		public Vector2 WaveDirection1 { get; set; } = new Vector2(2, 0);
+		public float Tiling { get; set; } = 4.0f;
 
 		[Category("Behavior")]
-		public Vector2 WaveDirection2 { get; set; } = new Vector2(0, 1);
-
-		[Category("Behavior")]
-		public float TimeScale { get; set; } = 0.025f;
-
-		[Category("Behavior")]
-		public float ReflectionFactor { get; set; } = 0.3f;
+		public float WaveStrength { get; set; } = 0.02f;
 
 		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;
 
 		[Category("Behavior")]
 		public float SpecularPower { get; set; } = 250.0f;
-
-		[Category("Behavior")]
-		public float FresnelFactor { get; set; } = 1.0f;
 
 		[Category("Behavior")]
 		public float EdgeFactor { get; set; } = 1.0f;
@@ -73,7 +58,7 @@ namespace Nursia.Graphics3D
 		public float MurkinessFactor { get; set; } = 5.0f;
 
 		[Category("Behavior")]
-		public bool CubeMapReflection { get; set; } = true;
+		public bool CubeMapReflection { get; set; } = false;
 
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }

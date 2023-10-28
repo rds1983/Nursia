@@ -5,8 +5,6 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	internal class WaterRenderer
 	{
-		private const float WaveSpeed = 0.03f;
-
 		private readonly MeshData _waterMesh;
 		private DateTime? _lastRenderTime;
 		private float _moveFactor = 0;
@@ -50,7 +48,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_textureSkybox"].SetValue(context.Scene.Skybox.Texture);
 
 				// Offsets
-				_moveFactor += WaveSpeed * (float)Nrs.Game.TargetElapsedTime.TotalSeconds;
+				_moveFactor += waterTile.WaveStrength * (float)Nrs.Game.TargetElapsedTime.TotalSeconds;
 				_moveFactor %= 1.0f;
 				effect.Parameters["_moveFactor"].SetValue(_moveFactor);
 				effect.Parameters["_tiling"].SetValue(4.0f);
@@ -61,15 +59,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
 
 				// Water parameters
-				effect.Parameters["_color1"].SetValue(waterTile.Color1.ToVector4());
-				effect.Parameters["_color2"].SetValue(waterTile.Color2.ToVector4());
 				effect.Parameters["_colorDeep"].SetValue(waterTile.ColorDeep.ToVector4());
 				effect.Parameters["_colorShallow"].SetValue(waterTile.ColorShallow.ToVector4());
-				effect.Parameters["_waveDirection1"].SetValue(waterTile.WaveDirection1);
-				effect.Parameters["_waveDirection2"].SetValue(waterTile.WaveDirection2);
-				effect.Parameters["_timeScale"].SetValue(waterTile.TimeScale);
-				effect.Parameters["_reflectionFactor"].SetValue(waterTile.ReflectionFactor);
-				effect.Parameters["_fresnelFactor"].SetValue(waterTile.FresnelFactor);
+				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
+				effect.Parameters["_waveStrength"].SetValue(waterTile.WaveStrength);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);
 				effect.Parameters["_murkinessFactor"].SetValue(waterTile.MurkinessFactor);

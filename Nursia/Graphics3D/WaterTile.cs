@@ -40,7 +40,7 @@ namespace Nursia.Graphics3D
 		public float Tiling { get; set; } = 4.0f;
 
 		[Category("Behavior")]
-		public float WaveStrength { get; set; } = 0.02f;
+		public float WaveStrength { get; set; } = 0.04f;
 
 		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;

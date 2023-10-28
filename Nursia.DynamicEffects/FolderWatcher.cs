@@ -12,8 +12,11 @@ namespace Nursia
 	{
 		private class EffectWrapper
 		{
+			public bool FirstLoad;
 			public Effect Effect;
 		}
+
+		public string BinaryFolder { get; set; }
 
 		private readonly string _folder;
 		private readonly static Regex _includeRegex = new Regex(@"#include ""([\.\w]+)""");
@@ -109,11 +112,25 @@ namespace Nursia
 			{
 				if (wr.Effect == null)
 				{
-					var fullPath = Path.Combine(_folder, name);
-					fullPath = Path.ChangeExtension(fullPath, "fx");
+					if (!wr.FirstLoad && !string.IsNullOrEmpty(BinaryFolder))
+					{
+						var efbPath = Path.Combine(BinaryFolder, key);
+						efbPath = Path.ChangeExtension(efbPath, "efb");
+						if (File.Exists(efbPath))
+						{
+							wr.Effect = new Effect(graphicsDevice, File.ReadAllBytes(efbPath));
+						}
 
-					var compilationResult = ShaderCompiler.Compile(fullPath, defines, s => Console.WriteLine(s));
-					wr.Effect = new Effect(graphicsDevice, compilationResult.Data);
+						wr.FirstLoad = true;
+					}
+
+					if (wr.Effect == null)
+					{
+						var fullPath = Path.Combine(_folder, name);
+						fullPath = Path.ChangeExtension(fullPath, "fx");
+						var compilationResult = ShaderCompiler.Compile(fullPath, defines, s => Console.WriteLine(s));
+						wr.Effect = new Effect(graphicsDevice, compilationResult.Data);
+					}
 				}
 
 				return wr.Effect;

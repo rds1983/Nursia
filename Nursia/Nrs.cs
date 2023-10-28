@@ -51,6 +51,8 @@ namespace Nursia
 
 		public static bool DrawBoundingBoxes { get; set; } = false;
 
+		public static IExternalEffectsSource ExternalEffectsSource { get; set; }
+
 		public static Action<string> InfoLogHandler = Console.WriteLine;
 		public static Action<string> WarnLogHandler = Console.WriteLine;
 		public static Action<string> ErrorLogHandler = Console.WriteLine;

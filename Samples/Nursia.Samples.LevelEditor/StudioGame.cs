@@ -52,6 +52,8 @@ namespace Nursia.Samples.LevelEditor
 			// UI
 			MyraEnvironment.Game = this;
 			Nrs.Game = this;
+			Nrs.ExternalEffectsSource = new FolderWatcher(@"D:\Projects\Nursia\Nursia\EffectsSource");
+
 			_mainForm = new MainForm();
 
 

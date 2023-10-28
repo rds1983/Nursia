@@ -86,7 +86,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						mesh.Material.Texture != null,
 						node.HasSkin,
 						_context.ClipPlane != null,
-						_context.HasLights && mesh.HasNormals);
+						_context.HasLights && mesh.HasNormals)();
 
 					if (node.HasSkin)
 					{
@@ -107,7 +107,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 						var device = Nrs.GraphicsDevice;
 						device.RasterizerState = RasterizerState.CullNone;
 						device.RasterizerState.FillMode = FillMode.WireFrame;
-						var colorEffect = Resources.ColorEffect;
+						var colorEffect = Resources.ColorEffect();
 
 						var boundingBoxTransform = Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X),
 							(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y),
@@ -150,7 +150,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var device = Nrs.GraphicsDevice;
 
 				device.DepthStencilState = DepthStencilState.DepthRead;
-				var effect = Resources.SkyboxEffect;
+				var effect = Resources.SkyboxEffect();
 
 				var view = _context.View;
 				view.Translation = Vector3.Zero;
@@ -172,7 +172,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 			{
 				var terrain = scene.Terrain;
 				var effect = Resources.GetTerrainEffect(terrain.TexturesCount - 1, _context.ClipPlane != null,
-														scene.HasMarker, _context.HasLights);
+														scene.HasMarker, _context.HasLights)();
 				if (scene.HasMarker)
 				{
 					var markerPosition = scene.Marker.Position.Value;
@@ -260,7 +260,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					mesh.Material.Texture != null,
 					false,
 					_context.ClipPlane != null,
-					_context.HasLights && mesh.HasNormals);
+					_context.HasLights && mesh.HasNormals)();
 
 			var m = Matrix.Identity;
 			DrawMesh(effect, mesh, ref m);

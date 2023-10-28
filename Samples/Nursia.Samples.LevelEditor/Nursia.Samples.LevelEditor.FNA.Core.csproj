@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\Nursia.DynamicEffects\Nursia.DynamicEffects.FNA.Core.csproj" />
     <ProjectReference Include="..\..\Nursia\Nursia.FNA.Core.csproj" />
   </ItemGroup>
   

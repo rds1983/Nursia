@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ModelViewer.UI;
 using Myra;
+using Myra.Events;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
@@ -215,7 +216,7 @@ namespace ModelViewer
 			_animationMoment = null;
 		}
 
-		private void _sliderTime_ValueChanged(object sender, Myra.Utility.ValueChangedEventArgs<float> e)
+		private void _sliderTime_ValueChanged(object sender, ValueChangedEventArgs<float> e)
 		{
 			if (_model == null || _model.CurrentAnimation == null)
 			{

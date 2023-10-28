@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 
 namespace Nursia
@@ -11,10 +12,10 @@ namespace Nursia
 	internal static class Resources
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA.bin");
-		private static Effect _colorEffect, _skyboxEffect;
-		private static Effect[] _defaultEffects = new Effect[16];
-		private static Effect[] _terrainEffects = new Effect[64];
-		private static Effect[] _waterEffects = new Effect[4];
+		private static Func<Effect> _colorEffect, _skyboxEffect;
+		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
+		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
+		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
 		private static Texture2D _white, _waterNormals1, _waterNormals2;
 
 		private static Assembly Assembly
@@ -39,7 +40,7 @@ namespace Nursia
 			}
 		}
 
-		public static Effect ColorEffect
+		public static Func<Effect> ColorEffect
 		{
 			get
 			{
@@ -48,12 +49,12 @@ namespace Nursia
 					return _colorEffect;
 				}
 
-				_colorEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "ColorEffect.efb");
+				_colorEffect = GetEffect("ColorEffect");
 				return _colorEffect;
 			}
 		}
 
-		public static Effect SkyboxEffect
+		public static Func<Effect> SkyboxEffect
 		{
 			get
 			{
@@ -62,7 +63,7 @@ namespace Nursia
 					return _skyboxEffect;
 				}
 
-				_skyboxEffect = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "SkyboxEffect.efb");
+				_skyboxEffect = GetEffect("SkyboxEffect");
 				return _skyboxEffect;
 			}
 		}
@@ -99,7 +100,7 @@ namespace Nursia
 			}
 		}
 
-		public static Effect GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning)
+		public static Func<Effect> GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning)
 		{
 			var key = 0;
 
@@ -149,13 +150,13 @@ namespace Nursia
 				defines["TEXTURE"] = "1";
 			}
 
-			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "DefaultEffect.efb", defines);
+			var result = GetEffect("DefaultEffect", defines);
 			_defaultEffects[key] = result;
 
 			return result;
 		}
 
-		public static Effect GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool lightning)
+		public static Func<Effect> GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool lightning)
 		{
 			if (texturesCount < 0 || texturesCount > 4)
 			{
@@ -207,13 +208,13 @@ namespace Nursia
 				defines["TEXTURES"] = texturesCount.ToString();
 			}
 
-			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "TerrainEffect.efb", defines);
+			var result = GetEffect("TerrainEffect", defines);
 			_terrainEffects[key] = result;
 
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool depthBuffer, bool cubeMapReflection)
+		public static Func<Effect> GetWaterEffect(bool depthBuffer, bool cubeMapReflection)
 		{
 			var key = 0;
 
@@ -241,15 +242,28 @@ namespace Nursia
 			if (cubeMapReflection)
 			{
 				defines["CUBEMAP_REFLECTION"] = "1";
-			} else
+			}
+			else
 			{
 				defines["PLANAR_REFLECTION"] = "1";
 			}
 
-			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, "WaterEffect.efb", defines);
+			var result = GetEffect("WaterEffect", defines);
 			_waterEffects[key] = result;
 
 			return result;
+		}
+
+		private static Func<Effect> GetEffect(string name, Dictionary<string, string> defines = null)
+		{
+			if (Nrs.ExternalEffectsSource == null)
+			{
+				name = Path.ChangeExtension(name, "efb");
+				var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, name, defines);
+				return () => result;
+			}
+
+			return Nrs.ExternalEffectsSource.Get(Nrs.GraphicsDevice, name, defines);
 		}
 	}
 }

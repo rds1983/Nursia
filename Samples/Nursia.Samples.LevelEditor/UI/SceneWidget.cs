@@ -154,6 +154,11 @@ namespace Nursia.Samples.LevelEditor.UI
 
 				_renderer.End();
 			}
+			catch(SharpDX.CompilationException ex)
+			{
+				var msg = Dialog.CreateMessageBox("Error", ex.Message);
+				msg.ShowModal(Desktop);
+			}
 			finally
 			{
 				device.Viewport = oldViewport;

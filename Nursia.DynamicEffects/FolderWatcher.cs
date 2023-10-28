@@ -14,6 +14,7 @@ namespace Nursia
 		{
 			public bool FirstLoad;
 			public Effect Effect;
+			public Effect OldEffect;
 		}
 
 		public string BinaryFolder { get; set; }
@@ -67,6 +68,11 @@ namespace Nursia
 			{
 				if (pair.Key.StartsWith(file))
 				{
+					if (pair.Value.Effect != null)
+					{
+						pair.Value.OldEffect = pair.Value.Effect;
+					}
+
 					pair.Value.Effect = null;
 				}
 			}
@@ -128,8 +134,30 @@ namespace Nursia
 					{
 						var fullPath = Path.Combine(_folder, name);
 						fullPath = Path.ChangeExtension(fullPath, "fx");
-						var compilationResult = ShaderCompiler.Compile(fullPath, defines, s => Console.WriteLine(s));
-						wr.Effect = new Effect(graphicsDevice, compilationResult.Data);
+						try
+						{
+							var compilationResult = ShaderCompiler.Compile(fullPath, defines, s => Console.WriteLine(s));
+							wr.Effect = new Effect(graphicsDevice, compilationResult.Data);
+
+							if (!string.IsNullOrEmpty(BinaryFolder))
+							{
+								var efbPath = Path.Combine(BinaryFolder, key);
+								efbPath = Path.ChangeExtension(efbPath, "efb");
+
+								File.WriteAllBytes(efbPath, compilationResult.Data);
+							}
+						}
+						catch(SharpDX.CompilationException ex)
+						{
+							// Try to restore previous version of the effect
+							if (wr.OldEffect == null)
+							{
+								throw new Exception($"Error compiling {fullPath}. Can't restore from the previous version of effect too.", ex);
+							}
+
+							wr.Effect = wr.OldEffect;
+							throw ex;
+						}
 					}
 				}
 

@@ -31,9 +31,6 @@ namespace Nursia.Graphics3D
 		public float SizeZ { get; set; }
 
 		[Category("Behavior")]
-		public bool Waves { get; set; } = true;
-
-		[Category("Behavior")]
 		public Color Color1 { get; set; } = new Color(0, 82, 110);
 
 		[Category("Behavior")]

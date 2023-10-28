@@ -14,7 +14,7 @@ namespace Nursia
 		private static Effect _colorEffect, _skyboxEffect;
 		private static Effect[] _defaultEffects = new Effect[16];
 		private static Effect[] _terrainEffects = new Effect[64];
-		private static Effect[] _waterEffects = new Effect[8];
+		private static Effect[] _waterEffects = new Effect[4];
 		private static Texture2D _white, _waterNormals1, _waterNormals2;
 
 		private static Assembly Assembly
@@ -213,22 +213,18 @@ namespace Nursia
 			return result;
 		}
 
-		public static Effect GetWaterEffect(bool waves, bool depthBuffer, bool cubeMapReflection)
+		public static Effect GetWaterEffect(bool depthBuffer, bool cubeMapReflection)
 		{
 			var key = 0;
-			if (waves)
+
+			if (depthBuffer)
 			{
 				key |= 1;
 			}
 
-			if (depthBuffer)
-			{
-				key |= 2;
-			}
-
 			if (cubeMapReflection)
 			{
-				key |= 4;
+				key |= 2;
 			}
 
 			if (_waterEffects[key] != null)
@@ -237,11 +233,6 @@ namespace Nursia
 			}
 
 			var defines = new Dictionary<string, string>();
-			if (waves)
-			{
-				defines["WAVES"] = "1";
-			}
-
 			if (depthBuffer)
 			{
 				defines["DEPTH_BUFFER"] = "1";

@@ -36,7 +36,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 					continue;
 				}
 
-				var effect = Resources.GetWaterEffect(waterTile.Waves, Nrs.DepthBufferEnabled, waterTile.CubeMapReflection);
+				var effect = Resources.GetWaterEffect(Nrs.DepthBufferEnabled, waterTile.CubeMapReflection);
 
 				// Textures
 				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals1);

@@ -1,12 +1,17 @@
 #include "Macros.fxh"
 #include "Lightning.fxh"
 
-DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals1);
-DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals2);
-DECLARE_TEXTURE_LINEAR_CLAMP(_textureScreen);
-DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
-DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureDudv);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureRefraction);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureReflection);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureDepth);
 DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
+
+const static float WaveStrength = 0.02;
+const static int BlurSize = 2;
+const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
+const static float TexelSize = 1.0 / 360;
 
 float4 _color1;
 float4 _color2;
@@ -29,46 +34,40 @@ float4x4 _reflectViewProj;
 float3x3 _worldInverseTranspose;
 float3 _cameraPosition;
 float _far, _near;
+float _tiling = 4.0;
+float _moveFactor;
+
+END_CONSTANTS
 
 struct VSInput
 {
-    float4 Position : SV_POSITION;
-	float2 TexCoord : TEXCOORD0;
+	float4 Position: SV_POSITION;
+	float2 TexCoord: TEXCOORD0;
 };
 
 struct VSOutput
 {
-    float4 Position: SV_POSITION;
-    float3 ToCamera: TEXCOORD0;
-	float4 ReflectionPosition: TEXCOORD1;
-	float4 PositionCopy: TEXCOORD2;
-	float3 SourcePosition: TEXCOORD3;
-	float2 TexCoord: TEXCOORD4;
+	float4 Position: SV_POSITION;
+	float4 SourcePosition: TEXCOORD0;
+	float4 ClipSpace: TEXCOORD1;
+	float2 TextureCoords: TEXCOORD2;
+	float3 ToCamera: TEXCOORD3;
 };
 
-// Transform the projective screen texcoords to NDC space
-// and scale and offset xy to correctly sample a DX texture
-float4 ToNDC(float4 input)
+VSOutput VertexShaderFunction(VSInput input)
 {
-	float4 result = input;
-	result.xyz /= result.w;
-	result.x = 0.5f * result.x + 0.5f;
-	result.y = -0.5f * result.y + 0.5f;
-	
-	// refract more based on distance from the camera
-	result.z = .1f / result.z; 
-	
-	return result;
-}
+	VSOutput output = (VSOutput)0;
 
-float3 ColorToNormal(float3 c)
-{
-	return float3(c.r * 2.0f - 1.0f, c.b * 2.0f - 1.0f, c.g * 2.0f - 1.0f);
-}
+	input.Position.w = 1.0;
+	float4 worldPosition = mul(input.Position, _world);
 
-float Fresnel(float amount, float3 normal, float3 view)
-{
-	return pow((1.0 - clamp(dot(normalize(normal), normalize(view)), 0.0, 1.0 )), amount);
+	output.Position = mul(input.Position, _worldViewProj);
+	output.SourcePosition = worldPosition;
+	output.ClipSpace = output.Position;
+	output.TextureCoords = float2(input.Position.x/2.0 + 0.5, input.Position.z/2.0 + 0.5) * _tiling;
+	output.ToCamera = _cameraPosition - worldPosition.xyz;
+
+	return output;
 }
 
 float Edge(float depth)
@@ -76,35 +75,18 @@ float Edge(float depth)
 	return 2.0 * _near * _far / (_far + _near - (2.0 * depth - 1.0) * (_far - _near));
 }
 
-VSOutput VS(VSInput input)
+float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
-	VSOutput output = (VSOutput)0;
+	// Calculate refract/reflect coords
+	float2 ndc = (input.ClipSpace.xy / input.ClipSpace.w)/2.0 + 0.5;
 
-	// Change the position vector to be 4 units for proper matrix calculations.
-	input.Position.w = 1.0f;
+	float2 refractTexCoords = float2(ndc.x, -ndc.y);
+	float2 reflectTexCoords = float2(ndc.x, ndc.y);
 
-	output.SourcePosition = input.Position.xyz;
-	float3 worldPosition = mul(input.Position, _world).xyz;
-	output.TexCoord = input.TexCoord;
-    output.Position = mul(input.Position, _worldViewProj);
-	output.PositionCopy = output.Position;
-	output.ToCamera = _cameraPosition - worldPosition;
-	output.ReflectionPosition = mul(input.Position, _reflectViewProj);
-
-	return output;
-}
-
-float4 PSColor(VSOutput input) : SV_Target0
-{
-	input.ToCamera = normalize(input.ToCamera);
-	
-	float4 screenTexCoord = ToNDC(input.PositionCopy);
-
-	// Depth variables and calc
 #ifdef DEPTH_BUFFER
-	float depth = SAMPLE_TEXTURE(_textureDepth, screenTexCoord).r;
-	float floorDistance = Edge(SAMPLE_TEXTURE(_textureDepth, screenTexCoord).r);
-	float waterDistance = Edge(input.PositionCopy.z / input.PositionCopy.w);
+	float depth = SAMPLE_TEXTURE(_textureDepth, refractTexCoords).r;
+	float floorDistance = Edge(SAMPLE_TEXTURE(_textureDepth, refractTexCoords).r);
+	float waterDistance = Edge(input.ClipSpace.z / input.ClipSpace.w);
 	float waterDepth = floorDistance - waterDistance;
 
 	float depthBlend = exp((waterDepth - _murkinessStart) * -(_murkinessFactor / 10));
@@ -113,39 +95,58 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float depthBlend = 0.5;
 #endif
 
-	// Retrieving depth color and applying the deep and shallow colors
-	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord).rgb;
-	float3 depthColor = lerp(_colorShallow.rgb, _colorDeep.rgb, depthBlend * 2);
-	float3 refractionColor = lerp(screenColor * depthColor, depthColor * 0.5, depthBlend);
+	// Calculate distortion
+	float2 distortedTexCoords = SAMPLE_TEXTURE(_textureDudv, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg*0.1;
+	distortedTexCoords = input.TextureCoords + float2(distortedTexCoords.x, distortedTexCoords.y + _moveFactor);
+	float2 totalDistortion = (SAMPLE_TEXTURE(_textureDudv, distortedTexCoords).rg * 2.0 - 1.0) * WaveStrength;
 
-	// Calculate Fresnel
-	float fresnel = Fresnel(5.0, float3(0, 1, 0), input.ToCamera);
-	float3 surfaceColor = lerp(_color1, _color2, fresnel); // Interpolate albedo values by frensel
-	refractionColor += surfaceColor;
+	// Apply distortion to coords
+	refractTexCoords += totalDistortion;
+	refractTexCoords.x = clamp(refractTexCoords.x, 0.001, 0.999);
+	refractTexCoords.y = clamp(refractTexCoords.y, -0.999, -0.001);    
 
-	// Time calculations for wave (normal map) movement
-	float2 time = (_time * _waveDirection1) * _timeScale; // Movement rate of first wave
-	float2 time2 = (_time * _waveDirection2) * _timeScale; // Movement rate of second wave
+	reflectTexCoords += totalDistortion;
+	reflectTexCoords = clamp(reflectTexCoords, 0.001, 0.999);
+
+	// Refraction color
+	float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, refractTexCoords);
 	
-	// Blend normal maps into one
-	float3 normal1 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals1, input.TexCoord + time).rgb);
-	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, input.TexCoord + time2).rgb);
-	float3 normal = lerp(normal1, normal2, 0.5);
-	
-	// Calculate reflection color
+	// Beer-Lambert law
+	float4 depthColor = float4(1, 1, 1, 1);
+	colorRefraction = lerp(colorRefraction, depthColor, depthBlend);
+
+	// Normal
+	float4 normalMapColour = SAMPLE_TEXTURE(_textureNormals, distortedTexCoords);
+	float3 normal = float3(normalMapColour.r * 2.0 - 1.0, normalMapColour.b*3.0, normalMapColour.g * 2.0 - 1.0);
+	normal = normalize(normal);      
+
 #if CUBEMAP_REFLECTION
 	float3 R = reflect(-input.ToCamera, normal);
-	float4 reflectionColor = SAMPLE_CUBEMAP(_textureSkybox, R);
+	float4 colorReflection = SAMPLE_CUBEMAP(_textureSkybox, R);
 #else
-	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
-	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
-#endif
+	// Reflection color is blurred
+	float4 colorReflection = 0;
 	
-	float3 color = lerp(refractionColor, reflectionColor, _reflectionFactor);
+	for(int i = -BlurSize; i < BlurSize; i++)
+	{
+		float offset = i * TexelSize;
+		colorReflection += SAMPLE_TEXTURE(_textureReflection, reflectTexCoords + float2(0.0, offset));
+	}
+	colorReflection /= BlurSampleCount;
+#endif
+
+	// Fresnel effect
+	float3 viewVector = normalize(input.ToCamera);
+	float refractiveFactor = dot(viewVector, normal);
+	refractiveFactor = pow(refractiveFactor, 0.5);
+	refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
+	  
+	// Calculate result
+	float4 result = _color1 * lerp(colorReflection, colorRefraction, refractiveFactor);
 
 	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
-	color *= lightPower.Diffuse;
-	color += lightPower.Specular;
+	result.rgb *= lightPower.Diffuse;
+	result.rgb += lightPower.Specular;
 
 #ifdef DEPTH_BUFFER
 	float alpha = clamp(waterDepth / _edgeFactor, 0.0f, 1.0f); // increase the soft Edges by increasing denominator
@@ -153,34 +154,9 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float alpha = 1.0;
 #endif
 
-	// color = float4(depthBlend, depthBlend, depthBlend, 1.0);
-	// color = float4(normal.x, normal.y, normal.z, 1.0);
+	result.a = alpha;
 
-	return float4(color, alpha);
+	return result;
 }
 
-float4 PSRefractionTexture(VSOutput input) : SV_Target0
-{
-	float4 screenTexCoord = ToNDC(input.PositionCopy);
-
-	return SAMPLE_TEXTURE(_textureScreen, screenTexCoord.xy);
-}
-
-float4 PSReflectionTexture(VSOutput input) : SV_Target0
-{
-	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
-
-	return SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
-}
-
-float4 PSDepthTexture(VSOutput input) : SV_Target0
-{
-	float4 screenTexCoord = ToNDC(input.PositionCopy);
-
-	return SAMPLE_TEXTURE(_textureDepth, screenTexCoord.xy);
-}
-
-TECHNIQUE(Color, VS, PSColor);
-TECHNIQUE(RefractionTexture, VS, PSRefractionTexture);
-TECHNIQUE(ReflectionTexture, VS, PSReflectionTexture);
-TECHNIQUE(DepthTexture, VS, PSDepthTexture);
+TECHNIQUE(Default, VertexShaderFunction, PixelShaderFunction);

@@ -5,8 +5,11 @@ namespace Nursia.Graphics3D.ForwardRendering
 {
 	internal class WaterRenderer
 	{
+		private const float WaveSpeed = 0.03f;
+
 		private readonly MeshData _waterMesh;
 		private DateTime? _lastRenderTime;
+		private float _moveFactor = 0;
 
 		public WaterRenderer()
 		{
@@ -39,15 +42,18 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var effect = Resources.GetWaterEffect(Nrs.DepthBufferEnabled, waterTile.CubeMapReflection)();
 
 				// Textures
-				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals1);
-				effect.Parameters["_textureNormals2"].SetValue(Resources.WaterNormals2);
-				effect.Parameters["_textureScreen"].SetValue(context.Screen);
+				effect.Parameters["_textureDudv"].SetValue(Resources.WaterDudv);
+				effect.Parameters["_textureNormals"].SetValue(Resources.WaterNormals);
+				effect.Parameters["_textureRefraction"].SetValue(context.Screen);
 				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
 				effect.Parameters["_textureDepth"].SetValue(context.Depth);
 				effect.Parameters["_textureSkybox"].SetValue(context.Scene.Skybox.Texture);
 
 				// Offsets
-				effect.Parameters["_time"].SetValue(deltaTime);
+				_moveFactor += WaveSpeed * (float)Nrs.Game.TargetElapsedTime.TotalSeconds;
+				_moveFactor %= 1.0f;
+				effect.Parameters["_moveFactor"].SetValue(_moveFactor);
+				effect.Parameters["_tiling"].SetValue(4.0f);
 
 				// Lights
 				context.SetLights(effect);
@@ -90,7 +96,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 
 				device.Apply(_waterMesh);
 
-				effect.CurrentTechnique = effect.Techniques[waterTile.RenderMode.ToString()];
+				//effect.CurrentTechnique = effect.Techniques[waterTile.RenderMode.ToString()];
 				device.DrawIndexedPrimitives(effect, _waterMesh);
 				++context.Statistics.MeshesDrawn;
 			}

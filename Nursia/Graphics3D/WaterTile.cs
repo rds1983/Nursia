@@ -31,7 +31,7 @@ namespace Nursia.Graphics3D
 		public float SizeZ { get; set; }
 
 		[Category("Behavior")]
-		public Color Color1 { get; set; } = new Color(0, 82, 110);
+		public Color Color1 { get; set; } = new Color(27, 75, 84);
 
 		[Category("Behavior")]
 		public Color Color2 { get; set; } = new Color(0, 121, 195);

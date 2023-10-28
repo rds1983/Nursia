@@ -12,11 +12,12 @@ namespace Nursia
 	internal static class Resources
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA.bin");
+		private static AssetManager _assetManagerResources = AssetManager.CreateResourceAssetManager(Assembly, "Resources");
 		private static Func<Effect> _colorEffect, _skyboxEffect;
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
-		private static Texture2D _white, _waterNormals1, _waterNormals2;
+		private static Texture2D _white, _waterDudv, _waterNormals;
 
 		private static Assembly Assembly
 		{
@@ -68,35 +69,29 @@ namespace Nursia
 			}
 		}
 
-		public static Texture2D WaterNormals1
+		public static Texture2D WaterDudv
 		{
 			get
 			{
-				if (_waterNormals1 == null)
+				if (_waterDudv == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals1.png"))
-					{
-						_waterNormals1 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
-					}
+					_waterDudv = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterDUDV.png");
 				}
 
-				return _waterNormals1;
+				return _waterDudv;
 			}
 		}
 
-		public static Texture2D WaterNormals2
+		public static Texture2D WaterNormals
 		{
 			get
 			{
-				if (_waterNormals2 == null)
+				if (_waterNormals == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals2.png"))
-					{
-						_waterNormals2 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
-					}
+					_waterNormals = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterNormals.png");
 				}
 
-				return _waterNormals2;
+				return _waterNormals;
 			}
 		}
 

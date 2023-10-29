@@ -8,15 +8,12 @@ DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
 DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
 
-float4 _color1;
-float4 _color2;
 float4 _colorShallow;
 float4 _colorDeep;
 float2 _waveDirection1;
 float2 _waveDirection2;
+float _reflectionDistortion;
 float _timeScale;
-float _reflectionFactor;
-float _fresnelFactor;
 float _edgeFactor;
 float _murkinessStart;
 float _murkinessFactor;
@@ -113,16 +110,6 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float depthBlend = 0.5;
 #endif
 
-	// Retrieving depth color and applying the deep and shallow colors
-	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord).rgb;
-	float3 depthColor = lerp(_colorShallow.rgb, _colorDeep.rgb, depthBlend * 2);
-	float3 refractionColor = lerp(screenColor * depthColor, depthColor * 0.5, depthBlend);
-
-	// Calculate Fresnel
-	float fresnel = Fresnel(5.0, float3(0, 1, 0), input.ToCamera);
-	float3 surfaceColor = lerp(_color1, _color2, fresnel); // Interpolate albedo values by frensel
-	refractionColor += surfaceColor;
-
 	// Time calculations for wave (normal map) movement
 	float2 time = (_time * _waveDirection1) * _timeScale; // Movement rate of first wave
 	float2 time2 = (_time * _waveDirection2) * _timeScale; // Movement rate of second wave
@@ -131,17 +118,35 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float3 normal1 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals1, input.TexCoord + time).rgb);
 	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, input.TexCoord + time2).rgb);
 	float3 normal = lerp(normal1, normal2, 0.5);
+	//normal = float3(normal.r * 2.0 - 1.0, normal.g * 3.0, normal.b * 2.0 - 1.0);
+	normal = normalize(normal);
 	
+	
+	float3 up = float3(0, 1, 0);
+	float cos = dot(normal, up);
+	float3 normalInPlane = normal - up * dot(normal, up);
+    float3 offset = normalInPlane * _reflectionDistortion;
+	
+	float2 dudv = float2(offset.x, offset.y);
+
+	// Retrieving depth color and applying the deep and shallow colors
+	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord + dudv).rgb;
+	float3 refractionColor = lerp(screenColor, float3(1, 1, 1), depthBlend);
+
 	// Calculate reflection color
 #if CUBEMAP_REFLECTION
 	float3 R = reflect(-input.ToCamera, normal);
 	float4 reflectionColor = SAMPLE_CUBEMAP(_textureSkybox, R);
 #else
 	float4 reflectionTexCoord = ToNDC(input.ReflectionPosition);
-	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy);
+	float4 reflectionColor = SAMPLE_TEXTURE(_textureReflection, reflectionTexCoord.xy + dudv);
 #endif
 	
-	float3 color = lerp(refractionColor, reflectionColor, _reflectionFactor);
+	// Fresnel effect
+	float refractiveFactor = dot(input.ToCamera, normal);
+	refractiveFactor = pow(refractiveFactor, 1);
+	refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
+	float3 color = lerp(reflectionColor, refractionColor, refractiveFactor) * _colorDeep;
 
 	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
 	color *= lightPower.Diffuse;

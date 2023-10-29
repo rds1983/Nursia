@@ -350,7 +350,7 @@ namespace Nursia.Graphics3D.ForwardRendering
 							_context.ViewProjection,
 							true);
 
-						RenderPass(scene, false);
+						RenderPass(scene, true);
 
 						camera.Position = oldPos;
 						camera.PitchAngle = -camera.PitchAngle;

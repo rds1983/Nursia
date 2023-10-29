@@ -17,7 +17,7 @@ namespace Nursia
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
-		private static Texture2D _white, _waterDudv, _waterNormals;
+		private static Texture2D _white, _waterNormals1, _waterNormals2;
 
 		private static Assembly Assembly
 		{
@@ -69,29 +69,29 @@ namespace Nursia
 			}
 		}
 
-		public static Texture2D WaterDudv
+		public static Texture2D WaterNormals1
 		{
 			get
 			{
-				if (_waterDudv == null)
+				if (_waterNormals1 == null)
 				{
-					_waterDudv = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterDUDV.png");
+					_waterNormals1 = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterNormals1.png");
 				}
 
-				return _waterDudv;
+				return _waterNormals1;
 			}
 		}
 
-		public static Texture2D WaterNormals
+		public static Texture2D WaterNormals2
 		{
 			get
 			{
-				if (_waterNormals == null)
+				if (_waterNormals2 == null)
 				{
-					_waterNormals = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterNormals.png");
+					_waterNormals2 = _assetManagerResources.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterNormals2.png");
 				}
 
-				return _waterNormals;
+				return _waterNormals2;
 			}
 		}
 

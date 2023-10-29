@@ -43,6 +43,12 @@ namespace Nursia.Graphics3D
 		public float WaveStrength { get; set; } = 0.04f;
 
 		[Category("Behavior")]
+		public float RefractionDistortion { get; set; } = 0.1f;
+
+		[Category("Behavior")]
+		public float ReflectionDistortion { get; set; } = 0.2f;
+
+		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;
 
 		[Category("Behavior")]

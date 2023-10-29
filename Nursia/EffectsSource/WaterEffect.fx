@@ -1,12 +1,16 @@
 #include "Macros.fxh"
 #include "Lightning.fxh"
 
-DECLARE_TEXTURE_LINEAR_WRAP(_textureDudv);
-DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals1);
+DECLARE_TEXTURE_LINEAR_WRAP(_textureNormals2);
 DECLARE_TEXTURE_LINEAR_WRAP(_textureRefraction);
-DECLARE_TEXTURE_LINEAR_WRAP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_WRAP(_textureDepth);
-DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
+
+#if CUBEMAP_REFLECTION
+DECLARE_CUBEMAP_LINEAR_CLAMP(_textureEnv);
+#else
+DECLARE_TEXTURE_LINEAR_WRAP(_textureReflection);
+#endif
 
 const static int BlurSize = 2;
 const static float BlurSampleCount = (BlurSize * 2.0) + 1.0;
@@ -20,6 +24,8 @@ float _murkinessFactor;
 float _tiling;
 float _moveFactor;
 float _waveStrength;
+float _reflectionDistortion;
+float _refractionDistortion;
 
 float4x4 _world;
 float4x4 _worldViewProj;
@@ -66,13 +72,16 @@ float Edge(float depth)
 	return 2.0 * _near * _far / (_far + _near - (2.0 * depth - 1.0) * (_far - _near));
 }
 
+float3 ColorToNormal(float3 c)
+{
+	return float3(c.r * 2.0f - 1.0f, c.b * 2.0f - 1.0f, c.g * 2.0f - 1.0f);
+}
+
 float4 PixelShaderFunction(VSOutput input) : SV_Target0
 {
-	// Calculate refract/reflect coords
+	// Calculate refract coords
 	float2 ndc = (input.ClipSpace.xy / input.ClipSpace.w)/2.0 + 0.5;
-
 	float2 refractTexCoords = float2(ndc.x, -ndc.y);
-	float2 reflectTexCoords = float2(ndc.x, ndc.y);
 
 #ifdef DEPTH_BUFFER
 	float depth = SAMPLE_TEXTURE(_textureDepth, refractTexCoords).r;
@@ -86,18 +95,23 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	float depthBlend = 0.5;
 #endif
 
-	// Calculate distortion
-	float2 distortedTexCoords = SAMPLE_TEXTURE(_textureDudv, float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y)).rg * 0.1;
-	distortedTexCoords = input.TextureCoords + float2(distortedTexCoords.x, distortedTexCoords.y + _moveFactor);
-	float2 totalDistortion = (SAMPLE_TEXTURE(_textureDudv, distortedTexCoords).rg * 2.0 - 1.0) * _waveStrength;
+	// Blend normal maps into one
+	float2 texCoords = float2(input.TextureCoords.x + _moveFactor, input.TextureCoords.y);
+	float3 normal1 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals1, texCoords).rgb);
+	texCoords = float2(-input.TextureCoords.x, input.TextureCoords.y + _moveFactor);
+	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, texCoords).rgb);
+	float3 normal = lerp(normal1, normal2, 0.5);
+	normal = normalize(normal);
+
+	float3 up = float3(0, 1, 0);
+	float cos = dot(normal, up);
+	float3 offset = normal - up * cos;
+	float2 totalDistortion = float2(offset.x, offset.y);
 
 	// Apply distortion to coords
-	refractTexCoords += totalDistortion;
+	refractTexCoords += (totalDistortion * _refractionDistortion);
 	refractTexCoords.x = clamp(refractTexCoords.x, 0.001, 0.999);
-	refractTexCoords.y = clamp(refractTexCoords.y, -0.999, -0.001);    
-
-	reflectTexCoords += totalDistortion;
-	reflectTexCoords = clamp(reflectTexCoords, 0.001, 0.999);
+	refractTexCoords.y = clamp(refractTexCoords.y, -0.999, -0.001);
 
 	// Refraction color
 	float4 colorRefraction = SAMPLE_TEXTURE(_textureRefraction, refractTexCoords);
@@ -105,24 +119,14 @@ float4 PixelShaderFunction(VSOutput input) : SV_Target0
 	// Beer-Lambert law
 	colorRefraction = lerp(_colorShallow * colorRefraction, _colorDeep, depthBlend);
 
-	// Normal
-	float4 normalMapColour = SAMPLE_TEXTURE(_textureNormals, distortedTexCoords);
-	float3 normal = float3(normalMapColour.r * 2.0 - 1.0, normalMapColour.b*3.0, normalMapColour.g * 2.0 - 1.0);
-	normal = normalize(normal);      
-
 #if CUBEMAP_REFLECTION
 	float3 R = reflect(-input.ToCamera, normal);
-	float4 colorReflection = _colorDeep * SAMPLE_CUBEMAP(_textureSkybox, R);
+	float4 colorReflection = _colorDeep * SAMPLE_CUBEMAP(_textureEnv, R);
 #else
-	// Reflection color is blurred
-	float4 colorReflection = 0;
-	
-	for(int i = -BlurSize; i < BlurSize; i++)
-	{
-		float offset = i * TexelSize;
-		colorReflection += SAMPLE_TEXTURE(_textureReflection, reflectTexCoords + float2(0.0, offset));
-	}
-	colorReflection /= BlurSampleCount;
+	float2 reflectTexCoords = float2(ndc.x, ndc.y);
+	reflectTexCoords += totalDistortion * _reflectionDistortion;
+	reflectTexCoords = clamp(reflectTexCoords, 0.001, 0.999);
+	float4 colorReflection = SAMPLE_TEXTURE(_textureReflection, reflectTexCoords);
 #endif
 
 	// Fresnel effect

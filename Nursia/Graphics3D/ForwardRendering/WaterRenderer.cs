@@ -24,7 +24,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 			if (_lastRenderTime != null)
 			{
 				deltaTime = (float)(now - _lastRenderTime.Value).TotalSeconds;
-			} else
+			}
+			else
 			{
 				_lastRenderTime = now;
 			}
@@ -40,12 +41,19 @@ namespace Nursia.Graphics3D.ForwardRendering
 				var effect = Resources.GetWaterEffect(Nrs.DepthBufferEnabled, waterTile.CubeMapReflection)();
 
 				// Textures
-				effect.Parameters["_textureDudv"].SetValue(Resources.WaterDudv);
-				effect.Parameters["_textureNormals"].SetValue(Resources.WaterNormals);
+				effect.Parameters["_textureNormals1"].SetValue(Resources.WaterNormals1);
+				effect.Parameters["_textureNormals2"].SetValue(Resources.WaterNormals2);
 				effect.Parameters["_textureRefraction"].SetValue(context.Screen);
-				effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
 				effect.Parameters["_textureDepth"].SetValue(context.Depth);
-				effect.Parameters["_textureSkybox"].SetValue(context.Scene.Skybox.Texture);
+
+				if (waterTile.CubeMapReflection)
+				{
+					effect.Parameters["_textureEnv"].SetValue(context.Scene.Skybox.Texture);
+				}
+				else
+				{
+					effect.Parameters["_textureReflection"].SetValue(waterTile.TargetReflection);
+				}
 
 				// Offsets
 				_moveFactor += waterTile.WaveStrength * (float)Nrs.Game.TargetElapsedTime.TotalSeconds;
@@ -63,6 +71,8 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_colorShallow"].SetValue(waterTile.ColorShallow.ToVector4());
 				effect.Parameters["_tiling"].SetValue(waterTile.Tiling);
 				effect.Parameters["_waveStrength"].SetValue(waterTile.WaveStrength);
+				effect.Parameters["_refractionDistortion"].SetValue(waterTile.RefractionDistortion);
+				effect.Parameters["_reflectionDistortion"].SetValue(waterTile.ReflectionDistortion);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);
 				effect.Parameters["_murkinessFactor"].SetValue(waterTile.MurkinessFactor);

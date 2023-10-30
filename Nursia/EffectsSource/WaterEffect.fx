@@ -117,7 +117,6 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float3 normal1 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals1, input.TexCoord + time).rgb);
 	float3 normal2 = ColorToNormal(SAMPLE_TEXTURE(_textureNormals2, input.TexCoord + time2).rgb);
 	float3 normal = lerp(normal1, normal2, 0.5);
-	//normal = float3(normal.r * 2.0 - 1.0, normal.g * 3.0, normal.b * 2.0 - 1.0);
 	normal = normalize(normal);
 	
 	

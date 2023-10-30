@@ -82,7 +82,8 @@ namespace Nursia
 			}
 
 			reporter(sb.ToString());
-			var compiled = ShaderBytecode.CompileFromFile(inputFile, "fx_2_0", ShaderFlags.OptimizationLevel3,
+			var data = File.ReadAllText(inputFile);
+			var compiled = ShaderBytecode.Compile(data, "fx_2_0", ShaderFlags.OptimizationLevel3,
 				EffectFlags.None, ToMacroses(defines), new IncludeFX(folder));
 
 			if (!string.IsNullOrEmpty(compiled.Message))

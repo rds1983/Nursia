@@ -55,11 +55,10 @@ namespace Nursia.Graphics3D.ForwardRendering
 				effect.Parameters["_specularFactor"].SetValue(waterTile.SpecularFactor);
 
 				// Water parameters
-				effect.Parameters["_colorDeep"].SetValue(waterTile.ColorDeep.ToVector4());
-				effect.Parameters["_colorShallow"].SetValue(waterTile.ColorShallow.ToVector4());
+				effect.Parameters["_color"].SetValue(waterTile.Color.ToVector4());
 				effect.Parameters["_waveDirection1"].SetValue(waterTile.WaveDirection1);
 				effect.Parameters["_waveDirection2"].SetValue(waterTile.WaveDirection2);
-				effect.Parameters["_reflectionDistortion"].SetValue(waterTile.ReflectionDistortion);
+				effect.Parameters["_planarReflectionDistortion"].SetValue(waterTile.PlanarReflectionDistortion);
 				effect.Parameters["_timeScale"].SetValue(waterTile.TimeScale);
 				effect.Parameters["_edgeFactor"].SetValue(waterTile.EdgeFactor);
 				effect.Parameters["_murkinessStart"].SetValue(waterTile.MurkinessStart);

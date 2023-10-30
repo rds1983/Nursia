@@ -35,7 +35,7 @@ namespace Nursia
 			{
 				var data = File.ReadAllText(file);
 				var matches = _includeRegex.Matches(data);
-				foreach(Match match in matches)
+				foreach (Match match in matches)
 				{
 					var includeFile = match.Groups[1].Value;
 
@@ -63,8 +63,13 @@ namespace Nursia
 
 		private void Watcher_Changed(object sender, FileSystemEventArgs e)
 		{
+			if (e.ChangeType != WatcherChangeTypes.Changed)
+			{
+				return;
+			}
+
 			var file = Path.GetFileNameWithoutExtension(e.FullPath);
-			foreach(var pair in _effects)
+			foreach (var pair in _effects)
 			{
 				if (pair.Key.StartsWith(file))
 				{
@@ -147,7 +152,7 @@ namespace Nursia
 								File.WriteAllBytes(efbPath, compilationResult.Data);
 							}
 						}
-						catch(SharpDX.CompilationException ex)
+						catch (SharpDX.CompilationException ex)
 						{
 							// Try to restore previous version of the effect
 							if (wr.OldEffect == null)

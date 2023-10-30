@@ -31,10 +31,7 @@ namespace Nursia.Graphics3D
 		public float SizeZ { get; set; }
 
 		[Category("Behavior")]
-		public Color ColorDeep { get; set; } = new Color(13, 75, 100);
-
-		[Category("Behavior")]
-		public Color ColorShallow { get; set; } = new Color(0, 141, 166);
+		public Color Color { get; set; } = new Color(13, 75, 100);
 
 		[Category("Behavior")]
 		public Vector2 WaveDirection1 { get; set; } = new Vector2(2, 0);
@@ -43,10 +40,10 @@ namespace Nursia.Graphics3D
 		public Vector2 WaveDirection2 { get; set; } = new Vector2(0, 1);
 
 		[Category("Behavior")]
-		public float ReflectionDistortion { get; set; } = 0.3f;
+		public float PlanarReflectionDistortion { get; set; } = 0.3f;
 
 		[Category("Behavior")]
-		public float TimeScale { get; set; } = 0.025f;
+		public float TimeScale { get; set; } = 0.01f;
 
 		[Category("Behavior")]
 		public float SpecularFactor { get; set; } = 0.0f;
@@ -61,10 +58,10 @@ namespace Nursia.Graphics3D
 		public float MurkinessStart { get; set; } = 0.0f;
 
 		[Category("Behavior")]
-		public float MurkinessFactor { get; set; } = 5.0f;
+		public float MurkinessFactor { get; set; } = 2.0f;
 
 		[Category("Behavior")]
-		public bool CubeMapReflection { get; set; } = false;
+		public bool CubeMapReflection { get; set; } = true;
 
 		[Category("Behavior")]
 		public WaterRenderMode RenderMode { get; set; }

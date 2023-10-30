@@ -8,11 +8,10 @@ DECLARE_TEXTURE_LINEAR_CLAMP(_textureReflection);
 DECLARE_TEXTURE_LINEAR_CLAMP(_textureDepth);
 DECLARE_CUBEMAP_LINEAR_CLAMP(_textureSkybox);
 
-float4 _colorShallow;
-float4 _colorDeep;
+float4 _color;
 float2 _waveDirection1;
 float2 _waveDirection2;
-float _reflectionDistortion;
+float _planarReflectionDistortion;
 float _timeScale;
 float _edgeFactor;
 float _murkinessStart;
@@ -83,7 +82,7 @@ VSOutput VS(VSInput input)
 	output.SourcePosition = input.Position.xyz;
 	float3 worldPosition = mul(input.Position, _world).xyz;
 	output.TexCoord = input.TexCoord;
-    output.Position = mul(input.Position, _worldViewProj);
+	output.Position = mul(input.Position, _worldViewProj);
 	output.PositionCopy = output.Position;
 	output.ToCamera = _cameraPosition - worldPosition;
 	output.ReflectionPosition = mul(input.Position, _reflectViewProj);
@@ -125,12 +124,12 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float3 up = float3(0, 1, 0);
 	float cos = dot(normal, up);
 	float3 normalInPlane = normal - up * dot(normal, up);
-    float3 offset = normalInPlane * _reflectionDistortion;
+	float3 offset = normalInPlane * _planarReflectionDistortion;
 	
 	float2 dudv = float2(offset.x, offset.y);
 
 	// Retrieving depth color and applying the deep and shallow colors
-	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord + dudv).rgb;
+	float3 screenColor = SAMPLE_TEXTURE(_textureScreen, screenTexCoord).rgb;
 	float3 refractionColor = lerp(screenColor, float3(1, 1, 1), depthBlend);
 
 	// Calculate reflection color
@@ -146,7 +145,7 @@ float4 PSColor(VSOutput input) : SV_Target0
 	float refractiveFactor = dot(input.ToCamera, normal);
 	refractiveFactor = pow(refractiveFactor, 1);
 	refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
-	float3 color = lerp(reflectionColor, refractionColor, refractiveFactor) * _colorDeep;
+	float3 color = lerp(reflectionColor, refractionColor, refractiveFactor) * _color;
 
 	LightPower lightPower = CalculateLightPower(normal, input.SourcePosition, input.ToCamera);
 	color *= lightPower.Diffuse;
@@ -160,6 +159,7 @@ float4 PSColor(VSOutput input) : SV_Target0
 
 	// color = float4(depthBlend, depthBlend, depthBlend, 1.0);
 	// color = float4(normal.x, normal.y, normal.z, 1.0);
+	// color = float4(refractiveFactor, refractiveFactor, refractiveFactor, 1.0);
 
 	return float4(color, alpha);
 }

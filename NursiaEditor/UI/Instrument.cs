@@ -1,6 +1,6 @@
 ﻿using Nursia.Graphics3D.Modelling;
 
-namespace Nursia.Samples.LevelEditor.UI
+namespace NursiaEditor.UI
 {
 	public enum InstrumentType
 	{

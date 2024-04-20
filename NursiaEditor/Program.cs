@@ -1,4 +1,4 @@
-﻿namespace Nursia.Samples.LevelEditor
+﻿namespace NursiaEditor
 {
 	class Program
 	{

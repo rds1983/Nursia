@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
+using Nursia;
 using Nursia.Graphics3D;
 using Nursia.Graphics3D.ForwardRendering;
 using Nursia.Graphics3D.Landscape;
@@ -11,7 +12,7 @@ using Nursia.Graphics3D.Modelling;
 using Nursia.Graphics3D.Utils;
 using static Nursia.Graphics3D.Utils.CameraInputController;
 
-namespace Nursia.Samples.LevelEditor.UI
+namespace NursiaEditor.UI
 {
 	public class SceneWidget : Widget
 	{

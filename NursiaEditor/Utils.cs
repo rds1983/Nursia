@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 
-namespace Nursia.Samples.LevelEditor
+namespace NursiaEditor
 {
 	public static class Utils
 	{

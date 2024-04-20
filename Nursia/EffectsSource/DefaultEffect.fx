@@ -128,7 +128,7 @@ VSOutput VS(VSInput input)
 	return output;
 }
 
-float4 PSColor(VSOutput input) : SV_Target0
+float4 PSDefault(VSOutput input) : SV_Target0
 {
 #ifdef CLIP_PLANE
     clip(input.ClipDistances.x); 
@@ -164,5 +164,5 @@ float4 PSDepth(VSOutput input) : COLOR
 	return float4(depth, 0.0f, 0.0f, 1.0f);
 }
 
-TECHNIQUE(Color, VS, PSColor);
+TECHNIQUE(Default, VS, PSDefault);
 TECHNIQUE(Depth, VS, PSDepth);

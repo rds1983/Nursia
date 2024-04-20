@@ -5,7 +5,7 @@ using System.Reflection;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Vertices;
+using Nursia.Rendering.Vertices;
 
 namespace Nursia.Utilities
 {
@@ -143,5 +143,18 @@ namespace Nursia.Utilities
 		public static IEnumerable<Vector3> GetPositions(this VertexPositionTexture[] vertices) => (from v in vertices select v.Position);
 		public static IEnumerable<Vector3> GetPositions(this VertexPositionNormal[] vertices) => (from v in vertices select v.Position);
 		public static IEnumerable<Vector3> GetPositions(this VertexPosition[] vertices) => (from v in vertices select v.Position);
+
+		public static EffectParameter FindParameterByName(this Effect effect, string name)
+		{
+			foreach (var par in effect.Parameters)
+			{
+				if (par.Name == name)
+				{
+					return par;
+				}
+			}
+
+			return null;
+		}
 	}
 }

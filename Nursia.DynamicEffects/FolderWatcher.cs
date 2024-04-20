@@ -161,7 +161,7 @@ namespace Nursia
 							}
 
 							wr.Effect = wr.OldEffect;
-							throw ex;
+							throw;
 						}
 					}
 				}

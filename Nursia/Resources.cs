@@ -9,6 +9,7 @@ using System.Reflection;
 
 namespace Nursia
 {
+
 	internal static class Resources
 	{
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA.bin");
@@ -264,6 +265,13 @@ namespace Nursia
 			}
 
 			return Nrs.ExternalEffectsSource.Get(Nrs.GraphicsDevice, name, defines);
+		}
+
+		public static Effect GetEffect2(string name, Dictionary<string, string> defines = null)
+		{
+			name = Path.ChangeExtension(name, "efb");
+			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, name, defines);
+			return result;
 		}
 	}
 }

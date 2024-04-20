@@ -1,0 +1,14 @@
+<Project>
+  <Project.ExportOptions Namespace="NursiaEditor.UI" Class="AddNewItemDialog" OutputPath="D:\Projects\Nursia\NursiaEditor\UI" />
+  <Dialog Title="Add New Scene" Left="808" Top="287" Width="300">
+    <Grid ColumnSpacing="8" RowSpacing="4">
+      <Grid.DefaultRowProportion Type="Auto" />
+      <Grid.ColumnsProportions>
+        <Proportion Type="Auto" />
+        <Proportion Type="Fill" />
+      </Grid.ColumnsProportions>
+      <Label Text="Name:" />
+      <TextBox Id="_textName" Grid.Column="1" />
+    </Grid>
+  </Dialog>
+</Project>

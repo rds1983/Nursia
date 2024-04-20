@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Myra.Graphics2D.UI;
 
-namespace Nursia.Samples.LevelEditor.UI
+namespace NursiaEditor.UI
 {
 	public class InstrumentButton : ImageTextButton
 	{

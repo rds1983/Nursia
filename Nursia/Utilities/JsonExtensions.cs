@@ -2,6 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
+using System.Text.Json.Serialization;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Nursia.Utilities
 {
@@ -382,6 +385,31 @@ namespace Nursia.Utilities
 		public static void RaiseError(string message)
 		{
 			throw new Exception(message);
+		}
+
+		public static JsonSerializerSettings CreateOptions()
+		{
+			var result = new JsonSerializerSettings
+			{
+				Culture = CultureInfo.InvariantCulture,
+				Formatting = Formatting.Indented,
+				TypeNameHandling = TypeNameHandling.Auto,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+			};
+
+			return result;
+		}
+
+		public static void SerializeToFile<T>(string path, JsonSerializerSettings options, T data)
+		{
+			var s = JsonConvert.SerializeObject(data, options);
+			File.WriteAllText(path, s);
+		}
+
+		public static T DeserializeFromFile<T>(string path, JsonSerializerSettings options)
+		{
+			var data = File.ReadAllText(path);
+			return JsonConvert.DeserializeObject<T>(data, options);
 		}
 	}
 }

@@ -2,23 +2,21 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
-using Nursia.Graphics3D;
-using Nursia.Graphics3D.ForwardRendering;
-using Nursia.Graphics3D.Landscape;
-using Nursia.Graphics3D.Modelling;
-using Nursia.Graphics3D.Utils;
-using static Nursia.Graphics3D.Utils.CameraInputController;
+using Nursia;
+using Nursia.Rendering;
+using Nursia.Modelling;
+using Nursia.Rendering.Utils;
+using static Nursia.Rendering.Utils.CameraInputController;
 
-namespace Nursia.Samples.LevelEditor.UI
+namespace NursiaEditor.UI
 {
-	public class SceneWidget : Widget
+    public class SceneWidget : Widget
 	{
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
-		private Mesh _waterMarker;
+		private Nursia.Modelling.ModelMesh _waterMarker;
 		private ModelInstance _modelMarker;
 		private Vector3? _touchDownStart;
 
@@ -33,6 +31,7 @@ namespace Nursia.Samples.LevelEditor.UI
 				_controller = _scene == null ? null : new CameraInputController(_scene.Camera);
 			}
 		}
+
 		public ForwardRenderer Renderer { get => _renderer; }
 		public Instrument Instrument { get; } = new Instrument();
 
@@ -45,7 +44,12 @@ namespace Nursia.Samples.LevelEditor.UI
 			}
 		}
 
-		private Vector3? CalculateMarkerPosition()
+		public SceneWidget()
+		{
+			Scene = new Scene();
+		}
+
+/*		private Vector3? CalculateMarkerPosition()
 		{
 			// Build viewport
 			var bounds = ActualBounds;
@@ -67,7 +71,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			var ray = new Ray(nearPoint, direction);
 
 			// Firstly determine whether we intersect zero height terrain rectangle
-			var bb = Utils.CreateBoundingBox(0, Scene.Terrain.Size.X, 0, 0, 0, Scene.Terrain.Size.Y);
+			var bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, 0, 0, 0, Scene.Terrain.Size.Y);
 			var intersectDist = ray.Intersects(bb);
 			if (intersectDist == null)
 			{
@@ -78,7 +82,7 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			// Now determine where we intersect terrain rectangle with real height
 			var height = Scene.Terrain.GetHeight(markerPosition.X, markerPosition.Z);
-			bb = Utils.CreateBoundingBox(0, Scene.Terrain.Size.X, height, height, 0, Scene.Terrain.Size.Y);
+			bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, height, height, 0, Scene.Terrain.Size.Y);
 			intersectDist = ray.Intersects(bb);
 			if (intersectDist == null)
 			{
@@ -99,7 +103,7 @@ namespace Nursia.Samples.LevelEditor.UI
 
 			Scene.Marker.Position = CalculateMarkerPosition();
 			Scene.Marker.Radius = Instrument.Radius;
-		}
+		}*/
 
 		private void UpdateKeyboard()
 		{
@@ -115,7 +119,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			_controller.Update();
 		}
 
-		public override void InternalRender(RenderContext context)
+		public override void InternalRender(Myra.Graphics2D.RenderContext context)
 		{
 			base.InternalRender(context);
 
@@ -138,8 +142,10 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
-				UpdateMarker();
-				_renderer.Begin();
+				_renderer.Render(Scene);
+
+//				UpdateMarker();
+/*				_renderer.Begin();
 				_renderer.DrawScene(Scene);
 
 				if (_waterMarker != null)
@@ -152,7 +158,7 @@ namespace Nursia.Samples.LevelEditor.UI
 					_renderer.DrawModel(_modelMarker, Scene.Camera);
 				}
 
-				_renderer.End();
+				_renderer.End();*/
 			}
 			catch(SharpDX.CompilationException ex)
 			{
@@ -182,7 +188,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			_controller.SetTouchState(TouchType.Move, false);
 			_controller.SetTouchState(TouchType.Rotate, false);
 
-			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
+/*			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
 			{
 				GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
 
@@ -194,10 +200,10 @@ namespace Nursia.Samples.LevelEditor.UI
 
 				_touchDownStart = null;
 				_waterMarker = null;
-			}
+			}*/
 		}
 
-		private void UpdateTerrainHeight(Point pos, float power)
+/*		private void UpdateTerrainHeight(Point pos, float power)
 		{
 			var height = Scene.Terrain.GetHeightByHeightPos(pos);
 			height += power;
@@ -312,9 +318,9 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				if (Scene.Marker.Position != null)
 				{
-					if (_modelMarker == null || _modelMarker.Model != Instrument.Model)
+					if (_modelMarker == null || _modelMarker != Instrument.Model)
 					{
-						_modelMarker = Instrument.Model.CreateInstance();
+						_modelMarker = Instrument.Model;
 					}
 
 					var pos = Scene.Marker.Position.Value;
@@ -357,7 +363,7 @@ namespace Nursia.Samples.LevelEditor.UI
 			{
 				var pos = Scene.Marker.Position.Value;
 
-				var model = Instrument.Model.CreateInstance();
+				var model = Instrument.Model;
 				pos.Y = -model.BoundingBox.Min.Y;
 				pos.Y += Scene.Terrain.GetHeight(pos.X, pos.Z);
 
@@ -417,6 +423,6 @@ namespace Nursia.Samples.LevelEditor.UI
 					}
 				}
 			}
-		}
+		}*/
 	}
 }

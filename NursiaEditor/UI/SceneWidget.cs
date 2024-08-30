@@ -44,11 +44,6 @@ namespace NursiaEditor.UI
 			}
 		}
 
-		public SceneWidget()
-		{
-			Scene = new Scene();
-		}
-
 /*		private Vector3? CalculateMarkerPosition()
 		{
 			// Build viewport
@@ -110,12 +105,12 @@ namespace NursiaEditor.UI
 			var keyboardState = Keyboard.GetState();
 
 			// Manage camera input controller
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Backward, keyboardState.IsKeyDown(Keys.S));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Up, keyboardState.IsKeyDown(Keys.Up));
-			_controller.SetControlKeyState(CameraInputController.ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
+			_controller.SetControlKeyState(ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
+			_controller.SetControlKeyState(ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
+			_controller.SetControlKeyState(ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
+			_controller.SetControlKeyState(ControlKeys.Backward, keyboardState.IsKeyDown(Keys.S));
+			_controller.SetControlKeyState(ControlKeys.Up, keyboardState.IsKeyDown(Keys.Up));
+			_controller.SetControlKeyState(ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
 			_controller.Update();
 		}
 
@@ -305,7 +300,7 @@ namespace NursiaEditor.UI
 			{
 				ApplyTerrainPaint();
 			}
-		}
+		}*/
 
 		public override void OnMouseMoved()
 		{
@@ -314,7 +309,7 @@ namespace NursiaEditor.UI
 			var mouseState = Mouse.GetState();
 			_controller.SetMousePosition(new Point(mouseState.X, mouseState.Y));
 
-			if (Instrument.Type == InstrumentType.Model)
+			/*if (Instrument.Type == InstrumentType.Model)
 			{
 				if (Scene.Marker.Position != null)
 				{
@@ -332,7 +327,7 @@ namespace NursiaEditor.UI
 				{
 					_modelMarker = null;
 				}
-			}
+			}*/
 		}
 
 		public override void OnMouseLeft()
@@ -342,7 +337,7 @@ namespace NursiaEditor.UI
 			_modelMarker = null;
 		}
 
-		public override void OnTouchDown()
+/*		public override void OnTouchDown()
 		{
 			base.OnTouchDown();
 
@@ -383,7 +378,7 @@ namespace NursiaEditor.UI
 
 			sizeX = Math.Abs(markerPos.X - _touchDownStart.Value.X);
 			sizeZ = Math.Abs(markerPos.Z - _touchDownStart.Value.Z);
-		}
+		}*/
 
 		public override void OnTouchMoved()
 		{
@@ -398,7 +393,7 @@ namespace NursiaEditor.UI
 			_controller.SetTouchState(TouchType.Rotate, mouseState.RightButton == ButtonState.Pressed);
 			_controller.Update();
 
-			if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
+			/*if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
 			{
 				return;
 			}
@@ -422,7 +417,7 @@ namespace NursiaEditor.UI
 						_waterMarker.Transform = Matrix.CreateScale(sizeX, 0, sizeZ) * Matrix.CreateTranslation(startPos);
 					}
 				}
-			}
-		}*/
+			}*/
+		}
 	}
 }

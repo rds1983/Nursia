@@ -30,7 +30,7 @@ namespace Nursia.Modelling
 			}
 		}
 
-		protected internal override void LoadResources(AssetManager assetManager)
+		public override void LoadResources(AssetManager assetManager)
 		{
 			base.LoadResources(assetManager);
 

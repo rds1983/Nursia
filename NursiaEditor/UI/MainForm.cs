@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using AssetManagementBase;
-using Microsoft.Build.Construction;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
+using Nursia;
+using Nursia.Modelling;
 using Nursia.Rendering;
-using NursiaEditor.Utility;
+using Nursia.Rendering.Lights;
 
 namespace NursiaEditor.UI
 {
 	public partial class MainForm
 	{
+		private bool _isDirty;
 		private readonly SceneWidget _sceneWidget;
 		private string _filePath;
-		private readonly TreeView _treeFileSystem;
+		private readonly TreeView _treeFileExplorer, _treeFileSystem;
 
 		public string FilePath
 		{
@@ -29,7 +30,27 @@ namespace NursiaEditor.UI
 				}
 
 				_filePath = value;
+				AssetManager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(_filePath));
+				IsDirty = false;
+				UpdateTitle();
+			}
+		}
 
+		public bool IsDirty
+		{
+			get
+			{
+				return _isDirty;
+			}
+
+			set
+			{
+				if (value == _isDirty)
+				{
+					return;
+				}
+
+				_isDirty = value;
 				UpdateTitle();
 			}
 		}
@@ -40,15 +61,23 @@ namespace NursiaEditor.UI
 			set
 			{
 				_sceneWidget.Scene = value;
-				RefreshExplorer();
+				RefreshExplorer(value.Children[0]);
 				RefreshLibrary();
 			}
 		}
 
-		public string BasePath
+		private SceneNode SelectedNode
 		{
-			get => _propertyGrid.Settings.BasePath;
-			set => _propertyGrid.Settings.BasePath = value;
+			get
+			{
+				SceneNode selectedNode = Scene;
+				if (_treeFileExplorer.SelectedRow != null)
+				{
+					selectedNode = (SceneNode)_treeFileExplorer.SelectedRow.Tag;
+				}
+
+				return selectedNode;
+			}
 		}
 
 		public AssetManager AssetManager
@@ -71,20 +100,13 @@ namespace NursiaEditor.UI
 				ClipToBounds = true
 			};
 
-			_treeFileSystem.TouchDown += (s, a) =>
+			_treeFileExplorer = new TreeView
 			{
-				if (_treeFileSystem.SelectedRow == null)
-				{
-					return;
-				}
-
-				Desktop.BuildContextMenu(new Tuple<string, Action>[]
-				{
-					new Tuple<string, Action>("Add New Scene", AddNewScene)
-				});
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				VerticalAlignment = VerticalAlignment.Stretch,
+				ClipToBounds = true
 			};
-
-			_panelFileSystem.Widgets.Add(_treeFileSystem);
+			_panelSceneExplorer.Widgets.Add(_treeFileExplorer);
 
 			/*			_propertyGrid.Settings.ImagePropertyValueGetter = name =>
 						{
@@ -143,11 +165,13 @@ namespace NursiaEditor.UI
 			_topSplitPane.SetSplitterPosition(0, 0.25f);
 			_topSplitPane.SetSplitterPosition(1, 0.7f);
 
-			_menuItemOpenSolution.Selected += (s, a) =>
+			_menuItemNew.Selected += (s, a) => NewScene();
+
+			_menuItemOpen.Selected += (s, a) =>
 			{
 				FileDialog dialog = new FileDialog(FileDialogMode.OpenFile)
 				{
-					Filter = "*.sln"
+					Filter = "*.scene"
 				};
 
 				if (!string.IsNullOrEmpty(_filePath))
@@ -164,104 +188,145 @@ namespace NursiaEditor.UI
 					}
 
 					// "Ok" or Enter
-					LoadSolution(dialog.FilePath);
+					Load(dialog.FilePath);
 				};
 
 				dialog.ShowModal(Desktop);
 			};
+
+			_menuItemSave.Selected += (s, a) => Save(false);
+			_menuItemSaveAs.Selected += (s, a) => Save(true);
+
+			_menuItemInsertLight.Selected += (s, a) =>
+			{
+				var dialog = new AddNewItemDialog
+				{
+					Title = "Add New Light"
+				};
+
+				dialog.AddItem("Direct");
+				dialog.AddItem("Point");
+
+				dialog.Closed += (s, a) =>
+				{
+					if (!dialog.Result)
+					{
+						// "Cancel" or Escape
+						return;
+					}
+
+					// "Ok" or Enter
+					BaseLight light = null;
+					switch (dialog.SelectedIndex)
+					{
+						case 0:
+							light = new DirectLight();
+							break;
+						case 1:
+							light = new PointLight();
+							break;
+					}
+
+					if (light != null)
+					{
+						light.Id = dialog.ItemName;
+						SelectedNode.Children.Add(light);
+						RefreshExplorer(light);
+					}
+				};
+
+				dialog.ShowModal(Desktop);
+			};
+
+			_menuItemInsertGltfModel.Selected += (s, a) =>
+			{
+				var dialog = new FileDialog(FileDialogMode.OpenFile)
+				{
+					Filter = "*.gltf|*.glb"
+				};
+
+				if (!string.IsNullOrEmpty(_filePath))
+				{
+					dialog.Folder = Path.GetDirectoryName(_filePath);
+				}
+
+				dialog.Closed += (s, a) =>
+				{
+					if (!dialog.Result)
+					{
+						// "Cancel" or Escape
+						return;
+					}
+
+					// "Ok" or Enter
+					try
+					{
+						var node = new NursiaModel();
+						node.ExternalResources["Model"] = dialog.FilePath;
+						node.LoadResources(AssetManager);
+
+						SelectedNode.Children.Add(node);
+						RefreshExplorer(node);
+					}
+					catch (Exception ex)
+					{
+						var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+						dialog.ShowModal(Desktop);
+					}
+				};
+
+				dialog.ShowModal(Desktop);
+			};
+
+			_treeFileExplorer.SelectionChanged += (s, a) =>
+			{
+				_propertyGrid.Object = _treeFileExplorer.SelectedRow.Tag;
+			};
+
+			_propertyGrid.PropertyChanged += (s, a) =>
+			{
+				IsDirty = true;
+			};
+
+			NewScene();
 		}
 
-		private void AddNewScene()
+		private void NewScene()
 		{
-			var dialog = new AddNewItemDialog
+			var scene = new Scene();
+			var root = new SceneNode
 			{
-				Title = "Add New Scene"
+				Id = "Root"
 			};
 
-			dialog.Closed += (s, a) =>
-			{
-				if (!dialog.Result)
-				{
-					return;
-				}
+			scene.Children.Add(root);
 
-				var node = _treeFileSystem.SelectedRow;
-				var project = (ProjectInSolution)node.Tag;
-				var path = Path.Combine(Path.GetDirectoryName(project.AbsolutePath), $"{Constants.ScenesFolder}/{dialog.ItemName}");
-
-				if (!Directory.Exists(path))
-				{
-					Directory.CreateDirectory(path);
-				}
-
-				var scene = new Scene();
-				scene.SaveToFile(path);
-				RefreshProject(node);
-			};
-
-			dialog.ShowModal(Desktop);
+			Scene = scene;
+			FilePath = string.Empty;
 		}
 
 		private void UpdateTitle()
 		{
 			var title = string.IsNullOrEmpty(_filePath) ? "NursiaEditor" : _filePath;
 
+			if (_isDirty)
+			{
+				title += " *";
+			}
+
 			StudioGame.Instance.Window.Title = title;
 		}
 
-		private void RefreshProject(TreeViewNode node)
-		{
-			node.RemoveAllSubNodes();
-
-			var project = (ProjectInSolution)node.Tag;
-			var path = Path.Combine(Path.GetDirectoryName(project.AbsolutePath), Constants.ScenesFolder);
-			if (!Directory.Exists(path))
-			{
-				return;
-			}
-
-			var scenes = Directory.EnumerateDirectories(path);
-			if (scenes.Count() == 0)
-			{
-				return;
-			}
-
-			foreach (var scene in scenes)
-			{
-
-			}
-		}
-
-		public void LoadSolution(string path)
+		public void Load(string path)
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(path))
-				{
-					var solutionFile = SolutionFile.Parse(path);
+				var folder = Path.GetDirectoryName(path);
+				AssetManager = AssetManager.CreateFileAssetManager(folder);
 
-					_treeFileSystem.RemoveAllSubNodes();
-					foreach (var project in solutionFile.ProjectsInOrder)
-					{
-						if (project.ProjectType != SolutionProjectType.KnownToBeMSBuildFormat)
-						{
-							continue;
-						}
-
-						var label = new Label
-						{
-							Text = project.ProjectName,
-						};
-
-						var projectNode = _treeFileSystem.AddSubNode(label);
-						projectNode.Tag = project;
-
-						RefreshProject(projectNode);
-					}
-				}
-
-				_filePath = path;
-				UpdateTitle();
+				Scene = AssetManager.LoadScene(path);
+				FilePath = path;
+				IsDirty = false;
 			}
 			catch (Exception ex)
 			{
@@ -270,8 +335,84 @@ namespace NursiaEditor.UI
 			}
 		}
 
-		private void RefreshExplorer()
+		private void ProcessSave(string filePath)
 		{
+			if (string.IsNullOrEmpty(filePath))
+			{
+				return;
+			}
+
+			try
+			{
+				Scene.SaveToFile(filePath);
+				FilePath = filePath;
+				IsDirty = false;
+			}
+			catch (Exception ex)
+			{
+				var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+				dialog.ShowModal(Desktop);
+			}
+		}
+
+		private void Save(bool setFileName)
+		{
+			if (string.IsNullOrEmpty(FilePath) || setFileName)
+			{
+				var dlg = new FileDialog(FileDialogMode.SaveFile)
+				{
+					Filter = "*.scene"
+				};
+
+				if (!string.IsNullOrEmpty(FilePath))
+				{
+					dlg.FilePath = FilePath;
+				}
+
+				dlg.ShowModal(Desktop);
+
+				dlg.Closed += (s, a) =>
+				{
+					if (dlg.Result)
+					{
+						ProcessSave(dlg.FilePath);
+					}
+				};
+			}
+			else
+			{
+				ProcessSave(FilePath);
+			}
+		}
+
+		private TreeViewNode RecursiveAddToExplorer(ITreeViewNode treeViewNode, SceneNode sceneNode)
+		{
+			var label = new Label
+			{
+				Text = $"{sceneNode.GetType().Name} (#{sceneNode.Id})",
+			};
+			var newNode = treeViewNode.AddSubNode(label);
+			newNode.IsExpanded = true;
+			newNode.Tag = sceneNode;
+
+			foreach (var child in sceneNode.Children)
+			{
+				RecursiveAddToExplorer(newNode, child);
+			}
+
+			return newNode;
+		}
+
+		private void RefreshExplorer(SceneNode selectedNode)
+		{
+			_treeFileExplorer.RemoveAllSubNodes();
+
+			foreach (var child in Scene.Children)
+			{
+				RecursiveAddToExplorer(_treeFileExplorer, child);
+			}
+
+			_treeFileExplorer.SelectedRow = _treeFileExplorer.FindNode(n => n.Tag == selectedNode);
 		}
 
 		public void RefreshLibrary()

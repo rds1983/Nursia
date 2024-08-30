@@ -3,8 +3,16 @@
   <VerticalStackPanel Id="_mainPanel">
     <HorizontalMenu>
       <MenuItem Text="&amp;File">
-        <MenuItem Text="&amp;Open Solution" Id="_menuItemOpenSolution" />
+        <MenuItem Text="&amp;New" Id="_menuItemNew" />
+        <MenuItem Text="&amp;Open" Id="_menuItemOpen" />
+        <MenuItem Text="&amp;Save" Id="_menuItemSave" />
+        <MenuItem Text="&amp;Save As" Id="_menuItemSaveAs" />
         <MenuItem Text="&amp;Quit" Id="_menuItemQuit" />
+      </MenuItem>
+      <MenuItem Text="&amp;Insert Scene Node">
+        <MenuItem Text="&amp;Light..." Id="_menuItemInsertLight" />
+        <MenuItem Text="&amp;Gltf/Glb Model..." Id="_menuItemInsertGltfModel" />
+        <MenuItem Text="&amp;Skybox..." Id="_menuItemInsertSkybox" />
       </MenuItem>
       <MenuItem Text="&amp;Help">
         <MenuItem Text="&amp;About" Id="_menuItemAbout" />

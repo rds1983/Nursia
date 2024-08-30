@@ -7,6 +7,6 @@ namespace Nursia.Rendering.Lights
 	/// </summary>
 	public class BaseLight : SceneNode
 	{
-		public Color Color { get; set; }
+		public Color Color { get; set; } = Color.White;
 	}
 }

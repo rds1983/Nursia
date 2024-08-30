@@ -75,15 +75,19 @@ namespace NursiaEditor
 
 			_mainForm = new MainForm();
 
+			_desktop = new Desktop();
+			_desktop.Widgets.Add(_mainForm);
+
 			if (_state != null)
 			{
 				_mainForm._topSplitPane.SetSplitterPosition(0, _state != null ? _state.TopSplitterPosition : 0.75f);
 				_mainForm._leftSplitPane.SetSplitterPosition(0, _state != null ? _state.LeftSplitterPosition : 0.5f);
-				_mainForm.LoadSolution(_state.EditedFile);
-			}
 
-			_desktop = new Desktop();
-			_desktop.Widgets.Add(_mainForm);
+				if (!string.IsNullOrEmpty(_state.EditedFile))
+				{
+					_mainForm.Load(_state.EditedFile);
+				}
+			}
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -113,7 +117,6 @@ namespace NursiaEditor
 		protected override void EndRun()
 		{
 			base.EndRun();
-
 
 			var state = new State
 			{

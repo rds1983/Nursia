@@ -1,5 +1,6 @@
 ﻿using AssetManagementBase;
 using Nursia.Modelling;
+using Nursia.Rendering;
 
 namespace Nursia
 {
@@ -12,6 +13,15 @@ namespace Nursia
 			return loader.Load(manager, assetName);
 		};
 
-		public static ModelInstance LoadGltf(this AssetManager assetManager, string path) => assetManager.UseLoader(_gltfLoader, path);
+		private readonly static AssetLoader<Scene> _sceneLoader = (manager, assetName, settings, tag) =>
+		{
+			return Scene.ReadFromFile(assetName, manager);
+		};
+
+		public static ModelInstance LoadGltf(this AssetManager assetManager,
+			string path) => assetManager.UseLoader(_gltfLoader, path);
+
+		public static Scene LoadScene(this AssetManager assetManager,
+			string path) => assetManager.UseLoader(_sceneLoader, path);
 	}
 }

@@ -26,6 +26,11 @@ namespace Nursia.Rendering.Lights
 			get { return _normalizedDirection; }
 		}
 
+		public DirectLight()
+		{
+			Direction = new Vector3(1, 0, 0);
+		}
+
 		private void UpdateNormalizedDirection()
 		{
 			var length = _direction.Length();

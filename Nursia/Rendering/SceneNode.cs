@@ -20,6 +20,7 @@ namespace Nursia.Rendering
 		private Quaternion _rotation = Quaternion.Identity;
 		private Matrix? _transform = null;
 
+		[Browsable(false)]
 		public Dictionary<string, string> ExternalResources = new Dictionary<string, string>();
 
 		public Vector3 Translation
@@ -97,7 +98,7 @@ namespace Nursia.Rendering
 			Children.CollectionChanged += ChildrenOnCollectionChanged;
 		}
 
-		protected internal virtual void LoadResources(AssetManager assetManager)
+		public virtual void LoadResources(AssetManager assetManager)
 		{
 			foreach(var child in Children)
 			{

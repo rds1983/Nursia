@@ -45,7 +45,7 @@ namespace Nursia.Sky
 			context.BatchJob("Default", Material, Transform, MeshData);
 		}
 
-		protected internal override void LoadResources(AssetManager assetManager)
+		public override void LoadResources(AssetManager assetManager)
 		{
 			base.LoadResources(assetManager);
 

@@ -21,7 +21,7 @@ namespace Nursia.Rendering
 			var options = JsonExtensions.CreateOptions();
 			var result = JsonExtensions.DeserializeFromFile<Scene>(path, options);
 
-			result.LoadResources(assetManager);
+			result.Load(assetManager);
 
 			return result;
 		}

@@ -11,6 +11,7 @@
       </MenuItem>
       <MenuItem Text="&amp;Insert Scene Node">
         <MenuItem Text="&amp;Light..." Id="_menuItemInsertLight" />
+        <MenuItem Text="Geometric &amp;Primitive..." Id="_menuItemInsertPrimitive" />
         <MenuItem Text="&amp;Gltf/Glb Model..." Id="_menuItemInsertGltfModel" />
         <MenuItem Text="&amp;Skybox..." Id="_menuItemInsertSkybox" />
       </MenuItem>

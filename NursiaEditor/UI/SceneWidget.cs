@@ -6,11 +6,10 @@ using Myra.Graphics2D.UI;
 using Nursia;
 using Nursia.Rendering;
 using Nursia.Modelling;
-using Nursia.Rendering.Utils;
-using static Nursia.Rendering.Utils.CameraInputController;
-using Nursia.Rendering.Vertices;
 using System.Collections.Generic;
 using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
+using Nursia.Utilities;
+using static Nursia.Utilities.CameraInputController;
 
 namespace NursiaEditor.UI
 {

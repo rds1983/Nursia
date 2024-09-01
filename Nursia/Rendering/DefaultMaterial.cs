@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using Nursia.Utilities;
+using System.ComponentModel;
 
 namespace Nursia.Rendering
 {
@@ -10,6 +12,8 @@ namespace Nursia.Rendering
 		private bool _skinning = false;
 		private Texture2D _texture;
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public Texture2D Texture
 		{
 			get => _texture;
@@ -42,6 +46,8 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public bool Skinning
 		{
 			get => _skinning;
@@ -58,7 +64,10 @@ namespace Nursia.Rendering
 			}
 		}
 
-		public Color DiffuseColor { get; set; }
+		public Color DiffuseColor { get; set; } = Color.White;
+
+		[Browsable(false)]
+		[JsonIgnore]
 		public Matrix[] BonesTransforms { get; set; }
 
 		private EffectParameter DiffuseColorParameter { get; set; }

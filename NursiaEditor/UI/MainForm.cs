@@ -238,6 +238,64 @@ namespace NursiaEditor.UI
 				dialog.ShowModal(Desktop);
 			};
 
+			_menuItemInsertPrimitive.Selected += (s, a) =>
+			{
+				var dialog = new AddNewItemDialog
+				{
+					Title = "Add New Geometric Primitive"
+				};
+
+				dialog.AddItem("Cube");
+				dialog.AddItem("Cylinder");
+
+				dialog.Closed += (s, a) =>
+				{
+					if (!dialog.Result)
+					{
+						// "Cancel" or Escape
+						return;
+					}
+
+					// "Ok" or Enter
+					object creationParams = null;
+					Mesh mesh = null;
+					switch (dialog.SelectedIndex)
+					{
+						case 0:
+							{
+								var p = PrimitiveMeshes.CubeParameters.Default;
+								mesh = PrimitiveMeshes.CreateCube(p);
+								creationParams = p;
+							}
+							break;
+
+						case 1:
+							{
+								var p = PrimitiveMeshes.CylinderParameters.Default;
+								mesh = PrimitiveMeshes.CreateCylinder(p);
+								creationParams = p;
+							}
+							break;
+					}
+
+					if (creationParams != null && mesh != null)
+					{
+						var node = new MeshNode
+						{
+							Id = dialog.ItemName,
+							Mesh = mesh,
+							Material = new DefaultMaterial(),
+							CreationParams = creationParams
+						};
+
+						SelectedNode.Children.Add(node);
+						RefreshExplorer(node);
+					}
+				};
+
+				dialog.ShowModal(Desktop);
+			};
+
 			_menuItemInsertGltfModel.Selected += (s, a) =>
 			{
 				var dialog = new FileDialog(FileDialogMode.OpenFile)
@@ -261,9 +319,11 @@ namespace NursiaEditor.UI
 					// "Ok" or Enter
 					try
 					{
-						var node = new NursiaModel();
-						node.ExternalResources["Model"] = dialog.FilePath;
-						node.LoadResources(AssetManager);
+						var node = new NursiaModel
+						{
+							ModelPath = dialog.FilePath
+						};
+						node.Load(AssetManager);
 
 						SelectedNode.Children.Add(node);
 						RefreshExplorer(node);

@@ -19,7 +19,7 @@ namespace Nursia.Rendering
 		private readonly RenderContext _context = new RenderContext();
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
-		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullClockwise;
+		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullCounterClockwise;
 		public BlendState BlendState { get; set; } = BlendState.NonPremultiplied;
 
 		public RenderStatistics Statistics => _context.Statistics;

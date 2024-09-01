@@ -23,6 +23,9 @@ namespace Nursia.Sky
 			set => Material.Texture = value;
 		}
 
+		[Browsable(false)]
+		public string TexturePath { get; set; }
+
 		private SkyboxMaterial Material { get; } = new SkyboxMaterial();
 
 		public Skybox()
@@ -45,14 +48,11 @@ namespace Nursia.Sky
 			context.BatchJob("Default", Material, Transform, MeshData);
 		}
 
-		public override void LoadResources(AssetManager assetManager)
+		public override void Load(AssetManager assetManager)
 		{
-			base.LoadResources(assetManager);
+			base.Load(assetManager);
 
-			var res = ExternalResources["Texture"];
-
-			var device = Nrs.GraphicsDevice;
-			Texture = assetManager.LoadTextureCube(Nrs.GraphicsDevice, res);
+			Texture = assetManager.LoadTextureCube(Nrs.GraphicsDevice, TexturePath);
 		}
 	}
 }

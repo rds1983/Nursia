@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Nursia.Rendering;
 
-namespace Nursia.Rendering.Utils
+namespace Nursia.Utilities
 {
 	public class CameraInputController
 	{

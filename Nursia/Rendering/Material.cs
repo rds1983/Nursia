@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using Nursia.Utilities;
 using System;
 using System.ComponentModel;
@@ -55,6 +56,8 @@ namespace Nursia.Rendering
 		private bool _dirty = true;
 		private readonly MaterialCommonParameters _commonParameters = new MaterialCommonParameters();
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public MaterialCommonParameters CommonParameters
 		{
 			get
@@ -64,6 +67,8 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public Effect Effect => CommonParameters.Effect;
 
 		[Category("Behavior")]

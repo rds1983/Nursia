@@ -1,5 +1,4 @@
 ﻿using AssetManagementBase;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
 using System.ComponentModel;
@@ -8,9 +7,14 @@ namespace Nursia.Modelling
 {
 	public class NursiaModel: SceneNode
 	{
+
+
 		[Browsable(false)]
 		[JsonIgnore]
 		public ModelInstance Model { get; set; }
+
+		[Browsable(false)]
+		public string ModelPath { get; set; }
 
 		protected internal override void Render(RenderContext context)
 		{
@@ -30,11 +34,11 @@ namespace Nursia.Modelling
 			}
 		}
 
-		public override void LoadResources(AssetManager assetManager)
+		public override void Load(AssetManager assetManager)
 		{
-			base.LoadResources(assetManager);
+			base.Load(assetManager);
 
-			Model = assetManager.LoadGltf(ExternalResources["Model"]);
+			Model = assetManager.LoadGltf(ModelPath);
 		}
 	}
 }

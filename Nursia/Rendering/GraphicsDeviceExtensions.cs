@@ -15,7 +15,7 @@ namespace Nursia.Rendering
 			foreach (var pass in technique.Passes)
 			{
 				pass.Apply();
-				device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
+				device.DrawIndexedPrimitives(meshData.PrimitiveType, 0,
 					0,
 					meshData.VertexCount,
 					0,

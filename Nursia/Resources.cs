@@ -12,7 +12,14 @@ namespace Nursia
 
 	internal static class Resources
 	{
-		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, "EffectsSource.FNA.bin");
+#if FNA
+		private const string EffectsResourcePath = "EffectsSource.FNA.bin";
+#elif MONOGAME
+		private const string EffectsResourcePath = "EffectsSource.MonoGameOGL.bin";
+#endif
+
+		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);
+
 		private static Func<Effect> _colorEffect, _skyboxEffect;
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];

@@ -8,14 +8,20 @@ using Nursia.Rendering;
 using Nursia.Modelling;
 using Nursia.Rendering.Utils;
 using static Nursia.Rendering.Utils.CameraInputController;
+using Nursia.Rendering.Vertices;
+using System.Collections.Generic;
+using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 
 namespace NursiaEditor.UI
 {
-    public class SceneWidget : Widget
+	public class SceneWidget : Widget
 	{
+		private const int GridSize = 200;
+
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
+		private MeshNode _gridMesh;
 		private Nursia.Modelling.ModelMesh _waterMarker;
 		private ModelInstance _modelMarker;
 		private Vector3? _touchDownStart;
@@ -35,6 +41,69 @@ namespace NursiaEditor.UI
 		public ForwardRenderer Renderer { get => _renderer; }
 		public Instrument Instrument { get; } = new Instrument();
 
+		private MeshNode GridMesh
+		{
+			get
+			{
+				if (_gridMesh == null)
+				{
+					var vertices = new List<VertexPosition>();
+					var indices = new List<short>();
+
+					short idx = 0;
+					for (var x = -GridSize; x <= GridSize; ++x)
+					{
+						vertices.Add(new VertexPosition
+						{
+							Position = new Vector3(x, 0, -GridSize)
+						});
+
+						vertices.Add(new VertexPosition
+						{
+							Position = new Vector3(x, 0, GridSize)
+						});
+
+						indices.Add(idx);
+						++idx;
+						indices.Add(idx);
+						++idx;
+					}
+
+					for (var z = -GridSize; z <= GridSize; ++z)
+					{
+						vertices.Add(new VertexPosition
+						{
+							Position = new Vector3(-GridSize, 0, z)
+						});
+
+						vertices.Add(new VertexPosition
+						{
+							Position = new Vector3(GridSize, 0, z)
+						});
+
+						indices.Add(idx);
+						++idx;
+						indices.Add(idx);
+						++idx;
+					}
+
+					var mesh = new Mesh(vertices.ToArray(), indices.ToArray(), PrimitiveType.LineList);
+
+					_gridMesh = new MeshNode
+					{
+						Mesh = mesh,
+						Material = new ColorMaterial
+						{
+							Color = Color.Beige,
+						},
+					};
+				}
+
+				return _gridMesh;
+			}
+		}
+
+
 		private static bool IsMouseLeftButtonDown
 		{
 			get
@@ -44,61 +113,61 @@ namespace NursiaEditor.UI
 			}
 		}
 
-/*		private Vector3? CalculateMarkerPosition()
-		{
-			// Build viewport
-			var bounds = ActualBounds;
-			var p = ToGlobal(bounds.Location);
-			bounds.X = p.X;
-			bounds.Y = p.Y;
-			var viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+		/*		private Vector3? CalculateMarkerPosition()
+				{
+					// Build viewport
+					var bounds = ActualBounds;
+					var p = ToGlobal(bounds.Location);
+					bounds.X = p.X;
+					bounds.Y = p.Y;
+					var viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
-			// Determine marker position
-			var nearPoint = new Vector3(Desktop.MousePosition.X, Desktop.MousePosition.Y, 0);
-			var farPoint = new Vector3(Desktop.MousePosition.X, Desktop.MousePosition.Y, 1);
+					// Determine marker position
+					var nearPoint = new Vector3(Desktop.MousePosition.X, Desktop.MousePosition.Y, 0);
+					var farPoint = new Vector3(Desktop.MousePosition.X, Desktop.MousePosition.Y, 1);
 
-			nearPoint = viewport.Unproject(nearPoint, Renderer.Projection, Renderer.View, Matrix.Identity);
-			farPoint = viewport.Unproject(farPoint, Renderer.Projection, Renderer.View, Matrix.Identity);
+					nearPoint = viewport.Unproject(nearPoint, Renderer.Projection, Renderer.View, Matrix.Identity);
+					farPoint = viewport.Unproject(farPoint, Renderer.Projection, Renderer.View, Matrix.Identity);
 
-			var direction = (farPoint - nearPoint);
-			direction.Normalize();
+					var direction = (farPoint - nearPoint);
+					direction.Normalize();
 
-			var ray = new Ray(nearPoint, direction);
+					var ray = new Ray(nearPoint, direction);
 
-			// Firstly determine whether we intersect zero height terrain rectangle
-			var bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, 0, 0, 0, Scene.Terrain.Size.Y);
-			var intersectDist = ray.Intersects(bb);
-			if (intersectDist == null)
-			{
-				return null;
-			}
+					// Firstly determine whether we intersect zero height terrain rectangle
+					var bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, 0, 0, 0, Scene.Terrain.Size.Y);
+					var intersectDist = ray.Intersects(bb);
+					if (intersectDist == null)
+					{
+						return null;
+					}
 
-			var markerPosition = nearPoint + direction * intersectDist.Value;
+					var markerPosition = nearPoint + direction * intersectDist.Value;
 
-			// Now determine where we intersect terrain rectangle with real height
-			var height = Scene.Terrain.GetHeight(markerPosition.X, markerPosition.Z);
-			bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, height, height, 0, Scene.Terrain.Size.Y);
-			intersectDist = ray.Intersects(bb);
-			if (intersectDist == null)
-			{
-				return null;
-			}
+					// Now determine where we intersect terrain rectangle with real height
+					var height = Scene.Terrain.GetHeight(markerPosition.X, markerPosition.Z);
+					bb = MathUtils.CreateBoundingBox(0, Scene.Terrain.Size.X, height, height, 0, Scene.Terrain.Size.Y);
+					intersectDist = ray.Intersects(bb);
+					if (intersectDist == null)
+					{
+						return null;
+					}
 
-			markerPosition = nearPoint + direction * intersectDist.Value;
+					markerPosition = nearPoint + direction * intersectDist.Value;
 
-			return markerPosition;
-		}
+					return markerPosition;
+				}
 
-		private void UpdateMarker()
-		{
-			if (Scene == null || Scene.Terrain == null || Instrument.Type == InstrumentType.None)
-			{
-				return;
-			}
+				private void UpdateMarker()
+				{
+					if (Scene == null || Scene.Terrain == null || Instrument.Type == InstrumentType.None)
+					{
+						return;
+					}
 
-			Scene.Marker.Position = CalculateMarkerPosition();
-			Scene.Marker.Radius = Instrument.Radius;
-		}*/
+					Scene.Marker.Position = CalculateMarkerPosition();
+					Scene.Marker.Radius = Instrument.Radius;
+				}*/
 
 		private void UpdateKeyboard()
 		{
@@ -137,25 +206,26 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
-				_renderer.Render(Scene);
+				_renderer.Render(Scene, Scene.Camera);
+				_renderer.Render(GridMesh, Scene.Camera);
 
-//				UpdateMarker();
-/*				_renderer.Begin();
-				_renderer.DrawScene(Scene);
+				//				UpdateMarker();
+				/*				_renderer.Begin();
+								_renderer.DrawScene(Scene);
 
-				if (_waterMarker != null)
-				{
-					_renderer.DrawMesh(_waterMarker, Scene.Camera);
-				}
+								if (_waterMarker != null)
+								{
+									_renderer.DrawMesh(_waterMarker, Scene.Camera);
+								}
 
-				if (_modelMarker != null)
-				{
-					_renderer.DrawModel(_modelMarker, Scene.Camera);
-				}
+								if (_modelMarker != null)
+								{
+									_renderer.DrawModel(_modelMarker, Scene.Camera);
+								}
 
-				_renderer.End();*/
+								_renderer.End();*/
 			}
-			catch(SharpDX.CompilationException ex)
+			catch (Exception ex)
 			{
 				var msg = Dialog.CreateMessageBox("Error", ex.Message);
 				msg.ShowModal(Desktop);
@@ -183,124 +253,124 @@ namespace NursiaEditor.UI
 			_controller.SetTouchState(TouchType.Move, false);
 			_controller.SetTouchState(TouchType.Rotate, false);
 
-/*			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
-			{
-				GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
+			/*			if (Instrument.Type == InstrumentType.Water && _touchDownStart != null && Scene.Marker.Position != null)
+						{
+							GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ);
 
-				if (sizeX > 0 && sizeZ > 0)
+							if (sizeX > 0 && sizeZ > 0)
+							{
+								var waterTile = new WaterTile(startPos.X, startPos.Z, Scene.DefaultWaterLevel, sizeX, sizeZ);
+								Scene.WaterTiles.Add(waterTile);
+							}
+
+							_touchDownStart = null;
+							_waterMarker = null;
+						}*/
+		}
+
+		/*		private void UpdateTerrainHeight(Point pos, float power)
 				{
-					var waterTile = new WaterTile(startPos.X, startPos.Z, Scene.DefaultWaterLevel, sizeX, sizeZ);
-					Scene.WaterTiles.Add(waterTile);
+					var height = Scene.Terrain.GetHeightByHeightPos(pos);
+					height += power;
+					Scene.Terrain.SetHeightByHeightPos(pos, height);
 				}
 
-				_touchDownStart = null;
-				_waterMarker = null;
-			}*/
-		}
-
-/*		private void UpdateTerrainHeight(Point pos, float power)
-		{
-			var height = Scene.Terrain.GetHeightByHeightPos(pos);
-			height += power;
-			Scene.Terrain.SetHeightByHeightPos(pos, height);
-		}
-
-		private void UpdateTerrainSplatMap(Point splatPos, SplatManChannel channel, float power)
-		{
-			var splatValue = Scene.Terrain.GetSplatValue(splatPos, channel);
-			splatValue += power * 0.5f;
-			Scene.Terrain.SetSplatValue(splatPos, channel, splatValue);
-		}
-
-		private void ApplyLowerRaise()
-		{
-			var power = Instrument.Power;
-			var radius = Scene.Marker.Radius;
-			var markerPos = Scene.Marker.Position.Value;
-
-			var topLeft = Scene.Terrain.ToHeightPosition(markerPos.X - radius, markerPos.Z - radius);
-			var bottomRight = Scene.Terrain.ToHeightPosition(markerPos.X + radius, markerPos.Z + radius);
-
-			for (var x = topLeft.X; x <= bottomRight.X; ++x)
-			{
-				for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
+				private void UpdateTerrainSplatMap(Point splatPos, SplatManChannel channel, float power)
 				{
-					var heightPos = new Point(x, y);
-					var terrainPos = Scene.Terrain.HeightToTerrainPosition(heightPos);
-					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
+					var splatValue = Scene.Terrain.GetSplatValue(splatPos, channel);
+					splatValue += power * 0.5f;
+					Scene.Terrain.SetSplatValue(splatPos, channel, splatValue);
+				}
 
-					if (dist > radius)
-					{
-						continue;
-					}
+				private void ApplyLowerRaise()
+				{
+					var power = Instrument.Power;
+					var radius = Scene.Marker.Radius;
+					var markerPos = Scene.Marker.Position.Value;
 
-					switch (Instrument.Type)
+					var topLeft = Scene.Terrain.ToHeightPosition(markerPos.X - radius, markerPos.Z - radius);
+					var bottomRight = Scene.Terrain.ToHeightPosition(markerPos.X + radius, markerPos.Z + radius);
+
+					for (var x = topLeft.X; x <= bottomRight.X; ++x)
 					{
-						case InstrumentType.None:
-							break;
-						case InstrumentType.RaiseTerrain:
-							UpdateTerrainHeight(heightPos, power);
-							break;
-						case InstrumentType.LowerTerrain:
-							UpdateTerrainHeight(heightPos, -power);
-							break;
+						for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
+						{
+							var heightPos = new Point(x, y);
+							var terrainPos = Scene.Terrain.HeightToTerrainPosition(heightPos);
+							var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
+
+							if (dist > radius)
+							{
+								continue;
+							}
+
+							switch (Instrument.Type)
+							{
+								case InstrumentType.None:
+									break;
+								case InstrumentType.RaiseTerrain:
+									UpdateTerrainHeight(heightPos, power);
+									break;
+								case InstrumentType.LowerTerrain:
+									UpdateTerrainHeight(heightPos, -power);
+									break;
+							}
+						}
 					}
 				}
-			}
-		}
 
-		private void ApplyTerrainPaint()
-		{
-			var power = Instrument.Power;
-			var radius = Scene.Marker.Radius;
-			var markerPos = Scene.Marker.Position.Value;
-
-			var topLeft = Scene.Terrain.ToSplatPosition(markerPos.X - radius, markerPos.Z - radius);
-			var bottomRight = Scene.Terrain.ToSplatPosition(markerPos.X + radius, markerPos.Z + radius);
-
-			for (var x = topLeft.X; x <= bottomRight.X; ++x)
-			{
-				for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
+				private void ApplyTerrainPaint()
 				{
-					var splatPos = new Point(x, y);
-					var terrainPos = Scene.Terrain.SplatToTerrainPosition(splatPos);
-					var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
+					var power = Instrument.Power;
+					var radius = Scene.Marker.Radius;
+					var markerPos = Scene.Marker.Position.Value;
 
-					if (dist > radius)
-					{
-						continue;
-					}
+					var topLeft = Scene.Terrain.ToSplatPosition(markerPos.X - radius, markerPos.Z - radius);
+					var bottomRight = Scene.Terrain.ToSplatPosition(markerPos.X + radius, markerPos.Z + radius);
 
-					switch (Instrument.Type)
+					for (var x = topLeft.X; x <= bottomRight.X; ++x)
 					{
-						case InstrumentType.PaintTexture1:
-							UpdateTerrainSplatMap(splatPos, SplatManChannel.First, power);
-							break;
-						case InstrumentType.PaintTexture2:
-							UpdateTerrainSplatMap(splatPos, SplatManChannel.Second, power);
-							break;
-						case InstrumentType.PaintTexture3:
-							UpdateTerrainSplatMap(splatPos, SplatManChannel.Third, power);
-							break;
-						case InstrumentType.PaintTexture4:
-							UpdateTerrainSplatMap(splatPos, SplatManChannel.Fourth, power);
-							break;
+						for (var y = topLeft.Y; y <= bottomRight.Y; ++y)
+						{
+							var splatPos = new Point(x, y);
+							var terrainPos = Scene.Terrain.SplatToTerrainPosition(splatPos);
+							var dist = Vector2.Distance(new Vector2(markerPos.X, markerPos.Z), terrainPos);
+
+							if (dist > radius)
+							{
+								continue;
+							}
+
+							switch (Instrument.Type)
+							{
+								case InstrumentType.PaintTexture1:
+									UpdateTerrainSplatMap(splatPos, SplatManChannel.First, power);
+									break;
+								case InstrumentType.PaintTexture2:
+									UpdateTerrainSplatMap(splatPos, SplatManChannel.Second, power);
+									break;
+								case InstrumentType.PaintTexture3:
+									UpdateTerrainSplatMap(splatPos, SplatManChannel.Third, power);
+									break;
+								case InstrumentType.PaintTexture4:
+									UpdateTerrainSplatMap(splatPos, SplatManChannel.Fourth, power);
+									break;
+							}
+						}
 					}
 				}
-			}
-		}
 
-		private void ApplyPaintInstrument()
-		{
-			if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
-			{
-				ApplyLowerRaise();
-			}
-			else
-			{
-				ApplyTerrainPaint();
-			}
-		}*/
+				private void ApplyPaintInstrument()
+				{
+					if (Instrument.Type == InstrumentType.RaiseTerrain || Instrument.Type == InstrumentType.LowerTerrain)
+					{
+						ApplyLowerRaise();
+					}
+					else
+					{
+						ApplyTerrainPaint();
+					}
+				}*/
 
 		public override void OnMouseMoved()
 		{
@@ -337,48 +407,48 @@ namespace NursiaEditor.UI
 			_modelMarker = null;
 		}
 
-/*		public override void OnTouchDown()
-		{
-			base.OnTouchDown();
+		/*		public override void OnTouchDown()
+				{
+					base.OnTouchDown();
 
-			if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
-			{
-				return;
-			}
+					if (!IsMouseLeftButtonDown || Scene.Marker.Position == null)
+					{
+						return;
+					}
 
-			if (Instrument.IsPaintInstrument)
-			{
-				ApplyPaintInstrument();
-			}
-			else if (Instrument.Type == InstrumentType.Water)
-			{
-				_touchDownStart = Scene.Marker.Position.Value;
-			}
-			else if (Instrument.Type == InstrumentType.Model)
-			{
-				var pos = Scene.Marker.Position.Value;
+					if (Instrument.IsPaintInstrument)
+					{
+						ApplyPaintInstrument();
+					}
+					else if (Instrument.Type == InstrumentType.Water)
+					{
+						_touchDownStart = Scene.Marker.Position.Value;
+					}
+					else if (Instrument.Type == InstrumentType.Model)
+					{
+						var pos = Scene.Marker.Position.Value;
 
-				var model = Instrument.Model;
-				pos.Y = -model.BoundingBox.Min.Y;
-				pos.Y += Scene.Terrain.GetHeight(pos.X, pos.Z);
+						var model = Instrument.Model;
+						pos.Y = -model.BoundingBox.Min.Y;
+						pos.Y += Scene.Terrain.GetHeight(pos.X, pos.Z);
 
-				model.Transform = Matrix.CreateTranslation(pos);
+						model.Transform = Matrix.CreateTranslation(pos);
 
-				Scene.Models.Add(model);
-			}
-		}
+						Scene.Models.Add(model);
+					}
+				}
 
-		private void GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ)
-		{
-			var markerPos = Scene.Marker.Position.Value;
+				private void GetWaterMarkerPos(out Vector3 startPos, out float sizeX, out float sizeZ)
+				{
+					var markerPos = Scene.Marker.Position.Value;
 
-			startPos = new Vector3(Math.Min(markerPos.X, _touchDownStart.Value.X),
-				Scene.DefaultWaterLevel,
-				Math.Min(markerPos.Z, _touchDownStart.Value.Z));
+					startPos = new Vector3(Math.Min(markerPos.X, _touchDownStart.Value.X),
+						Scene.DefaultWaterLevel,
+						Math.Min(markerPos.Z, _touchDownStart.Value.Z));
 
-			sizeX = Math.Abs(markerPos.X - _touchDownStart.Value.X);
-			sizeZ = Math.Abs(markerPos.Z - _touchDownStart.Value.Z);
-		}*/
+					sizeX = Math.Abs(markerPos.X - _touchDownStart.Value.X);
+					sizeZ = Math.Abs(markerPos.Z - _touchDownStart.Value.Z);
+				}*/
 
 		public override void OnTouchMoved()
 		{

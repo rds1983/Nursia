@@ -6,7 +6,7 @@ float4 _color;
 
 MATRIX_CONSTANTS
 
-float4x4 _transform;
+float4x4 _worldViewProj;
 
 END_CONSTANTS
 
@@ -24,7 +24,7 @@ VSOutput VertexShaderFunction(VSInput input)
 {
     VSOutput output = (VSOutput)0;
     
-    output.Position = mul(input.Position, _transform);
+    output.Position = mul(input.Position, _worldViewProj);
 
     return output;
 }

@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Rendering.Vertices;
 
+using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
+
 namespace Nursia.Utilities
 {
 	internal static class GraphicsExtensions
@@ -136,6 +138,7 @@ namespace Nursia.Utilities
 				indices.Length,
 				BufferUsage.None);
 			result.SetData(indices);
+
 			return result;
 		}
 

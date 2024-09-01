@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nursia.MonoGame", "Nursia\Nursia.MonoGame.csproj", "{61B6656E-111C-4C09-8124-8BD0E3D4D4F4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NursiaEditor.MonoGame.OpenGL", "NursiaEditor\NursiaEditor.MonoGame.OpenGL.csproj", "{7BFAA776-6BBE-4AF2-AAB8-03E74D5DA9DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61B6656E-111C-4C09-8124-8BD0E3D4D4F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61B6656E-111C-4C09-8124-8BD0E3D4D4F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61B6656E-111C-4C09-8124-8BD0E3D4D4F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61B6656E-111C-4C09-8124-8BD0E3D4D4F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BFAA776-6BBE-4AF2-AAB8-03E74D5DA9DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BFAA776-6BBE-4AF2-AAB8-03E74D5DA9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BFAA776-6BBE-4AF2-AAB8-03E74D5DA9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BFAA776-6BBE-4AF2-AAB8-03E74D5DA9DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35ACDF4E-2CE2-46B1-A19F-35DC131069A1}
+	EndGlobalSection
+EndGlobal

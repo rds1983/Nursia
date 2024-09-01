@@ -97,16 +97,16 @@ namespace Nursia.Rendering
 			}
 		}
 
-		public void Render(Scene scene)
+		public void Render(SceneNode node, Camera camera)
 		{
 			// Prepare render context
-			if (!_context.PrepareRender(scene.Camera))
+			if (!_context.PrepareRender(camera))
 			{
 				return;
 			}
 
 			// Batch Render Jobs
-			BatchNode(scene);
+			BatchNode(node);
 
 			// Set state
 			SetState();
@@ -138,7 +138,7 @@ namespace Nursia.Rendering
 						commonPars.WorldInverseTranspose.SetValue(worldInverseTranspose);
 					}
 
-					commonPars.CameraPosition?.SetValue(scene.Camera.Position);
+					commonPars.CameraPosition?.SetValue(camera.Position);
 					commonPars.LightType?.SetValue(_effectLightType);
 					commonPars.LightPosition?.SetValue(_effectLightPosition);
 					commonPars.LightDirection?.SetValue(_effectLightDirection);

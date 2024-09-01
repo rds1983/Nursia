@@ -4,6 +4,7 @@ using Nursia.Rendering;
 using Nursia.Rendering.Vertices;
 using System;
 using System.Collections.Generic;
+using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 
 namespace Nursia.Modelling
 {

@@ -14,7 +14,7 @@ namespace Nursia.Rendering
 		public VertexBuffer VertexBuffer { get; private set; }
 		public IndexBuffer IndexBuffer { get; private set; }
 		public PrimitiveType PrimitiveType { get; }
-		public int PrimitiveCount => IndexBuffer.IndexCount / 3;
+		public int PrimitiveCount { get; private set; }
 		public int VertexCount => VertexBuffer.VertexCount;
 		public BoundingBox BoundingBox { get; }
 		public bool HasNormals { get; }
@@ -26,6 +26,19 @@ namespace Nursia.Rendering
 			PrimitiveType = primitiveType;
 			BoundingBox = BoundingBox.CreateFromPoints(positions);
 			HasNormals = (from el in VertexBuffer.VertexDeclaration.GetVertexElements() where el.VertexElementUsage == VertexElementUsage.Normal select el).Count() > 0;
+
+			switch (primitiveType)
+			{
+				case PrimitiveType.TriangleList:
+					PrimitiveCount = IndexBuffer.IndexCount / 3;
+					break;
+				case PrimitiveType.LineList:
+					PrimitiveCount = IndexBuffer.IndexCount / 2;
+					break;
+
+				default:
+					throw new NotSupportedException($"Primitive type {primitiveType} isn't supported yet.");
+			}
 		}
 
 		public Mesh(VertexPositionNormalTexture[] vertices, short[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :

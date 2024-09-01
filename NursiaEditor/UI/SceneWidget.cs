@@ -94,7 +94,7 @@ namespace NursiaEditor.UI
 						Mesh = mesh,
 						Material = new ColorMaterial
 						{
-							Color = Color.Beige,
+							Color = Color.Green,
 						},
 					};
 				}

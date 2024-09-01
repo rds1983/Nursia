@@ -9,12 +9,6 @@
         <MenuItem Text="&amp;Save As" Id="_menuItemSaveAs" />
         <MenuItem Text="&amp;Quit" Id="_menuItemQuit" />
       </MenuItem>
-      <MenuItem Text="&amp;Insert Scene Node">
-        <MenuItem Text="&amp;Light..." Id="_menuItemInsertLight" />
-        <MenuItem Text="Geometric &amp;Primitive..." Id="_menuItemInsertPrimitive" />
-        <MenuItem Text="&amp;Gltf/Glb Model..." Id="_menuItemInsertGltfModel" />
-        <MenuItem Text="&amp;Skybox..." Id="_menuItemInsertSkybox" />
-      </MenuItem>
       <MenuItem Text="&amp;Help">
         <MenuItem Text="&amp;About" Id="_menuItemAbout" />
       </MenuItem>

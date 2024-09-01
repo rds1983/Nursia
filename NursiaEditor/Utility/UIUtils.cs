@@ -8,7 +8,7 @@ namespace NursiaEditor.Utility
 	{
 		public static void BuildContextMenu(this Desktop desktop, IEnumerable<Tuple<string, Action>> items)
 		{
-			if (desktop.ContextMenu != null || desktop.TouchPosition == null)
+			if (desktop.ContextMenu != null)
 			{
 				// Dont show if it's already shown
 				return;
@@ -26,7 +26,7 @@ namespace NursiaEditor.Utility
 				verticalMenu.Items.Add(menuItem);
 			}
 
-			desktop.ShowContextMenu(verticalMenu, desktop.TouchPosition.Value);
+			desktop.ShowContextMenu(verticalMenu, desktop.MousePosition);
 		}
 	}
 }

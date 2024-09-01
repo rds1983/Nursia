@@ -31,6 +31,9 @@ namespace Nursia.Rendering
 			}
 		}
 
+		/// <summary>
+		/// Yaw Angle in Degrees
+		/// </summary>
 		public float YawAngle
 		{
 			get { return _yawAngle; }
@@ -44,7 +47,10 @@ namespace Nursia.Rendering
 				}
 			}
 		}
-
+		
+		/// <summary>
+		/// Pitch Angle In Degrees
+		/// </summary>
 		public float PitchAngle
 		{
 			get { return _pitchAngle; }

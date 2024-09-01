@@ -1,5 +1,6 @@
 ﻿using AssetManagementBase;
 using Nursia.Utilities;
+using System.ComponentModel;
 
 namespace Nursia.Rendering
 {
@@ -8,6 +9,7 @@ namespace Nursia.Rendering
 	/// </summary>
 	public class Scene : SceneNode
 	{
+		[Browsable(false)]
 		public Camera Camera { get; } = new Camera();
 
 		public void SaveToFile(string path)

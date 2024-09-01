@@ -13,7 +13,6 @@ namespace Nursia.Rendering
 
 		public Material Material { get; set; }
 
-		[Browsable(false)]
 		public object CreationParams { get; set; }
 
 		protected internal override void Render(RenderContext context)
@@ -47,6 +46,12 @@ namespace Nursia.Rendering
 			{
 				var asCylinderParams = (CylinderParameters)CreationParams;
 				Mesh = CreateCylinder(asCylinderParams);
+			}
+
+			if (CreationParams is GeoSphereParameters)
+			{
+				var asGeoSphereParams = (GeoSphereParameters)CreationParams;
+				Mesh = CreateGeoSphere(asGeoSphereParams);
 			}
 		}
 	}

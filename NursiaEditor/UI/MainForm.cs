@@ -247,6 +247,7 @@ namespace NursiaEditor.UI
 
 				dialog.AddItem("Cube");
 				dialog.AddItem("Cylinder");
+				dialog.AddItem("GeoSphere");
 
 				dialog.Closed += (s, a) =>
 				{
@@ -273,6 +274,14 @@ namespace NursiaEditor.UI
 							{
 								var p = PrimitiveMeshes.CylinderParameters.Default;
 								mesh = PrimitiveMeshes.CreateCylinder(p);
+								creationParams = p;
+							}
+							break;
+
+						case 2:
+							{
+								var p = PrimitiveMeshes.GeoSphereParameters.Default;
+								mesh = PrimitiveMeshes.CreateGeoSphere(p);
 								creationParams = p;
 							}
 							break;

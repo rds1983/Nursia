@@ -9,7 +9,7 @@ namespace Nursia.Rendering
 	{
 		private class Builder
 		{
-			public List<VertexPositionNormalTexture> Vertices { get; } = new List<VertexPositionNormalTexture>();
+			public List<VertexPositionNormalTexture> Vertices { get; set; } = new List<VertexPositionNormalTexture>();
 			public List<short> Indices { get; } = new List<short>();
 
 			public Mesh Create(bool toLeftHanded)

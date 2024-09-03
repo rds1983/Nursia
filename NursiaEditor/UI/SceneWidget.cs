@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
+using Nursia.Rendering.Lights;
 
 namespace NursiaEditor.UI
 {
@@ -110,6 +111,11 @@ namespace NursiaEditor.UI
 				var mouseState = Mouse.GetState();
 				return (mouseState.LeftButton == ButtonState.Pressed);
 			}
+		}
+
+		public SceneWidget()
+		{
+			ClipToBounds = true;
 		}
 
 		/*		private Vector3? CalculateMarkerPosition()
@@ -233,6 +239,27 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = oldViewport;
 			}
+
+			var camera = Scene.Camera;
+			var widgetViewport = new Viewport(0, 0, ActualBounds.Width, ActualBounds.Height);
+			var projection = camera.CalculateProjection(widgetViewport.AspectRatio);
+
+			// Draw lights' icons'
+			Scene.Iterate(n =>
+			{
+				var asLight = n as BaseLight;
+				if(asLight != null)
+				{
+					var p = widgetViewport.Project(asLight.Translation,
+						projection, camera.View, Matrix.Identity);
+
+					var icon = NursiaEditor.Resources.IconDirectionalLight;
+
+					p.X -= icon.Width / 2;
+					p.Y -= icon.Height / 2;
+					context.Draw(icon, new Vector2(p.X, p.Y), Color.White);
+				}
+			});
 		}
 
 		protected override void OnPlacedChanged()

@@ -13,7 +13,7 @@ namespace Nursia.Rendering
 	/// <summary>
 	/// Base 3D Scene Node
 	/// </summary>
-	public class SceneNode: ItemWithId
+	public class SceneNode : ItemWithId
 	{
 		private Vector3 _translation = Vector3.Zero;
 		private Vector3 _scale = Vector3.One;
@@ -97,7 +97,7 @@ namespace Nursia.Rendering
 
 		public virtual void Load(AssetManager assetManager)
 		{
-			foreach(var child in Children)
+			foreach (var child in Children)
 			{
 				child.Load(assetManager);
 			}
@@ -173,7 +173,7 @@ namespace Nursia.Rendering
 
 			foreach (var child in Children)
 			{
-				child.InternalQueryByType<T>(result);
+				child.InternalQueryByType(result);
 			}
 		}
 
@@ -184,6 +184,16 @@ namespace Nursia.Rendering
 			InternalQueryByType<T>(result);
 
 			return result;
+		}
+
+		public void Iterate(Action<SceneNode> action)
+		{
+			action(this);
+
+			foreach (var child in Children)
+			{
+				action(child);
+			}
 		}
 
 		public void RemoveFromParent()

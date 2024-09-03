@@ -32,11 +32,7 @@ namespace Nursia.Rendering
 			}
 
 			// Calculate matrices
-			Projection = Matrix.CreatePerspectiveFieldOfView(
-				MathHelper.ToRadians(camera.ViewAngle),
-				Nrs.GraphicsDevice.Viewport.AspectRatio,
-				camera.NearPlaneDistance, camera.FarPlaneDistance);
-
+			Projection = camera.CalculateProjection();
 			ViewProjection = _camera.View * Projection;
 			Frustrum = new BoundingFrustum(ViewProjection);
 

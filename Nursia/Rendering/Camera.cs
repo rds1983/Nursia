@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using glTFLoader.Schema;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Nursia.Utilities;
 using System;
@@ -47,7 +48,7 @@ namespace Nursia.Rendering
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Pitch Angle In Degrees
 		/// </summary>
@@ -228,6 +229,12 @@ namespace Nursia.Rendering
 
 			_dirty = false;
 		}
+
+		public Matrix CalculateProjection(float aspectRatio) =>
+			Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(ViewAngle),
+				aspectRatio, NearPlaneDistance, FarPlaneDistance);
+
+		public Matrix CalculateProjection() => CalculateProjection(Nrs.GraphicsDevice.Viewport.AspectRatio);
 
 		public override string ToString()
 		{

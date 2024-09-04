@@ -248,7 +248,7 @@ namespace NursiaEditor.UI
 			Scene.Iterate(n =>
 			{
 				var asLight = n as BaseLight;
-				if(asLight != null)
+				if (asLight != null)
 				{
 					var p = widgetViewport.Project(asLight.Translation,
 						projection, camera.View, Matrix.Identity);

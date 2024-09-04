@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Primitives;
 using Nursia.Rendering;
 using Nursia.Utilities;
 using System;

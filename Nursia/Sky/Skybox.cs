@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Nursia.Primitives;
 using Nursia.Rendering;
 using System.ComponentModel;
 

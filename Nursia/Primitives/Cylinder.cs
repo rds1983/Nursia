@@ -75,25 +75,62 @@ using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
+using Nursia.Rendering;
 
-namespace Nursia.Rendering
+namespace Nursia.Primitives
 {
-	partial class PrimitiveMeshes
+	public class Cylinder : PrimitiveMesh
 	{
-		public struct CylinderParameters
-		{
-			public static readonly CylinderParameters Default = new CylinderParameters
-			{
-				Height = 1.0f,
-				Diameter = 1.0f,
-				Tessellation = 32,
-				LeftHanded = false
-			};
+		private float _height = 1.0f;
+		private float _diameter = 1.0f;
+		private int _tessellation = 32;
 
-			public float Height;
-			public float Diameter;
-			public int Tessellation;
-			public bool LeftHanded;
+		public float Height
+		{
+			get => _height;
+
+			set
+			{
+				if (value.EpsilonEquals(_height))
+				{
+					return;
+				}
+
+				_height = value;
+				InvalidateMesh();
+			}
+		}
+
+		public float Diameter
+		{
+			get => _diameter;
+
+			set
+			{
+				if (value.EpsilonEquals(_diameter))
+				{
+					return;
+				}
+
+				_diameter = value;
+				InvalidateMesh();
+			}
+		}
+
+		public int Tessellation
+		{
+			get => _tessellation;
+
+			set
+			{
+				if (value == _tessellation)
+				{
+					return;
+				}
+
+				_tessellation = value;
+				InvalidateMesh();
+			}
 		}
 
 		// Helper computes a point on a unit circle, aligned to the x/z plane and centered on the origin.
@@ -147,38 +184,28 @@ namespace Nursia.Rendering
 			}
 		}
 
-		/// <summary>
-		/// Creates a cylinder primitive.
-		/// </summary>
-		/// <param name="device">The device.</param>
-		/// <param name="height">The height.</param>
-		/// <param name="diameter">The diameter.</param>
-		/// <param name="tessellation">The tessellation.</param>
-		/// <param name="toLeftHanded">if set to <c>true</c> vertices and indices will be transformed to left handed. Default is false.</param>
-		/// <returns>A cylinder primitive.</returns>
-		/// <exception cref="System.ArgumentOutOfRangeException">tessellation;tessellation must be &gt;= 3</exception>
-		public static Mesh CreateCylinder(float height = 1.0f, float diameter = 1.0f, int tessellation = 32, bool toLeftHanded = false)
+		protected override Mesh CreateMesh()
 		{
-			if (tessellation < 3)
+			if (_tessellation < 3)
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be >= 3");
 
 			var builder = new Builder();
 
-			height /= 2;
+			_height /= 2;
 
-			var topOffset = Vector3.UnitY * height;
+			var topOffset = Vector3.UnitY * _height;
 
-			float radius = diameter / 2;
-			int stride = tessellation + 1;
+			float radius = _diameter / 2;
+			int stride = _tessellation + 1;
 
 			// Create a ring of triangles around the outside of the cylinder.
-			for (int i = 0; i <= tessellation; i++)
+			for (int i = 0; i <= _tessellation; i++)
 			{
-				var normal = GetCircleVector(i, tessellation);
+				var normal = GetCircleVector(i, _tessellation);
 
 				var sideOffset = normal * radius;
 
-				var textureCoordinate = new Vector2((float)i / tessellation, 0);
+				var textureCoordinate = new Vector2((float)i / _tessellation, 0);
 
 				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset + topOffset, normal, textureCoordinate));
 				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset - topOffset, normal, textureCoordinate + Vector2.UnitY));
@@ -193,14 +220,11 @@ namespace Nursia.Rendering
 			}
 
 			// Create flat triangle fan caps to seal the top and bottom.
-			CreateCylinderCap(builder.Vertices, builder.Indices, tessellation, height, radius, true);
-			CreateCylinderCap(builder.Vertices, builder.Indices, tessellation, height, radius, false);
+			CreateCylinderCap(builder.Vertices, builder.Indices, _tessellation, _height, radius, true);
+			CreateCylinderCap(builder.Vertices, builder.Indices, _tessellation, _height, radius, false);
 
 			// Create the primitive object.
-			return builder.Create(toLeftHanded);
+			return builder.Create(IsLeftHanded);
 		}
-
-		public static Mesh CreateCylinder(CylinderParameters p) =>
-			CreateCylinder(p.Height, p.Diameter, p.Tessellation, p.LeftHanded);
 	}
 }

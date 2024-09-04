@@ -75,46 +75,33 @@ using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
+using Nursia.Rendering;
 
-namespace Nursia.Rendering
+namespace Nursia.Primitives
 {
-	partial class PrimitiveMeshes
+	public class GeoSphere : PrimitiveMesh
 	{
-		public struct GeoSphereParameters
-		{
-			public static readonly GeoSphereParameters Default = new GeoSphereParameters
-			{
-				Diameter = 1.0f,
-				Tesselation = 3,
-				LeftHanded = false
-			};
-
-			public float Diameter;
-			public int Tesselation;
-			public bool LeftHanded;
-		}
-
 		private static readonly Vector3[] OctahedronVertices = new Vector3[]
-					{
-                                      // when looking down the negative z-axis (into the screen)
-                new Vector3( 0,  1,  0), // 0 top
-                new Vector3( 0,  0, -1), // 1 front
-                new Vector3( 1,  0,  0), // 2 right
-                new Vector3( 0,  0,  1), // 3 back
-                new Vector3(-1,  0,  0), // 4 left
-                new Vector3( 0, -1,  0), // 5 bottom
-					};
+		{
+			// when looking down the negative z-axis (into the screen)
+			new Vector3( 0,  1,  0), // 0 top
+			new Vector3( 0,  0, -1), // 1 front
+			new Vector3( 1,  0,  0), // 2 right
+			new Vector3( 0,  0,  1), // 3 back
+			new Vector3(-1,  0,  0), // 4 left
+			new Vector3( 0, -1,  0), // 5 bottom
+		};
 
 		private static readonly short[] OctahedronIndices = new short[]
 		{
-				0, 1, 2, // top front-right face
-                0, 2, 3, // top back-right face
-                0, 3, 4, // top back-left face
-                0, 4, 1, // top front-left face
-                5, 1, 4, // bottom front-left face
-                5, 4, 3, // bottom back-left face
-                5, 3, 2, // bottom back-right face
-                5, 2, 1, // bottom front-right face
+			0, 1, 2, // top front-right face
+			0, 2, 3, // top back-right face
+			0, 3, 4, // top back-left face
+			0, 4, 1, // top front-left face
+			5, 1, 4, // bottom front-left face
+			5, 4, 3, // bottom back-left face
+			5, 3, 2, // bottom back-right face
+			5, 2, 1, // bottom front-right face
 		};
 
 		private unsafe class GeosphereBuilder : Builder
@@ -134,19 +121,46 @@ namespace Nursia.Rendering
 			}
 		}
 
+		private float _diameter = 1.0f;
+		private int _tessellation = 3;
 
-		/// <summary>
-		/// Creates a Geodesic sphere.
-		/// </summary>
-		/// <param name="diameter">The diameter.</param>
-		/// <param name="tessellation">The tessellation.</param>
-		/// <param name="toLeftHanded">if set to <c>true</c> vertices and indices will be transformed to left handed. Default is false.</param>
-		/// <returns>A Geodesic sphere.</returns>
-		public static unsafe Mesh CreateGeoSphere(float diameter = 1.0f, int tessellation = 3, bool toLeftHanded = false)
+		public float Diameter
+		{
+			get => _diameter;
+
+			set
+			{
+				if (value.EpsilonEquals(_diameter))
+				{
+					return;
+				}
+
+				_diameter = value;
+				InvalidateMesh();
+			}
+		}
+
+		public int Tessellation
+		{
+			get => _tessellation;
+
+			set
+			{
+				if (value == _tessellation)
+				{
+					return;
+				}
+
+				_tessellation = value;
+				InvalidateMesh();
+			}
+		}
+
+		protected unsafe override Mesh CreateMesh()
 		{
 			var builder = new GeosphereBuilder();
 
-			float radius = diameter / 2.0f;
+			float radius = _diameter / 2.0f;
 
 			// We know these values by looking at the above index list for the octahedron. Despite the subdivisions that are
 			// about to go on, these values aren't ever going to change because the vertices don't move around in the array.
@@ -154,7 +168,7 @@ namespace Nursia.Rendering
 			const int northPoleIndex = 0;
 			const int southPoleIndex = 5;
 
-			for (int iSubdivision = 0; iSubdivision < tessellation; ++iSubdivision)
+			for (int iSubdivision = 0; iSubdivision < _tessellation; ++iSubdivision)
 			{
 				// The new index collection after subdivision.
 				var newIndices = new List<short>();
@@ -323,11 +337,8 @@ namespace Nursia.Rendering
 				builder.IndicesPtr = (short*)0;
 			}
 
-			return builder.Create(toLeftHanded);
+			return builder.Create(IsLeftHanded);
 		}
-
-		public static Mesh CreateGeoSphere(GeoSphereParameters p) =>
-			CreateGeoSphere(p.Diameter, p.Tesselation, p.LeftHanded);
 
 		private static unsafe void FixPole(GeosphereBuilder builder, short poleIndex)
 		{

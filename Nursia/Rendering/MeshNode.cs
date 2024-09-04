@@ -1,7 +1,5 @@
-﻿using AssetManagementBase;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.ComponentModel;
-using static Nursia.Rendering.PrimitiveMeshes;
 
 namespace Nursia.Rendering
 {
@@ -13,8 +11,6 @@ namespace Nursia.Rendering
 
 		public Material Material { get; set; }
 
-		public object CreationParams { get; set; }
-
 		protected internal override void Render(RenderContext context)
 		{
 			base.Render(context);
@@ -25,34 +21,6 @@ namespace Nursia.Rendering
 			}
 
 			context.BatchJob("Default", Material, Transform, Mesh);
-		}
-
-		public override void Load(AssetManager assetManager)
-		{
-			base.Load(assetManager);
-
-			if (CreationParams == null)
-			{
-				return;
-			}
-
-			if (CreationParams is CubeParameters)
-			{
-				var asCubeParams = (CubeParameters)CreationParams;
-				Mesh = CreateCube(asCubeParams);
-			}
-
-			if (CreationParams is CylinderParameters)
-			{
-				var asCylinderParams = (CylinderParameters)CreationParams;
-				Mesh = CreateCylinder(asCylinderParams);
-			}
-
-			if (CreationParams is GeoSphereParameters)
-			{
-				var asGeoSphereParams = (GeoSphereParameters)CreationParams;
-				Mesh = CreateGeoSphere(asGeoSphereParams);
-			}
 		}
 	}
 }

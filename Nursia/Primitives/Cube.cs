@@ -72,23 +72,13 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Rendering;
+using Nursia.Utilities;
 
-namespace Nursia.Rendering
+namespace Nursia.Primitives
 {
-	partial class PrimitiveMeshes
+	public class Cube : PrimitiveMesh
 	{
-		public struct CubeParameters
-		{
-			public static readonly CubeParameters Default = new CubeParameters
-			{
-				Size = 1.0f,
-				LeftHanded = false
-			};
-
-			public float Size;
-			public bool LeftHanded;
-		}
-
 		private const int CubeFaceCount = 6;
 
 		private static readonly Vector3[] faceNormals = new Vector3[CubeFaceCount]
@@ -109,17 +99,29 @@ namespace Nursia.Rendering
 				new Vector2(0, 0),
 		};
 
-		/// <summary>
-		/// Creates a cube with six faces each one pointing in a different direction.
-		/// </summary>
-		/// <param name="size">The size.</param>
-		/// <param name="toLeftHanded">if set to <c>true</c> vertices and indices will be transformed to left handed. Default is false.</param>
-		/// <returns>A cube.</returns>
-		public static Mesh CreateCube(float size = 1.0f, bool toLeftHanded = false)
+		private float _size = 1.0f;
+
+		public float Size
+		{
+			get => _size;
+
+			set
+			{
+				if (value.EpsilonEquals(_size))
+				{
+					return;
+				}
+
+				_size = value;
+				InvalidateMesh();
+			}
+		}
+
+		protected override Mesh CreateMesh()
 		{
 			var builder = new Builder();
 
-			size /= 2.0f;
+			_size /= 2.0f;
 
 			// Create each face in turn.
 			for (int i = 0; i < CubeFaceCount; i++)
@@ -147,16 +149,14 @@ namespace Nursia.Rendering
 				builder.Indices.Add((short)(vbase + 3));
 
 				// Four vertices per face.
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * size, normal, textureCoordinates[0]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 + side2) * size, normal, textureCoordinates[1]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 + side2) * size, normal, textureCoordinates[2]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 - side2) * size, normal, textureCoordinates[3]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * _size, normal, textureCoordinates[0]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 + side2) * _size, normal, textureCoordinates[1]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 + side2) * _size, normal, textureCoordinates[2]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 - side2) * _size, normal, textureCoordinates[3]));
 			}
 
 			// Create the primitive object.
-			return builder.Create(toLeftHanded);
+			return builder.Create(IsLeftHanded);
 		}
-
-		public static Mesh CreateCube(CubeParameters p) => CreateCube(p.Size, p.LeftHanded);
 	}
 }

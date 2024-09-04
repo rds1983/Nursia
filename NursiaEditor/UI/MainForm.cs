@@ -8,6 +8,7 @@ using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
 using Nursia.Modelling;
+using Nursia.Primitives;
 using Nursia.Rendering;
 using Nursia.Rendering.Lights;
 using NursiaEditor.Utility;
@@ -205,6 +206,11 @@ namespace NursiaEditor.UI
 			_propertyGrid.PropertyChanged += (s, a) =>
 			{
 				IsDirty = true;
+
+				if (a.Data == "PrimitiveMeshType")
+				{
+					_propertyGrid.Rebuild();
+				}
 			};
 
 			NewScene();
@@ -263,9 +269,14 @@ namespace NursiaEditor.UI
 				Title = "Add New Geometric Primitive"
 			};
 
+			dialog.AddItem("Capsule");
 			dialog.AddItem("Cube");
 			dialog.AddItem("Cylinder");
 			dialog.AddItem("GeoSphere");
+			dialog.AddItem("Plane");
+			dialog.AddItem("Sphere");
+			dialog.AddItem("Teapot");
+			dialog.AddItem("Torus");
 
 			dialog.Closed += (s, a) =>
 			{
@@ -276,43 +287,49 @@ namespace NursiaEditor.UI
 				}
 
 				// "Ok" or Enter
-				object creationParams = null;
-				Mesh mesh = null;
+				PrimitiveMesh primitiveMesh = null;
 				switch (dialog.SelectedIndex)
 				{
 					case 0:
-						{
-							var p = PrimitiveMeshes.CubeParameters.Default;
-							mesh = PrimitiveMeshes.CreateCube(p);
-							creationParams = p;
-						}
+						primitiveMesh = new Capsule();
 						break;
 
 					case 1:
-						{
-							var p = PrimitiveMeshes.CylinderParameters.Default;
-							mesh = PrimitiveMeshes.CreateCylinder(p);
-							creationParams = p;
-						}
+						primitiveMesh = new Cube();
 						break;
 
 					case 2:
-						{
-							var p = PrimitiveMeshes.GeoSphereParameters.Default;
-							mesh = PrimitiveMeshes.CreateGeoSphere(p);
-							creationParams = p;
-						}
+						primitiveMesh = new Cylinder();
+						break;
+
+					case 3:
+						primitiveMesh = new GeoSphere();
+						break;
+
+					case 4:
+						primitiveMesh = new Nursia.Primitives.Plane();
+						break;
+
+					case 5:
+						primitiveMesh = new Sphere();
+						break;
+
+					case 6:
+						primitiveMesh = new Teapot();
+						break;
+
+					case 7:
+						primitiveMesh = new Torus();
 						break;
 				}
 
-				if (creationParams != null && mesh != null)
+				if (primitiveMesh != null)
 				{
-					var meshNode = new MeshNode
+					var meshNode = new PrimitiveMeshNode
 					{
 						Id = dialog.ItemName,
-						Mesh = mesh,
 						Material = new DefaultMaterial(),
-						CreationParams = creationParams
+						PrimitiveMesh = primitiveMesh
 					};
 
 					AddNewNode(sceneNode, meshNode);

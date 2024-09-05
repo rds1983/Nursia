@@ -102,14 +102,14 @@ namespace Nursia.Primitives
 			// the indices
 			for (int i = 1; i <= _tessellation; ++i)
 			{
-				builder.Indices.Add((short)(0));
-				builder.Indices.Add((short)(i));
-				builder.Indices.Add((short)(i + 1));
+				builder.Indices.Add(0);
+				builder.Indices.Add(i);
+				builder.Indices.Add(i + 1);
 
 				// note the opposite order of vertices - this is required to make the second face look the other way
-				builder.Indices.Add((short)(secondFaceOffset + i + 1));
-				builder.Indices.Add((short)(secondFaceOffset + i));
-				builder.Indices.Add((short)(secondFaceOffset + 0));
+				builder.Indices.Add(secondFaceOffset + i + 1);
+				builder.Indices.Add(secondFaceOffset + i);
+				builder.Indices.Add(secondFaceOffset + 0);
 			}
 
 			return builder.Create(IsLeftHanded);

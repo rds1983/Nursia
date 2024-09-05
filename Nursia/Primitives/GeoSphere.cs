@@ -92,7 +92,7 @@ namespace Nursia.Primitives
 			new Vector3(+0, -1,  0), // 5 bottom
 		};
 
-		private static readonly short[] OctahedronIndices =
+		private static readonly int[] OctahedronIndices =
 		{
 			0, 1, 2, // top front-right face
 			0, 2, 3, // top back-right face
@@ -108,12 +108,12 @@ namespace Nursia.Primitives
 		{
 			public List<Vector3> Positions { get; } = new List<Vector3>(OctahedronVertices);
 
-			public short* IndicesPtr;
+			public int* IndicesPtr;
 
 			// Key: an edge
 			// Value: the index of the vertex which lies midway between the two vertices pointed to by the key value
 			// This map is used to avoid duplicating vertices when subdividing triangles along edges.
-			public Dictionary<UndirectedEdge, short> SubdividedEdges { get; } = new Dictionary<UndirectedEdge, short>();
+			public Dictionary<UndirectedEdge, int> SubdividedEdges { get; } = new Dictionary<UndirectedEdge, int>();
 
 			public GeoSphereBuilder()
 			{
@@ -169,7 +169,7 @@ namespace Nursia.Primitives
 			for (int iSubdivision = 0; iSubdivision < _tessellation; ++iSubdivision)
 			{
 				// The new index collection after subdivision.
-				var newIndices = new List<short>();
+				var newIndices = new List<int>();
 				builder.SubdividedEdges.Clear();
 
 				int triangleCount = builder.Indices.Count / 3;
@@ -192,9 +192,9 @@ namespace Nursia.Primitives
 					Vector3 v01; // vertex on the midpoint of v0 and v1
 					Vector3 v12; // ditto v1 and v2
 					Vector3 v20; // ditto v2 and v0
-					short iv01; // index of v01
-					short iv12; // index of v12
-					short iv20; // index of v20
+					int iv01; // index of v01
+					int iv12; // index of v12
+					int iv20; // index of v20
 
 					// Add/get new vertices and their indices
 					DivideEdge(builder, iv0, iv1, out v01, out iv01);
@@ -274,7 +274,7 @@ namespace Nursia.Primitives
 			var indicesArray = builder.Indices.ToArray();
 			fixed (void* pIndices = indicesArray)
 			{
-				builder.IndicesPtr = (short*)pIndices;
+				builder.IndicesPtr = (int*)pIndices;
 
 				for (int i = 0; i < preCount; ++i)
 				{
@@ -327,7 +327,7 @@ namespace Nursia.Primitives
 								Math.Abs(builder.Vertices[*triIndex0].TextureCoordinate.X - builder.Vertices[*triIndex2].TextureCoordinate.X) > 0.5f * UScale)
 							{
 								// yep; replace the specified index to point to the new, corrected vertex
-								builder.IndicesPtr[j + 0] = (short)newIndex;
+								builder.IndicesPtr[j + 0] = newIndex;
 							}
 						}
 					}
@@ -337,7 +337,7 @@ namespace Nursia.Primitives
 				FixPole(builder, southPoleIndex);
 
 				// Clear indices as it will not be accessible outside the fixed statement
-				builder.IndicesPtr = (short*)0;
+				builder.IndicesPtr = (int*)0;
 			}
 
 			return builder.Create(IsLeftHanded);
@@ -353,9 +353,9 @@ namespace Nursia.Primitives
 				// These pointers point to the three indices which make up this triangle. pPoleIndex is the pointer to the
 				// entry in the index array which represents the pole index, and the other two pointers point to the other
 				// two indices making up this triangle.
-				short* pPoleIndex;
-				short* pOtherIndex0;
-				short* pOtherIndex1;
+				int* pPoleIndex;
+				int* pOtherIndex0;
+				int* pOtherIndex1;
 				if (builder.IndicesPtr[i + 0] == poleIndex)
 				{
 					pPoleIndex = &builder.IndicesPtr[i + 0];
@@ -391,14 +391,14 @@ namespace Nursia.Primitives
 				}
 				else
 				{
-					*pPoleIndex = (short)builder.Vertices.Count;
+					*pPoleIndex = builder.Vertices.Count;
 					builder.Vertices.Add(newPoleVertex);
 				}
 			}
 		}
 
 		// Function that, when given the index of two vertices, creates a new vertex at the midpoint of those builder.Vertices.
-		private void DivideEdge(GeoSphereBuilder builder, int i0, int i1, out Vector3 outVertex, out short outIndex)
+		private void DivideEdge(GeoSphereBuilder builder, int i0, int i1, out Vector3 outVertex, out int outIndex)
 		{
 			var edge = new UndirectedEdge(i0, i1);
 
@@ -414,7 +414,7 @@ namespace Nursia.Primitives
 
 				// outVertex = (builder.Vertices[i0] + builder.Vertices[i1]) / 2
 				outVertex = (builder.Positions[i0] + builder.Positions[i1]) * 0.5f;
-				outIndex = (short)builder.Positions.Count;
+				outIndex = builder.Positions.Count;
 				builder.Positions.Add(outVertex);
 
 				// Now add it to the map.

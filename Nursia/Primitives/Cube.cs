@@ -144,13 +144,13 @@ namespace Nursia.Primitives
 
 				// Six indices (two triangles) per face.
 				int vbase = i * 4;
-				builder.Indices.Add((short)(vbase + 0));
-				builder.Indices.Add((short)(vbase + 1));
-				builder.Indices.Add((short)(vbase + 2));
+				builder.Indices.Add(vbase + 0);
+				builder.Indices.Add(vbase + 1);
+				builder.Indices.Add(vbase + 2);
 
-				builder.Indices.Add((short)(vbase + 0));
-				builder.Indices.Add((short)(vbase + 2));
-				builder.Indices.Add((short)(vbase + 3));
+				builder.Indices.Add(vbase + 0);
+				builder.Indices.Add(vbase + 2);
+				builder.Indices.Add(vbase + 3);
 
 				// Four vertices per face.
 				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * size, normal, texCoords[0]));

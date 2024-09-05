@@ -197,13 +197,13 @@ namespace Nursia.Primitives
 					int nextI = i + 1;
 					int nextJ = (j + 1) % stride;
 
-					builder.Indices.Add((short)(i * stride + j));
-					builder.Indices.Add((short)(nextI * stride + j));
-					builder.Indices.Add((short)(i * stride + nextJ));
+					builder.Indices.Add(i * stride + j);
+					builder.Indices.Add(nextI * stride + j);
+					builder.Indices.Add(i * stride + nextJ);
 
-					builder.Indices.Add((short)(i * stride + nextJ));
-					builder.Indices.Add((short)(nextI * stride + j));
-					builder.Indices.Add((short)(nextI * stride + nextJ));
+					builder.Indices.Add(i * stride + nextJ);
+					builder.Indices.Add(nextI * stride + j);
+					builder.Indices.Add(nextI * stride + nextJ);
 				}
 			}
 

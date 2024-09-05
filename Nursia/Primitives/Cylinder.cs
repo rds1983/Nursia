@@ -158,9 +158,9 @@ namespace Nursia.Primitives
 				}
 
 				int vbase = builder.Vertices.Count;
-				builder.Indices.Add((short)(vbase));
-				builder.Indices.Add((short)(vbase + i1));
-				builder.Indices.Add((short)(vbase + i2));
+				builder.Indices.Add(vbase);
+				builder.Indices.Add(vbase + i1);
+				builder.Indices.Add(vbase + i2);
 			}
 
 			// Which end of the cylinder is this?
@@ -207,13 +207,13 @@ namespace Nursia.Primitives
 				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset + topOffset, normal, textureCoordinate * new Vector2(UScale, VScale)));
 				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset - topOffset, normal, (textureCoordinate + Vector2.UnitY) * new Vector2(UScale, VScale)));
 
-				builder.Indices.Add((short)(i * 2));
-				builder.Indices.Add((short)((i * 2 + 2) % (stride * 2)));
-				builder.Indices.Add((short)(i * 2 + 1));
+				builder.Indices.Add(i * 2);
+				builder.Indices.Add((i * 2 + 2) % (stride * 2));
+				builder.Indices.Add(i * 2 + 1);
 
-				builder.Indices.Add((short)(i * 2 + 1));
-				builder.Indices.Add((short)((i * 2 + 2) % (stride * 2)));
-				builder.Indices.Add((short)((i * 2 + 3) % (stride * 2)));
+				builder.Indices.Add(i * 2 + 1);
+				builder.Indices.Add((i * 2 + 2) % (stride * 2));
+				builder.Indices.Add((i * 2 + 3) % (stride * 2));
 			}
 
 			// Create flat triangle fan caps to seal the top and bottom.

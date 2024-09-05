@@ -127,22 +127,22 @@ namespace Nursia.Primitives
 				{
 					for (int i = 0; i < _tessellation; ++i)
 					{
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i));
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i + offsetV1));
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i + offsetV2));
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i);
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i + offsetV1);
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i + offsetV2);
 
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i + vertexNumberBySection));
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i + offsetV3));
-						builder.Indices.Add((short)(globalOffset + j * vertexNumberBySection + i + offsetV4));
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i + vertexNumberBySection);
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i + offsetV3);
+						builder.Indices.Add(globalOffset + j * vertexNumberBySection + i + offsetV4);
 					}
 				}
 
 				// the extremity triangle
 				for (int i = 0; i < _tessellation; ++i)
 				{
-					builder.Indices.Add((short)(globalOffset + (_tessellation - 1) * vertexNumberBySection + i));
-					builder.Indices.Add((short)(globalOffset + (_tessellation - 1) * vertexNumberBySection + i + offsetV1));
-					builder.Indices.Add((short)(globalOffset + (_tessellation - 1) * vertexNumberBySection + i + offsetV2));
+					builder.Indices.Add(globalOffset + (_tessellation - 1) * vertexNumberBySection + i);
+					builder.Indices.Add(globalOffset + (_tessellation - 1) * vertexNumberBySection + i + offsetV1);
+					builder.Indices.Add(globalOffset + (_tessellation - 1) * vertexNumberBySection + i + offsetV2);
 				}
 			}
 

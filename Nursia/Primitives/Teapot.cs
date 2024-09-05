@@ -441,7 +441,7 @@ namespace Nursia.Primitives
 
 		// Creates indices for a patch that is tessellated at the specified level.
 		// Calls the specified outputIndex function for each generated index value.
-		private static IEnumerable<short> CreatePatchIndices(int tessellation, bool isMirrored, int baseIndex)
+		private static IEnumerable<int> CreatePatchIndices(int tessellation, bool isMirrored, int baseIndex)
 		{
 			int stride = tessellation + 1;
 			// Make a list of six index values (two triangles).
@@ -466,7 +466,7 @@ namespace Nursia.Primitives
 
 					foreach (var index in indices)
 					{
-						yield return (short)index;
+						yield return index;
 					}
 				}
 			}

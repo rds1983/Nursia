@@ -12,7 +12,7 @@ namespace Nursia.Primitives
 		protected class Builder
 		{
 			public List<VertexPositionNormalTexture> Vertices { get; set; } = new List<VertexPositionNormalTexture>();
-			public List<short> Indices { get; } = new List<short>();
+			public List<int> Indices { get; } = new List<int>();
 
 			public Mesh Create(bool toLeftHanded)
 			{
@@ -34,7 +34,13 @@ namespace Nursia.Primitives
 					}
 				}
 
-				return new Mesh(Vertices.ToArray(), Indices.ToArray());
+				var indicesShort = new short[Indices.Count];
+				for (var i = 0; i < indicesShort.Length; ++i)
+				{
+					indicesShort[i] = (short)Indices[i];
+				}
+
+				return new Mesh(Vertices.ToArray(), indicesShort);
 			}
 		}
 

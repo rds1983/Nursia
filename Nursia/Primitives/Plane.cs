@@ -213,13 +213,13 @@ namespace Nursia.Primitives
 				{
 					// Six indices (two triangles) per face.
 					int vbase = lineWidth * y + x;
-					builder.Indices.Add((short)(vbase + 1));
-					builder.Indices.Add((short)(vbase + 1 + lineWidth));
-					builder.Indices.Add((short)(vbase + lineWidth));
+					builder.Indices.Add(vbase + 1);
+					builder.Indices.Add(vbase + 1 + lineWidth);
+					builder.Indices.Add(vbase + lineWidth);
 
-					builder.Indices.Add((short)(vbase + 1));
-					builder.Indices.Add((short)(vbase + lineWidth));
-					builder.Indices.Add((short)(vbase));
+					builder.Indices.Add(vbase + 1);
+					builder.Indices.Add(vbase + lineWidth);
+					builder.Indices.Add(vbase);
 				}
 			}
 			if (_generateBackFace)
@@ -243,13 +243,13 @@ namespace Nursia.Primitives
 					{
 						// Six indices (two triangles) per face.
 						int vbase = lineWidth * (y + _tessellation.Y + 1) + x;
-						builder.Indices.Add((short)(vbase + 1));
-						builder.Indices.Add((short)(vbase + lineWidth));
-						builder.Indices.Add((short)(vbase + 1 + lineWidth));
+						builder.Indices.Add(vbase + 1);
+						builder.Indices.Add(vbase + lineWidth);
+						builder.Indices.Add(vbase + 1 + lineWidth);
 
-						builder.Indices.Add((short)(vbase + 1));
-						builder.Indices.Add((short)(vbase));
-						builder.Indices.Add((short)(vbase + lineWidth));
+						builder.Indices.Add(vbase + 1);
+						builder.Indices.Add(vbase);
+						builder.Indices.Add(vbase + lineWidth);
 					}
 				}
 			}

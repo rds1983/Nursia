@@ -16,9 +16,9 @@ namespace Nursia.Rendering
 	public class SceneNode : ItemWithId
 	{
 		private Vector3 _translation = Vector3.Zero;
+		private Vector3 _rotation = Vector3.Zero;
 		private Vector3 _scale = Vector3.One;
-		private Quaternion _rotation = Quaternion.Identity;
-		private Matrix? _transform = null;
+		private Matrix? _globalTransform = null, _localTransform = null;
 
 		public Vector3 Translation
 		{
@@ -32,7 +32,7 @@ namespace Nursia.Rendering
 				}
 
 				_translation = value;
-				_transform = null;
+				InvalidateTransform();
 			}
 		}
 
@@ -48,11 +48,11 @@ namespace Nursia.Rendering
 				}
 
 				_scale = value;
-				_transform = null;
+				InvalidateTransform();
 			}
 		}
 
-		public Quaternion Rotation
+		public Vector3 Rotation
 		{
 			get => _rotation;
 
@@ -64,22 +64,49 @@ namespace Nursia.Rendering
 				}
 
 				_rotation = value;
-				_transform = null;
+				InvalidateTransform();
 			}
 		}
 
 		[Browsable(false)]
 		[JsonIgnore]
-		public Matrix Transform
+		public Matrix LocalTransform
 		{
 			get
 			{
-				if (_transform == null)
+				if (_localTransform == null)
 				{
-					_transform = Mathematics.CreateTransform(Translation, Scale, Rotation);
+					var quaternion = Quaternion.CreateFromYawPitchRoll(
+						MathHelper.ToRadians(_rotation.Y),
+						MathHelper.ToRadians(_rotation.X),
+						MathHelper.ToRadians(_rotation.Z));
+					_localTransform = Mathematics.CreateTransform(Translation, Scale, quaternion);
 				}
 
-				return _transform.Value;
+				return _localTransform.Value;
+			}
+		}
+
+
+		[Browsable(false)]
+		[JsonIgnore]
+		public Matrix GlobalTransform
+		{
+			get
+			{
+				if (_globalTransform == null)
+				{
+					if (Parent != null)
+					{
+						_globalTransform = LocalTransform * Parent.GlobalTransform;
+					}
+					else
+					{
+						_globalTransform = LocalTransform;
+					}
+				}
+
+				return _globalTransform.Value;
 			}
 		}
 
@@ -140,6 +167,17 @@ namespace Nursia.Rendering
 
 		protected internal virtual void Render(RenderContext context)
 		{
+		}
+
+		public void InvalidateTransform()
+		{
+			_localTransform = null;
+			_globalTransform = null;
+
+			foreach (var child in Children)
+			{
+				child.InvalidateTransform();
+			}
 		}
 
 		private void InternalQuery(Func<SceneNode, bool> predicate, List<SceneNode> result)

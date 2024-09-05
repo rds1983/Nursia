@@ -207,9 +207,15 @@ namespace NursiaEditor.UI
 			{
 				IsDirty = true;
 
-				if (a.Data == "PrimitiveMeshType")
+				switch(a.Data)
 				{
-					_propertyGrid.Rebuild();
+					case "Id":
+						UpdateTreeNodeId(_treeFileExplorer.SelectedRow);
+						break;
+
+					case "PrimitiveMeshType":
+						_propertyGrid.Rebuild();
+						break;
 				}
 			};
 
@@ -220,6 +226,12 @@ namespace NursiaEditor.UI
 		{
 			parent.Children.Add(child);
 			RefreshExplorer(child);
+		}
+
+		private void OnAddNode(SceneNode sceneNode)
+		{
+			var newNode = new SceneNode();
+			AddNewNode(sceneNode, newNode);
 		}
 
 		private void OnAddNewLight(SceneNode sceneNode)
@@ -409,6 +421,7 @@ namespace NursiaEditor.UI
 
 			var contextMenuOptions = new List<Tuple<string, Action>>
 			{
+				new Tuple<string, Action>("Insert &Node...", () => OnAddNode(sceneNode)),
 				new Tuple<string, Action>("Insert &Light...", () => OnAddNewLight(sceneNode)),
 				new Tuple<string, Action>("Insert &Geometric Primitive...", () => OnAddNewGeometricPrimitive(sceneNode)),
 				new Tuple<string, Action>("Insert &Gltf/Glb Model...", () => OnAddGltfModel(sceneNode)),
@@ -531,15 +544,21 @@ namespace NursiaEditor.UI
 			}
 		}
 
+		private void UpdateTreeNodeId(TreeViewNode node)
+		{
+			var sceneNode = (SceneNode)node.Tag;
+			var label = (Label)node.Content;
+			label.Text = $"{sceneNode.GetType().Name} (#{sceneNode.Id})";
+		}
+
 		private TreeViewNode RecursiveAddToExplorer(ITreeViewNode treeViewNode, SceneNode sceneNode)
 		{
-			var label = new Label
-			{
-				Text = $"{sceneNode.GetType().Name} (#{sceneNode.Id})",
-			};
+			var label = new Label();
 			var newNode = treeViewNode.AddSubNode(label);
 			newNode.IsExpanded = true;
 			newNode.Tag = sceneNode;
+
+			UpdateTreeNodeId(newNode);
 
 			foreach (var child in sceneNode.Children)
 			{

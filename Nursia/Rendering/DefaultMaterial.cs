@@ -30,6 +30,7 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[DefaultValue(true)]
 		public bool Lightning
 		{
 			get => _lightning;

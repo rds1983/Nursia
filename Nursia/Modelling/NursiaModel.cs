@@ -27,7 +27,7 @@ namespace Nursia.Modelling
 
 			Model.UpdateNodesAbsoluteTransforms();
 
-			var transform = Transform;
+			var transform = GlobalTransform;
 			foreach (var node in Model.RootNodes)
 			{
 				node.Render(context, ref transform);

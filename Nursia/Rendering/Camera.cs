@@ -182,7 +182,6 @@ namespace Nursia.Rendering
 			}
 
 			return deg;
-
 		}
 
 		public void SetLookAt(Vector3 position, Vector3 target)

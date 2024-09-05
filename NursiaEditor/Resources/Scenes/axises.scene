@@ -1,0 +1,66 @@
+{
+  "Camera": {
+    "Position": "-0.027334038, 5.5951877, 4.30605",
+    "YawAngle": 185.39986,
+    "PitchAngle": 46.000095,
+    "ViewAngle": 60.0,
+    "NearPlaneDistance": 0.1,
+    "FarPlaneDistance": 1000.0
+  },
+  "Scale": "1, 1, 1",
+  "Rotation": "0, 0, 0, 1",
+  "Children": [
+    {
+      "Scale": "1, 1, 1",
+      "Rotation": "0, 0, 0, 1",
+      "Children": [
+        {
+          "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+          "PrimitiveMesh": {
+            "$type": "Nursia.Primitives.Cone, Nursia",
+            "Radius": 0.1,
+            "Height": 0.2,
+            "Tessellation": 64,
+            "UScale": 1.0,
+            "VScale": 1.0
+          },
+          "Material": {
+            "$type": "Nursia.Rendering.DefaultMaterial, Nursia",
+            "Lightning": false,
+            "DiffuseColor": "75, 217, 97, 255",
+            "SpecularPower": 250.0
+          },
+          "Translation": "0, 1, 0",
+          "Scale": "1, 1, 1",
+          "Rotation": "0, 0, 0, 1",
+          "Children": [],
+          "Id": "yArrow"
+        },
+        {
+          "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+          "PrimitiveMesh": {
+            "$type": "Nursia.Primitives.Cylinder, Nursia",
+            "Height": 1.0,
+            "Radius": 0.04,
+            "Tessellation": 32,
+            "UScale": 1.0,
+            "VScale": 1.0
+          },
+          "Material": {
+            "$type": "Nursia.Rendering.DefaultMaterial, Nursia",
+            "Lightning": false,
+            "DiffuseColor": "75, 217, 97, 255",
+            "SpecularPower": 250.0
+          },
+          "Translation": "0, 0.5, 0",
+          "Scale": "1, 1, 1",
+          "Rotation": "0, 0, 0, 1",
+          "Children": [],
+          "Id": "yBody"
+        }
+      ],
+      "Id": "yAxis"
+    }
+  ],
+  "Id": "Root"
+}

@@ -41,12 +41,12 @@ namespace Nursia.Sky
 			// Calculate special world-view-project matrix with zero translation
 			var view = context.Camera.View;
 			view.Translation = Vector3.Zero;
-			var transform = Transform * view * context.Projection;
+			var transform = GlobalTransform * view * context.Projection;
 
 			// Set to the material
 			Material.Transform = transform;
 
-			context.BatchJob("Default", Material, Transform, MeshData);
+			context.BatchJob("Default", Material, GlobalTransform, MeshData);
 		}
 
 		public override void Load(AssetManager assetManager)

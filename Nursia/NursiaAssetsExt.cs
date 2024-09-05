@@ -15,7 +15,8 @@ namespace Nursia
 
 		private readonly static AssetLoader<Scene> _sceneLoader = (manager, assetName, settings, tag) =>
 		{
-			return Scene.ReadFromFile(assetName, manager);
+			var data = manager.LoadString(assetName);
+			return Scene.ReadFromString(data, manager);
 		};
 
 		public static ModelInstance LoadGltf(this AssetManager assetManager,

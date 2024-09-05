@@ -406,9 +406,8 @@ namespace Nursia.Utilities
 			File.WriteAllText(path, s);
 		}
 
-		public static T DeserializeFromFile<T>(string path, JsonSerializerSettings options)
+		public static T DeserializeFromString<T>(string data, JsonSerializerSettings options)
 		{
-			var data = File.ReadAllText(path);
 			return JsonConvert.DeserializeObject<T>(data, options);
 		}
 	}

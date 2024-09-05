@@ -214,6 +214,17 @@ namespace NursiaEditor.UI
 				_renderer.Render(Scene, Scene.Camera);
 				_renderer.Render(GridMesh, Scene.Camera);
 
+				device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
+					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);
+
+				var m = NursiaEditor.Resources.ModelAxises;
+				var c = Scene.Camera.Clone();
+
+				// Make the gizmo placed always in front of the camera
+				c.Position = Vector3.Zero;
+				m.Translation = c.Direction * 2;
+				_renderer.Render(m, c);
+
 				//				UpdateMarker();
 				/*				_renderer.Begin();
 								_renderer.DrawScene(Scene);
@@ -241,8 +252,8 @@ namespace NursiaEditor.UI
 			}
 
 			var camera = Scene.Camera;
-			var widgetViewport = new Viewport(0, 0, ActualBounds.Width, ActualBounds.Height);
-			var projection = camera.CalculateProjection(widgetViewport.AspectRatio);
+			var viewport = new Viewport(0, 0, ActualBounds.Width, ActualBounds.Height);
+			var projection = camera.CalculateProjection(viewport.AspectRatio);
 
 			// Draw lights' icons'
 			Scene.Iterate(n =>
@@ -250,7 +261,7 @@ namespace NursiaEditor.UI
 				var asLight = n as BaseLight;
 				if (asLight != null)
 				{
-					var p = widgetViewport.Project(asLight.Translation,
+					var p = viewport.Project(asLight.Translation,
 						projection, camera.View, Matrix.Identity);
 
 					var icon = NursiaEditor.Resources.IconDirectionalLight;

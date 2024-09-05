@@ -184,17 +184,6 @@ namespace Nursia.Rendering
 			return deg;
 		}
 
-		public void SetLookAt(Vector3 position, Vector3 target)
-		{
-			Position = position;
-
-			var direction = target - _position;
-			direction.Normalize();
-
-			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Asin(direction.Y));
-			YawAngle = MathHelper.ToDegrees((float)Math.Atan2(direction.X, direction.Y));
-		}
-
 		private void Invalidate()
 		{
 			_dirty = true;
@@ -239,6 +228,20 @@ namespace Nursia.Rendering
 		{
 			Update();
 			return _string;
+		}
+
+		public Camera Clone()
+		{
+			return new Camera
+			{
+				Position = Position,
+				YawAngle = YawAngle,
+				PitchAngle = PitchAngle,
+				RollAngle = RollAngle,
+				ViewAngle = ViewAngle,
+				NearPlaneDistance = NearPlaneDistance,
+				FarPlaneDistance = FarPlaneDistance
+			};
 		}
 	}
 }

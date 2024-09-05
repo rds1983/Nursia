@@ -91,8 +91,8 @@ namespace Nursia.Utilities
 
 		public static Matrix CreateTransform(Vector3 translation, Vector3 scale, Quaternion rotation)
 		{
-			return Matrix.CreateFromQuaternion(rotation) *
-				Matrix.CreateScale(scale) *
+			return Matrix.CreateScale(scale) * 
+				Matrix.CreateFromQuaternion(rotation) *
 				Matrix.CreateTranslation(translation);
 		}
 

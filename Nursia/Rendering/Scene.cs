@@ -1,6 +1,7 @@
 ﻿using AssetManagementBase;
 using Nursia.Utilities;
 using System.ComponentModel;
+using System.IO;
 
 namespace Nursia.Rendering
 {
@@ -18,14 +19,20 @@ namespace Nursia.Rendering
 			JsonExtensions.SerializeToFile(path, options, this);
 		}
 
-		public static Scene ReadFromFile(string path, AssetManager assetManager)
+		public static Scene ReadFromString(string data, AssetManager assetManager)
 		{
 			var options = JsonExtensions.CreateOptions();
-			var result = JsonExtensions.DeserializeFromFile<Scene>(path, options);
+			var result = JsonExtensions.DeserializeFromString<Scene>(data, options);
 
 			result.Load(assetManager);
 
 			return result;
+		}
+
+		public static Scene ReadFromFile(string path, AssetManager assetManager)
+		{
+			var data = File.ReadAllText(path);
+			return ReadFromString(data, assetManager);
 		}
 	}
 }

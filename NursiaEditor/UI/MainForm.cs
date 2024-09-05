@@ -270,8 +270,10 @@ namespace NursiaEditor.UI
 			};
 
 			dialog.AddItem("Capsule");
+			dialog.AddItem("Cone");
 			dialog.AddItem("Cube");
 			dialog.AddItem("Cylinder");
+			dialog.AddItem("Disc");
 			dialog.AddItem("GeoSphere");
 			dialog.AddItem("Plane");
 			dialog.AddItem("Sphere");
@@ -295,30 +297,38 @@ namespace NursiaEditor.UI
 						break;
 
 					case 1:
-						primitiveMesh = new Cube();
+						primitiveMesh = new Cone();
 						break;
 
 					case 2:
-						primitiveMesh = new Cylinder();
+						primitiveMesh = new Cube();
 						break;
 
 					case 3:
-						primitiveMesh = new GeoSphere();
+						primitiveMesh = new Cylinder();
 						break;
 
 					case 4:
-						primitiveMesh = new Nursia.Primitives.Plane();
+						primitiveMesh = new Disc();
 						break;
 
 					case 5:
-						primitiveMesh = new Sphere();
+						primitiveMesh = new GeoSphere();
 						break;
 
 					case 6:
-						primitiveMesh = new Teapot();
+						primitiveMesh = new Nursia.Primitives.Plane();
 						break;
 
 					case 7:
+						primitiveMesh = new Sphere();
+						break;
+
+					case 8:
+						primitiveMesh = new Teapot();
+						break;
+
+					case 9:
 						primitiveMesh = new Torus();
 						break;
 				}

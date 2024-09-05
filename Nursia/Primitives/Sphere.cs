@@ -78,23 +78,23 @@ using System;
 
 namespace Nursia.Primitives
 {
-	public class Sphere: PrimitiveMesh
+	public class Sphere : PrimitiveMesh
 	{
-		private float _diameter = 1.0f;
+		private float _radius = 0.5f;
 		private int _tessellation = 16;
 
-		public float Diameter
+		public float Radius
 		{
-			get => _diameter;
+			get => _radius;
 
 			set
 			{
-				if (value.EpsilonEquals(_diameter))
+				if (value.EpsilonEquals(_radius))
 				{
 					return;
 				}
 
-				_diameter = value;
+				_radius = value;
 				InvalidateMesh();
 			}
 		}
@@ -117,32 +117,44 @@ namespace Nursia.Primitives
 
 		protected override Mesh CreateMesh()
 		{
-			if (_tessellation < 3) throw new ArgumentOutOfRangeException("tessellation", "Must be >= 3");
+			if (_tessellation < 3)
+				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
 
 			int verticalSegments = _tessellation;
 			int horizontalSegments = _tessellation * 2;
 
 			var builder = new Builder();
 
-			float radius = _diameter / 2;
+			// generate the first extremity points
+			for (int j = 0; j <= horizontalSegments; j++)
+			{
+				var normal = new Vector3(0, -1, 0);
+				var textureCoordinate = new Vector2(UScale * j / horizontalSegments, VScale);
+				builder.Vertices.Add(new VertexPositionNormalTexture(normal * _radius, normal, textureCoordinate));
+			}
 
 			// Create rings of vertices at progressively higher latitudes.
-			for (int i = 0; i <= verticalSegments; i++)
+			for (int i = 1; i < verticalSegments; i++)
 			{
-				float v = 1.0f - (float)i / verticalSegments;
+				float v = VScale * (1.0f - (float)i / verticalSegments);
 
 				var latitude = (float)((i * Math.PI / verticalSegments) - Math.PI / 2.0);
-				var dy = (float)Math.Sin(latitude);
-				var dxz = (float)Math.Cos(latitude);
+				var dy = MathF.Sin(latitude);
+				var dxz = MathF.Cos(latitude);
+
+				// the first point
+				var firstNormal = new Vector3(0, dy, dxz);
+				var firstHorizontalVertex = new VertexPositionNormalTexture(firstNormal * _radius, firstNormal, new Vector2(0, v));
+				builder.Vertices.Add(firstHorizontalVertex);
 
 				// Create a single ring of vertices at this latitude.
-				for (int j = 0; j <= horizontalSegments; j++)
+				for (int j = 1; j < horizontalSegments; j++)
 				{
-					float u = (float)j / horizontalSegments;
+					float u = (UScale * j) / horizontalSegments;
 
 					var longitude = (float)(j * 2.0 * Math.PI / horizontalSegments);
-					var dx = (float)Math.Sin(longitude);
-					var dz = (float)Math.Cos(longitude);
+					var dx = MathF.Sin(longitude);
+					var dz = MathF.Cos(longitude);
 
 					dx *= dxz;
 					dz *= dxz;
@@ -150,13 +162,24 @@ namespace Nursia.Primitives
 					var normal = new Vector3(dx, dy, dz);
 					var textureCoordinate = new Vector2(u, v);
 
-					builder.Vertices.Add(new VertexPositionNormalTexture(normal * radius, normal, textureCoordinate));
+					builder.Vertices.Add(new VertexPositionNormalTexture(normal * _radius, normal, textureCoordinate));
 				}
+
+				// the last point equal to the first point
+				firstHorizontalVertex.TextureCoordinate = new Vector2(UScale, v);
+				builder.Vertices.Add(firstHorizontalVertex);
+			}
+
+			// generate the end extremity points
+			for (int j = 0; j <= horizontalSegments; j++)
+			{
+				var normal = new Vector3(0, 1, 0);
+				var textureCoordinate = new Vector2(UScale * j / horizontalSegments, 0f);
+				builder.Vertices.Add(new VertexPositionNormalTexture(normal * _radius, normal, textureCoordinate));
 			}
 
 			// Fill the index buffer with triangles joining each pair of latitude rings.
 			int stride = horizontalSegments + 1;
-
 			for (int i = 0; i < verticalSegments; i++)
 			{
 				for (int j = 0; j <= horizontalSegments; j++)

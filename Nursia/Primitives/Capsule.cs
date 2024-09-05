@@ -86,8 +86,6 @@ namespace Nursia.Primitives
 		private float _length = 1.0f;
 		private float _radius = 0.5f;
 		private int _tessellation = 8;
-		private float _uScale = 1.0f;
-		private float _vScale = 1.0f;
 
 		public float Length
 		{
@@ -137,41 +135,10 @@ namespace Nursia.Primitives
 			}
 		}
 
-		public float UScale
-		{
-			get => _uScale;
-
-			set
-			{
-				if (value.EpsilonEquals(_uScale))
-				{
-					return;
-				}
-
-				_uScale = value;
-				InvalidateMesh();
-			}
-		}
-
-		public float VScale
-		{
-			get => _vScale;
-
-			set
-			{
-				if (value.EpsilonEquals(_vScale))
-				{
-					return;
-				}
-
-				_vScale = value;
-				InvalidateMesh();
-			}
-		}
-
 		protected override Mesh CreateMesh()
 		{
-			if (_tessellation < 3) _tessellation = 3;
+			if (_tessellation < 3)
+				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
 
 			int verticalSegments = 2 * _tessellation;
 			int horizontalSegments = 4 * _tessellation;
@@ -213,7 +180,7 @@ namespace Nursia.Primitives
 					dz *= dxz;
 
 					var normal = new Vector3(dx, dy, dz);
-					var textureCoordinate = new Vector2(u * _uScale, v * _vScale);
+					var textureCoordinate = new Vector2(u * UScale, v * VScale);
 					var position = _radius * normal + new Vector3(0, deltaY, 0);
 
 					builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, textureCoordinate));

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
+using Nursia.Utilities;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -39,6 +40,8 @@ namespace Nursia.Primitives
 
 		private bool _isLeftHanded;
 		private Mesh _mesh;
+		private float _uScale = 1.0f;
+		private float _vScale = 1.0f;
 
 		[Browsable(false)]
 		[JsonIgnore]
@@ -67,6 +70,38 @@ namespace Nursia.Primitives
 				}
 
 				_isLeftHanded = value;
+				InvalidateMesh();
+			}
+		}
+
+		public float UScale
+		{
+			get => _uScale;
+
+			set
+			{
+				if (value.EpsilonEquals(_uScale))
+				{
+					return;
+				}
+
+				_uScale = value;
+				InvalidateMesh();
+			}
+		}
+
+		public float VScale
+		{
+			get => _vScale;
+
+			set
+			{
+				if (value.EpsilonEquals(_vScale))
+				{
+					return;
+				}
+
+				_vScale = value;
 				InvalidateMesh();
 			}
 		}

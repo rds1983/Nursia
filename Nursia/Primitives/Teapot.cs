@@ -86,176 +86,180 @@ namespace Nursia.Primitives
 		// as well as in X (all of the teapot is symmetrical from left to right, but
 		// only some parts are symmetrical from front to back). The control points
 		// are stored as integer indices into the TeapotControlPoints array.
+		// The teapot model consists of 10 bezier patches. Each patch has 16 control
+		// points, plus a flag indicating whether it should be mirrored in the Z axis
+		// as well as in X (all of the teapot is symmetrical from left to right, but
+		// only some parts are symmetrical from front to back). The control points
+		// are stored as integer indices into the TeapotControlPoints array.
 		private struct TeapotPatch
 		{
 			public TeapotPatch(bool mirrorZ, params int[] indices)
 			{
-				this.mirrorZ = mirrorZ;
-				this.indices = indices;
+				this.MirrorZ = mirrorZ;
+				this.Indices = indices;
 			}
 
-			public bool mirrorZ;
-			public int[] indices;
+			public bool MirrorZ;
+			public int[] Indices;
 		}
 
 		// Static data array defines the bezier patches that make up the teapot.
 		private static readonly TeapotPatch[] TeapotPatches = new TeapotPatch[]
-			{
-                    // Rim.
-                    new TeapotPatch(true, new[] {102, 103, 104, 105, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}),
+		{
+			// Rim.
+			new TeapotPatch(true, new[] { 102, 103, 104, 105, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }),
 
-                    // Body.
-                    new TeapotPatch(true, new[] {12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27}),
-					new TeapotPatch(true, new[] {24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}),
+			// Body.
+			new TeapotPatch(true, new[] { 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 }),
+			new TeapotPatch(true, new[] { 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 }),
 
-                    // Lid.
-                    new TeapotPatch(true, new[] {96, 96, 96, 96, 97, 98, 99, 100, 101, 101, 101, 101, 0, 1, 2, 3}),
-					new TeapotPatch(true, new[] {0, 1, 2, 3, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}),
+			// Lid.
+			new TeapotPatch(true, new[] { 96, 96, 96, 96, 97, 98, 99, 100, 101, 101, 101, 101, 0, 1, 2, 3 }),
+			new TeapotPatch(true, new[] { 0, 1, 2, 3, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117 }),
 
-                    // Handle.
-                    new TeapotPatch(false, new[] {41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56}),
-					new TeapotPatch(false, new[] {53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 28, 65, 66, 67}),
+			// Handle.
+			new TeapotPatch(false, new[] { 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56 }),
+			new TeapotPatch(false, new[] { 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 28, 65, 66, 67 }),
 
-                    // Spout.
-                    new TeapotPatch(false, new[] {68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83}),
-					new TeapotPatch(false, new[] {80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95}),
+			// Spout.
+			new TeapotPatch(false, new[] { 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83 }),
+			new TeapotPatch(false, new[] { 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95 }),
 
-                    // Bottom.
-                    new TeapotPatch(true, new[] {118, 118, 118, 118, 124, 122, 119, 121, 123, 126, 125, 120, 40, 39, 38, 37}),
-			};
-
+			// Bottom.
+			new TeapotPatch(true, new[] { 118, 118, 118, 118, 124, 122, 119, 121, 123, 126, 125, 120, 40, 39, 38, 37 }),
+		};
 
 		// Static array defines the control point positions that make up the teapot.
 		private static readonly Vector3[] TeapotControlPoints = new Vector3[]
-			{
-					new Vector3(0, 0.345f, -0.05f),
-					new Vector3(-0.028f, 0.345f, -0.05f),
-					new Vector3(-0.05f, 0.345f, -0.028f),
-					new Vector3(-0.05f, 0.345f, -0),
-					new Vector3(0, 0.3028125f, -0.334375f),
-					new Vector3(-0.18725f, 0.3028125f, -0.334375f),
-					new Vector3(-0.334375f, 0.3028125f, -0.18725f),
-					new Vector3(-0.334375f, 0.3028125f, -0),
-					new Vector3(0, 0.3028125f, -0.359375f),
-					new Vector3(-0.20125f, 0.3028125f, -0.359375f),
-					new Vector3(-0.359375f, 0.3028125f, -0.20125f),
-					new Vector3(-0.359375f, 0.3028125f, -0),
-					new Vector3(0, 0.27f, -0.375f),
-					new Vector3(-0.21f, 0.27f, -0.375f),
-					new Vector3(-0.375f, 0.27f, -0.21f),
-					new Vector3(-0.375f, 0.27f, -0),
-					new Vector3(0, 0.13875f, -0.4375f),
-					new Vector3(-0.245f, 0.13875f, -0.4375f),
-					new Vector3(-0.4375f, 0.13875f, -0.245f),
-					new Vector3(-0.4375f, 0.13875f, -0),
-					new Vector3(0, 0.007499993f, -0.5f),
-					new Vector3(-0.28f, 0.007499993f, -0.5f),
-					new Vector3(-0.5f, 0.007499993f, -0.28f),
-					new Vector3(-0.5f, 0.007499993f, -0),
-					new Vector3(0, -0.105f, -0.5f),
-					new Vector3(-0.28f, -0.105f, -0.5f),
-					new Vector3(-0.5f, -0.105f, -0.28f),
-					new Vector3(-0.5f, -0.105f, -0),
-					new Vector3(0, -0.105f, 0.5f),
-					new Vector3(0, -0.2175f, -0.5f),
-					new Vector3(-0.28f, -0.2175f, -0.5f),
-					new Vector3(-0.5f, -0.2175f, -0.28f),
-					new Vector3(-0.5f, -0.2175f, -0),
-					new Vector3(0, -0.27375f, -0.375f),
-					new Vector3(-0.21f, -0.27375f, -0.375f),
-					new Vector3(-0.375f, -0.27375f, -0.21f),
-					new Vector3(-0.375f, -0.27375f, -0),
-					new Vector3(0, -0.2925f, -0.375f),
-					new Vector3(-0.21f, -0.2925f, -0.375f),
-					new Vector3(-0.375f, -0.2925f, -0.21f),
-					new Vector3(-0.375f, -0.2925f, -0),
-					new Vector3(0, 0.17625f, 0.4f),
-					new Vector3(-0.075f, 0.17625f, 0.4f),
-					new Vector3(-0.075f, 0.2325f, 0.375f),
-					new Vector3(0, 0.2325f, 0.375f),
-					new Vector3(0, 0.17625f, 0.575f),
-					new Vector3(-0.075f, 0.17625f, 0.575f),
-					new Vector3(-0.075f, 0.2325f, 0.625f),
-					new Vector3(0, 0.2325f, 0.625f),
-					new Vector3(0, 0.17625f, 0.675f),
-					new Vector3(-0.075f, 0.17625f, 0.675f),
-					new Vector3(-0.075f, 0.2325f, 0.75f),
-					new Vector3(0, 0.2325f, 0.75f),
-					new Vector3(0, 0.12f, 0.675f),
-					new Vector3(-0.075f, 0.12f, 0.675f),
-					new Vector3(-0.075f, 0.12f, 0.75f),
-					new Vector3(0, 0.12f, 0.75f),
-					new Vector3(0, 0.06375f, 0.675f),
-					new Vector3(-0.075f, 0.06375f, 0.675f),
-					new Vector3(-0.075f, 0.007499993f, 0.75f),
-					new Vector3(0, 0.007499993f, 0.75f),
-					new Vector3(0, -0.04875001f, 0.625f),
-					new Vector3(-0.075f, -0.04875001f, 0.625f),
-					new Vector3(-0.075f, -0.09562501f, 0.6625f),
-					new Vector3(0, -0.09562501f, 0.6625f),
-					new Vector3(-0.075f, -0.105f, 0.5f),
-					new Vector3(-0.075f, -0.18f, 0.475f),
-					new Vector3(0, -0.18f, 0.475f),
-					new Vector3(0, 0.02624997f, -0.425f),
-					new Vector3(-0.165f, 0.02624997f, -0.425f),
-					new Vector3(-0.165f, -0.18f, -0.425f),
-					new Vector3(0, -0.18f, -0.425f),
-					new Vector3(0, 0.02624997f, -0.65f),
-					new Vector3(-0.165f, 0.02624997f, -0.65f),
-					new Vector3(-0.165f, -0.12375f, -0.775f),
-					new Vector3(0, -0.12375f, -0.775f),
-					new Vector3(0, 0.195f, -0.575f),
-					new Vector3(-0.0625f, 0.195f, -0.575f),
-					new Vector3(-0.0625f, 0.17625f, -0.6f),
-					new Vector3(0, 0.17625f, -0.6f),
-					new Vector3(0, 0.27f, -0.675f),
-					new Vector3(-0.0625f, 0.27f, -0.675f),
-					new Vector3(-0.0625f, 0.27f, -0.825f),
-					new Vector3(0, 0.27f, -0.825f),
-					new Vector3(0, 0.28875f, -0.7f),
-					new Vector3(-0.0625f, 0.28875f, -0.7f),
-					new Vector3(-0.0625f, 0.2934375f, -0.88125f),
-					new Vector3(0, 0.2934375f, -0.88125f),
-					new Vector3(0, 0.28875f, -0.725f),
-					new Vector3(-0.0375f, 0.28875f, -0.725f),
-					new Vector3(-0.0375f, 0.298125f, -0.8625f),
-					new Vector3(0, 0.298125f, -0.8625f),
-					new Vector3(0, 0.27f, -0.7f),
-					new Vector3(-0.0375f, 0.27f, -0.7f),
-					new Vector3(-0.0375f, 0.27f, -0.8f),
-					new Vector3(0, 0.27f, -0.8f),
-					new Vector3(0, 0.4575f, -0),
-					new Vector3(0, 0.4575f, -0.2f),
-					new Vector3(-0.1125f, 0.4575f, -0.2f),
-					new Vector3(-0.2f, 0.4575f, -0.1125f),
-					new Vector3(-0.2f, 0.4575f, -0),
-					new Vector3(0, 0.3825f, -0),
-					new Vector3(0, 0.27f, -0.35f),
-					new Vector3(-0.196f, 0.27f, -0.35f),
-					new Vector3(-0.35f, 0.27f, -0.196f),
-					new Vector3(-0.35f, 0.27f, -0),
-					new Vector3(0, 0.3075f, -0.1f),
-					new Vector3(-0.056f, 0.3075f, -0.1f),
-					new Vector3(-0.1f, 0.3075f, -0.056f),
-					new Vector3(-0.1f, 0.3075f, -0),
-					new Vector3(0, 0.3075f, -0.325f),
-					new Vector3(-0.182f, 0.3075f, -0.325f),
-					new Vector3(-0.325f, 0.3075f, -0.182f),
-					new Vector3(-0.325f, 0.3075f, -0),
-					new Vector3(0, 0.27f, -0.325f),
-					new Vector3(-0.182f, 0.27f, -0.325f),
-					new Vector3(-0.325f, 0.27f, -0.182f),
-					new Vector3(-0.325f, 0.27f, -0),
-					new Vector3(0, -0.33f, -0),
-					new Vector3(-0.1995f, -0.33f, -0.35625f),
-					new Vector3(0, -0.31125f, -0.375f),
-					new Vector3(0, -0.33f, -0.35625f),
-					new Vector3(-0.35625f, -0.33f, -0.1995f),
-					new Vector3(-0.375f, -0.31125f, -0),
-					new Vector3(-0.35625f, -0.33f, -0),
-					new Vector3(-0.21f, -0.31125f, -0.375f),
-					new Vector3(-0.375f, -0.31125f, -0.21f),
-			};
+		{
+			new Vector3(0, 0.345f, -0.05f),
+			new Vector3(-0.028f, 0.345f, -0.05f),
+			new Vector3(-0.05f, 0.345f, -0.028f),
+			new Vector3(-0.05f, 0.345f, -0),
+			new Vector3(0, 0.3028125f, -0.334375f),
+			new Vector3(-0.18725f, 0.3028125f, -0.334375f),
+			new Vector3(-0.334375f, 0.3028125f, -0.18725f),
+			new Vector3(-0.334375f, 0.3028125f, -0),
+			new Vector3(0, 0.3028125f, -0.359375f),
+			new Vector3(-0.20125f, 0.3028125f, -0.359375f),
+			new Vector3(-0.359375f, 0.3028125f, -0.20125f),
+			new Vector3(-0.359375f, 0.3028125f, -0),
+			new Vector3(0, 0.27f, -0.375f),
+			new Vector3(-0.21f, 0.27f, -0.375f),
+			new Vector3(-0.375f, 0.27f, -0.21f),
+			new Vector3(-0.375f, 0.27f, -0),
+			new Vector3(0, 0.13875f, -0.4375f),
+			new Vector3(-0.245f, 0.13875f, -0.4375f),
+			new Vector3(-0.4375f, 0.13875f, -0.245f),
+			new Vector3(-0.4375f, 0.13875f, -0),
+			new Vector3(0, 0.007499993f, -0.5f),
+			new Vector3(-0.28f, 0.007499993f, -0.5f),
+			new Vector3(-0.5f, 0.007499993f, -0.28f),
+			new Vector3(-0.5f, 0.007499993f, -0),
+			new Vector3(0, -0.105f, -0.5f),
+			new Vector3(-0.28f, -0.105f, -0.5f),
+			new Vector3(-0.5f, -0.105f, -0.28f),
+			new Vector3(-0.5f, -0.105f, -0),
+			new Vector3(0, -0.105f, 0.5f),
+			new Vector3(0, -0.2175f, -0.5f),
+			new Vector3(-0.28f, -0.2175f, -0.5f),
+			new Vector3(-0.5f, -0.2175f, -0.28f),
+			new Vector3(-0.5f, -0.2175f, -0),
+			new Vector3(0, -0.27375f, -0.375f),
+			new Vector3(-0.21f, -0.27375f, -0.375f),
+			new Vector3(-0.375f, -0.27375f, -0.21f),
+			new Vector3(-0.375f, -0.27375f, -0),
+			new Vector3(0, -0.2925f, -0.375f),
+			new Vector3(-0.21f, -0.2925f, -0.375f),
+			new Vector3(-0.375f, -0.2925f, -0.21f),
+			new Vector3(-0.375f, -0.2925f, -0),
+			new Vector3(0, 0.17625f, 0.4f),
+			new Vector3(-0.075f, 0.17625f, 0.4f),
+			new Vector3(-0.075f, 0.2325f, 0.375f),
+			new Vector3(0, 0.2325f, 0.375f),
+			new Vector3(0, 0.17625f, 0.575f),
+			new Vector3(-0.075f, 0.17625f, 0.575f),
+			new Vector3(-0.075f, 0.2325f, 0.625f),
+			new Vector3(0, 0.2325f, 0.625f),
+			new Vector3(0, 0.17625f, 0.675f),
+			new Vector3(-0.075f, 0.17625f, 0.675f),
+			new Vector3(-0.075f, 0.2325f, 0.75f),
+			new Vector3(0, 0.2325f, 0.75f),
+			new Vector3(0, 0.12f, 0.675f),
+			new Vector3(-0.075f, 0.12f, 0.675f),
+			new Vector3(-0.075f, 0.12f, 0.75f),
+			new Vector3(0, 0.12f, 0.75f),
+			new Vector3(0, 0.06375f, 0.675f),
+			new Vector3(-0.075f, 0.06375f, 0.675f),
+			new Vector3(-0.075f, 0.007499993f, 0.75f),
+			new Vector3(0, 0.007499993f, 0.75f),
+			new Vector3(0, -0.04875001f, 0.625f),
+			new Vector3(-0.075f, -0.04875001f, 0.625f),
+			new Vector3(-0.075f, -0.09562501f, 0.6625f),
+			new Vector3(0, -0.09562501f, 0.6625f),
+			new Vector3(-0.075f, -0.105f, 0.5f),
+			new Vector3(-0.075f, -0.18f, 0.475f),
+			new Vector3(0, -0.18f, 0.475f),
+			new Vector3(0, 0.02624997f, -0.425f),
+			new Vector3(-0.165f, 0.02624997f, -0.425f),
+			new Vector3(-0.165f, -0.18f, -0.425f),
+			new Vector3(0, -0.18f, -0.425f),
+			new Vector3(0, 0.02624997f, -0.65f),
+			new Vector3(-0.165f, 0.02624997f, -0.65f),
+			new Vector3(-0.165f, -0.12375f, -0.775f),
+			new Vector3(0, -0.12375f, -0.775f),
+			new Vector3(0, 0.195f, -0.575f),
+			new Vector3(-0.0625f, 0.195f, -0.575f),
+			new Vector3(-0.0625f, 0.17625f, -0.6f),
+			new Vector3(0, 0.17625f, -0.6f),
+			new Vector3(0, 0.27f, -0.675f),
+			new Vector3(-0.0625f, 0.27f, -0.675f),
+			new Vector3(-0.0625f, 0.27f, -0.825f),
+			new Vector3(0, 0.27f, -0.825f),
+			new Vector3(0, 0.28875f, -0.7f),
+			new Vector3(-0.0625f, 0.28875f, -0.7f),
+			new Vector3(-0.0625f, 0.2934375f, -0.88125f),
+			new Vector3(0, 0.2934375f, -0.88125f),
+			new Vector3(0, 0.28875f, -0.725f),
+			new Vector3(-0.0375f, 0.28875f, -0.725f),
+			new Vector3(-0.0375f, 0.298125f, -0.8625f),
+			new Vector3(0, 0.298125f, -0.8625f),
+			new Vector3(0, 0.27f, -0.7f),
+			new Vector3(-0.0375f, 0.27f, -0.7f),
+			new Vector3(-0.0375f, 0.27f, -0.8f),
+			new Vector3(0, 0.27f, -0.8f),
+			new Vector3(0, 0.4575f, -0),
+			new Vector3(0, 0.4575f, -0.2f),
+			new Vector3(-0.1125f, 0.4575f, -0.2f),
+			new Vector3(-0.2f, 0.4575f, -0.1125f),
+			new Vector3(-0.2f, 0.4575f, -0),
+			new Vector3(0, 0.3825f, -0),
+			new Vector3(0, 0.27f, -0.35f),
+			new Vector3(-0.196f, 0.27f, -0.35f),
+			new Vector3(-0.35f, 0.27f, -0.196f),
+			new Vector3(-0.35f, 0.27f, -0),
+			new Vector3(0, 0.3075f, -0.1f),
+			new Vector3(-0.056f, 0.3075f, -0.1f),
+			new Vector3(-0.1f, 0.3075f, -0.056f),
+			new Vector3(-0.1f, 0.3075f, -0),
+			new Vector3(0, 0.3075f, -0.325f),
+			new Vector3(-0.182f, 0.3075f, -0.325f),
+			new Vector3(-0.325f, 0.3075f, -0.182f),
+			new Vector3(-0.325f, 0.3075f, -0),
+			new Vector3(0, 0.27f, -0.325f),
+			new Vector3(-0.182f, 0.27f, -0.325f),
+			new Vector3(-0.325f, 0.27f, -0.182f),
+			new Vector3(-0.325f, 0.27f, -0),
+			new Vector3(0, -0.33f, -0),
+			new Vector3(-0.1995f, -0.33f, -0.35625f),
+			new Vector3(0, -0.31125f, -0.375f),
+			new Vector3(0, -0.33f, -0.35625f),
+			new Vector3(-0.35625f, -0.33f, -0.1995f),
+			new Vector3(-0.375f, -0.31125f, -0),
+			new Vector3(-0.35625f, -0.33f, -0),
+			new Vector3(-0.21f, -0.31125f, -0.375f),
+			new Vector3(-0.375f, -0.31125f, -0.21f),
+		};
 
 		private float _size = 1.0f;
 		private int _tessellation = 8;
@@ -292,30 +296,10 @@ namespace Nursia.Primitives
 			}
 		}
 
-		// Tessellates the specified bezier patch.
-		private static void TessellatePatch(Builder builder, ref TeapotPatch patch,
-			int tessellation, Vector3 scale, bool isMirrored)
-		{
-			// Look up the 16 control points for this patch.
-			var controlPoints = new Vector3[16];
-
-			for (int i = 0; i < 16; i++)
-			{
-				controlPoints[i] = TeapotControlPoints[patch.indices[i]] * scale;
-			}
-
-			// Create the index data.
-			int vbase = builder.Vertices.Count;
-			builder.Indices.AddRange(CreatePatchIndices(tessellation, isMirrored, vbase));
-			CreatePatchVertices(controlPoints, tessellation, isMirrored, builder.Vertices);
-		}
-
 		protected override Mesh CreateMesh()
 		{
 			if (_tessellation < 1)
-				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be > 0");
-
-			var builder = new Builder();
+				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
 
 			var scaleVector = new Vector3(_size, _size, _size);
 			var scaleNegateX = scaleVector;
@@ -324,6 +308,7 @@ namespace Nursia.Primitives
 			scaleNegateZ.Z = -scaleNegateZ.Z;
 			var scaleNegateXZ = new Vector3(-_size, _size, -_size);
 
+			var builder = new Builder();
 			for (int i = 0; i < TeapotPatches.Length; i++)
 			{
 				var patch = TeapotPatches[i];
@@ -333,7 +318,7 @@ namespace Nursia.Primitives
 				TessellatePatch(builder, ref patch, _tessellation, scaleVector, false);
 				TessellatePatch(builder, ref patch, _tessellation, scaleNegateX, true);
 
-				if (patch.mirrorZ)
+				if (patch.MirrorZ)
 				{
 					// Some parts of the teapot (the body, lid, and rim, but not the
 					// handle or spout) are also symmetrical from front to back, so
@@ -341,6 +326,12 @@ namespace Nursia.Primitives
 					TessellatePatch(builder, ref patch, _tessellation, scaleNegateZ, true);
 					TessellatePatch(builder, ref patch, _tessellation, scaleNegateXZ, false);
 				}
+			}
+
+			var texCoord = new Vector2(UScale, VScale);
+			for (var i = 0; i < builder.Vertices.Count; i++)
+			{
+				builder.Vertices[i] = new VertexPositionNormalTexture(builder.Vertices[i].Position, builder.Vertices[i].Normal, builder.Vertices[i].TextureCoordinate * texCoord);
 			}
 
 			return builder.Create(IsLeftHanded);
@@ -359,7 +350,6 @@ namespace Nursia.Primitives
 				   p3 * 3 * t2 * (1 - t) +
 				   p4 * t * t2;
 		}
-
 
 		// Computes the tangent of a cubic bezier curve at the specified time.
 		// Template supports Vector3, float, or any other types with * and + operators.
@@ -409,6 +399,7 @@ namespace Nursia.Primitives
 
 					// Cross the two tangent vectors to compute the normal.
 					var normal = Vector3.Cross(tangent1, tangent2);
+
 					if (!normal.IsZero())
 					{
 						normal.Normalize();
@@ -454,18 +445,18 @@ namespace Nursia.Primitives
 		{
 			int stride = tessellation + 1;
 			// Make a list of six index values (two triangles).
-			var indices = new short[6];
+			var indices = new int[6];
 
 			for (int i = 0; i < tessellation; i++)
 			{
 				for (int j = 0; j < tessellation; j++)
 				{
-					indices[0] = (short)(baseIndex + i * stride + j);
-					indices[1] = (short)(baseIndex + (i + 1) * stride + j);
-					indices[2] = (short)(baseIndex + (i + 1) * stride + j + 1);
-					indices[3] = (short)(baseIndex + i * stride + j);
-					indices[4] = (short)(baseIndex + (i + 1) * stride + j + 1);
-					indices[5] = (short)(baseIndex + i * stride + j + 1);
+					indices[0] = baseIndex + i * stride + j;
+					indices[1] = baseIndex + (i + 1) * stride + j;
+					indices[2] = baseIndex + (i + 1) * stride + j + 1;
+					indices[3] = baseIndex + i * stride + j;
+					indices[4] = baseIndex + (i + 1) * stride + j + 1;
+					indices[5] = baseIndex + i * stride + j + 1;
 
 					// If this patch is mirrored, reverse indices to fix the winding order.
 					if (isMirrored)
@@ -475,10 +466,28 @@ namespace Nursia.Primitives
 
 					foreach (var index in indices)
 					{
-						yield return index;
+						yield return (short)index;
 					}
 				}
 			}
+		}
+
+		// Tessellates the specified bezier patch.
+		private static void TessellatePatch(Builder builder, ref TeapotPatch patch,
+			int tessellation, Vector3 scale, bool isMirrored)
+		{
+			// Look up the 16 control points for this patch.
+			var controlPoints = new Vector3[16];
+
+			for (int i = 0; i < 16; i++)
+			{
+				controlPoints[i] = TeapotControlPoints[patch.Indices[i]] * scale;
+			}
+
+			// Create the index data.
+			int vbase = builder.Vertices.Count;
+			builder.Indices.AddRange(CreatePatchIndices(tessellation, isMirrored, vbase));
+			CreatePatchVertices(controlPoints, tessellation, isMirrored, builder.Vertices);
 		}
 	}
 }

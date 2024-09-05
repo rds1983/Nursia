@@ -81,27 +81,27 @@ namespace Nursia.Primitives
 	{
 		private const int CubeFaceCount = 6;
 
-		private static readonly Vector3[] faceNormals = new Vector3[CubeFaceCount]
+		private static readonly Vector3[] FaceNormals = new Vector3[CubeFaceCount]
 		{
-				new Vector3(0, 0, 1),
-				new Vector3(0, 0, -1),
-				new Vector3(1, 0, 0),
-				new Vector3(-1, 0, 0),
-				new Vector3(0, 1, 0),
-				new Vector3(0, -1, 0),
+			new Vector3(0, 0, 1),
+			new Vector3(0, 0, -1),
+			new Vector3(1, 0, 0),
+			new Vector3(-1, 0, 0),
+			new Vector3(0, 1, 0),
+			new Vector3(0, -1, 0),
 		};
 
-		private static readonly Vector2[] textureCoordinates = new Vector2[4]
+		private static readonly Vector2[] TextureCoordinates = new Vector2[4]
 		{
-				new Vector2(1, 0),
-				new Vector2(1, 1),
-				new Vector2(0, 1),
-				new Vector2(0, 0),
+			new Vector2(1, 0),
+			new Vector2(1, 1),
+			new Vector2(0, 1),
+			new Vector2(0, 0),
 		};
 
-		private float _size = 1.0f;
+		private Vector3 _size = Vector3.One;
 
-		public float Size
+		public Vector3 Size
 		{
 			get => _size;
 
@@ -121,12 +121,17 @@ namespace Nursia.Primitives
 		{
 			var builder = new Builder();
 
-			_size /= 2.0f;
+			var texCoords = new Vector2[4];
+			for (var i = 0; i < 4; i++)
+			{
+				texCoords[i] = TextureCoordinates[i] * new Vector2(UScale, VScale);
+			}
 
 			// Create each face in turn.
+			var size = _size / 2.0f;
 			for (int i = 0; i < CubeFaceCount; i++)
 			{
-				Vector3 normal = faceNormals[i];
+				Vector3 normal = FaceNormals[i];
 
 				// Get two vectors perpendicular both to the face normal and to each other.
 				Vector3 basis = (i >= 4) ? Vector3.UnitZ : Vector3.UnitY;
@@ -138,8 +143,7 @@ namespace Nursia.Primitives
 				Vector3.Cross(ref normal, ref side1, out side2);
 
 				// Six indices (two triangles) per face.
-				short vbase = (short)(i * 4);
-
+				int vbase = i * 4;
 				builder.Indices.Add((short)(vbase + 0));
 				builder.Indices.Add((short)(vbase + 1));
 				builder.Indices.Add((short)(vbase + 2));
@@ -149,10 +153,10 @@ namespace Nursia.Primitives
 				builder.Indices.Add((short)(vbase + 3));
 
 				// Four vertices per face.
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * _size, normal, textureCoordinates[0]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 + side2) * _size, normal, textureCoordinates[1]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 + side2) * _size, normal, textureCoordinates[2]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 - side2) * _size, normal, textureCoordinates[3]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * size, normal, texCoords[0]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 + side2) * size, normal, texCoords[1]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 + side2) * size, normal, texCoords[2]));
+				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 - side2) * size, normal, texCoords[3]));
 			}
 
 			// Create the primitive object.

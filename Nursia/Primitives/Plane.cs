@@ -78,11 +78,22 @@ using System;
 
 namespace Nursia.Primitives
 {
+	/// <summary>
+	/// Enumerates the different possible direction of a plane normal.
+	/// </summary>
+	public enum NormalDirection
+	{
+		UpZ,
+		UpY,
+		UpX,
+	}
+
 	public class Plane : PrimitiveMesh
 	{
-		private Vector2 _size;
-		private int _tessellation = 1;
-		private Vector2 _uvFactor;
+		private Vector2 _size = Vector2.One;
+		private Point _tessellation = new Point(1, 1);
+		private bool _generateBackFace;
+		private NormalDirection _normalDirection;
 
 		public Vector2 Size
 		{
@@ -100,7 +111,7 @@ namespace Nursia.Primitives
 			}
 		}
 
-		public int Tessellation
+		public Point Tessellation
 		{
 			get => _tessellation;
 
@@ -116,59 +127,92 @@ namespace Nursia.Primitives
 			}
 		}
 
-		public Vector2 UvFactor
+		public bool GenerateBackface
 		{
-			get => _uvFactor;
+			get => _generateBackFace;
 
 			set
 			{
-				if (value.EpsilonEquals(_uvFactor))
+				if (value == _generateBackFace)
 				{
 					return;
 				}
 
-				_uvFactor = value;
+				_generateBackFace = value;
+				InvalidateMesh();
+			}
+		}
+
+		public NormalDirection NormalDirection
+		{
+			get => _normalDirection;
+
+			set
+			{
+				if (value == _normalDirection)
+				{
+					return;
+				}
+
+				_normalDirection = value;
 				InvalidateMesh();
 			}
 		}
 
 		protected override Mesh CreateMesh()
 		{
-			if (_tessellation < 1)
+			if (_tessellation.X < 1 || _tessellation.Y < 1)
 			{
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be > 0");
 			}
 
+			var lineWidth = _tessellation.X + 1;
+			var lineHeight = _tessellation.Y + 1;
+
+			var deltaX = _size.X / _tessellation.X;
+			var deltaY = _size.Y / _tessellation.Y;
+
+			var sizeX = _size.X / 2.0f;
+			var sizeY = _size.Y / 2.0f;
+
 			var builder = new Builder();
-			var lineWidth = _tessellation + 1;
 
-			var deltaX = _size.X / _tessellation;
-			var deltaY = _size.Y / _tessellation;
+			Vector3 normal;
+			switch (_normalDirection)
+			{
+				default:
+				case NormalDirection.UpZ: normal = Vector3.UnitZ; break;
+				case NormalDirection.UpY: normal = Vector3.UnitY; break;
+				case NormalDirection.UpX: normal = Vector3.UnitX; break;
+			}
 
-			_size.X /= 2.0f;
-			_size.Y /= 2.0f;
-
-			var normal = Vector3.UnitZ;
+			var uv = new Vector2(UScale, VScale);
 
 			// Create vertices
-			for (int y = 0; y < (_tessellation + 1); y++)
+			for (int y = 0; y < (_tessellation.Y + 1); y++)
 			{
-				for (int x = 0; x < (_tessellation + 1); x++)
+				for (int x = 0; x < (_tessellation.X + 1); x++)
 				{
-					var position = new Vector3(-_size.X + deltaX * x, _size.Y - deltaY * y, 0);
-					var texCoord = new Vector2(1.0f * x / _tessellation * _uvFactor.X, 1.0f * y / _tessellation * _uvFactor.Y);
+					Vector3 position;
+					switch (_normalDirection)
+					{
+						default:
+						case NormalDirection.UpZ: position = new Vector3(-sizeX + deltaX * x, sizeY - deltaY * y, 0); break;
+						case NormalDirection.UpY: position = new Vector3(-sizeX + deltaX * x, 0, -sizeY + deltaY * y); break;
+						case NormalDirection.UpX: position = new Vector3(0, sizeY - deltaY * y, sizeX - deltaX * x); break;
+					}
+					var texCoord = new Vector2(uv.X * x / _tessellation.X, uv.Y * y / _tessellation.Y);
 					builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, texCoord));
 				}
 			}
 
 			// Create indices
-			for (int y = 0; y < _tessellation; y++)
+			for (int y = 0; y < _tessellation.Y; y++)
 			{
-				for (int x = 0; x < _tessellation; x++)
+				for (int x = 0; x < _tessellation.X; x++)
 				{
 					// Six indices (two triangles) per face.
-					short vbase = (short)(lineWidth * y + x);
-
+					int vbase = lineWidth * y + x;
 					builder.Indices.Add((short)(vbase + 1));
 					builder.Indices.Add((short)(vbase + 1 + lineWidth));
 					builder.Indices.Add((short)(vbase + lineWidth));
@@ -176,6 +220,37 @@ namespace Nursia.Primitives
 					builder.Indices.Add((short)(vbase + 1));
 					builder.Indices.Add((short)(vbase + lineWidth));
 					builder.Indices.Add((short)(vbase));
+				}
+			}
+			if (_generateBackFace)
+			{
+				var numVertices = lineWidth * lineHeight;
+				normal = -normal;
+				for (int y = 0; y < (_tessellation.Y + 1); y++)
+				{
+					for (int x = 0; x < (_tessellation.X + 1); x++)
+					{
+						var baseVertex = builder.Vertices[builder.Vertices.Count - numVertices];
+						var position = new Vector3(baseVertex.Position.X, baseVertex.Position.Y, baseVertex.Position.Z);
+						var texCoord = new Vector2(uv.X * x / _tessellation.X, uv.Y * y / _tessellation.Y);
+						builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, texCoord));
+					}
+				}
+				// Create indices
+				for (int y = 0; y < _tessellation.Y; y++)
+				{
+					for (int x = 0; x < _tessellation.X; x++)
+					{
+						// Six indices (two triangles) per face.
+						int vbase = lineWidth * (y + _tessellation.Y + 1) + x;
+						builder.Indices.Add((short)(vbase + 1));
+						builder.Indices.Add((short)(vbase + lineWidth));
+						builder.Indices.Add((short)(vbase + 1 + lineWidth));
+
+						builder.Indices.Add((short)(vbase + 1));
+						builder.Indices.Add((short)(vbase));
+						builder.Indices.Add((short)(vbase + lineWidth));
+					}
 				}
 			}
 

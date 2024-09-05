@@ -80,38 +80,38 @@ namespace Nursia.Primitives
 {
 	public class Torus : PrimitiveMesh
 	{
-		private float _diameter = 1.0f;
-		private float _thickness = 0.33333f;
-		private int _tessellation = 16;
+		private float _majorRadius = 0.5f;
+		private float _minorRadius = 0.16666f;
+		private int _tessellation = 32;
 
-		public float Diameter
+		public float MajorRadius
 		{
-			get => _diameter;
+			get => _majorRadius;
 
 			set
 			{
-				if (value.EpsilonEquals(_diameter))
+				if (value.EpsilonEquals(_majorRadius))
 				{
 					return;
 				}
 
-				_diameter = value;
+				_majorRadius = value;
 				InvalidateMesh();
 			}
 		}
 
-		public float Thickness
+		public float MinorRadius
 		{
-			get => _thickness;
+			get => _minorRadius;
 
 			set
 			{
-				if (value.EpsilonEquals(_thickness))
+				if (value.EpsilonEquals(_minorRadius))
 				{
 					return;
 				}
 
-				_thickness = value;
+				_minorRadius = value;
 				InvalidateMesh();
 			}
 		}
@@ -137,9 +137,10 @@ namespace Nursia.Primitives
 			if (_tessellation < 3)
 				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
 
-			var builder = new Builder();
-
 			int stride = _tessellation + 1;
+			var texFactor = new Vector2(UScale, VScale);
+
+			var builder = new Builder();
 
 			// First we loop around the main ring of the torus.
 			for (int i = 0; i <= _tessellation; i++)
@@ -150,7 +151,7 @@ namespace Nursia.Primitives
 
 				// Create a transform matrix that will align geometry to
 				// slice perpendicularly though the current ring position.
-				var transform = Matrix.CreateTranslation(_diameter / 2, 0, 0) * Matrix.CreateRotationY(outerAngle);
+				var transform = Matrix.CreateTranslation(_majorRadius, 0, 0) * Matrix.CreateRotationY(outerAngle);
 
 				// Now we loop along the other axis, around the side of the tube.
 				for (int j = 0; j <= _tessellation; j++)
@@ -158,17 +159,17 @@ namespace Nursia.Primitives
 					float v = 1 - (float)j / _tessellation;
 
 					float innerAngle = j * MathHelper.TwoPi / _tessellation + MathHelper.Pi;
-					float dx = (float)Math.Cos(innerAngle), dy = (float)Math.Sin(innerAngle);
+					float dx = MathF.Cos(innerAngle), dy = MathF.Sin(innerAngle);
 
 					// Create a vertex.
 					var normal = new Vector3(dx, dy, 0);
-					var position = normal * _thickness / 2;
+					var position = normal * _minorRadius;
 					var textureCoordinate = new Vector2(u, v);
 
 					Vector3.Transform(ref position, ref transform, out position);
 					Vector3.TransformNormal(ref normal, ref transform, out normal);
 
-					builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, textureCoordinate));
+					builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, textureCoordinate * texFactor));
 
 					// And create indices for two triangles.
 					int nextI = (i + 1) % stride;

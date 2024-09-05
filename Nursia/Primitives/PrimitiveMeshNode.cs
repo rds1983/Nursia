@@ -6,8 +6,10 @@ namespace Nursia.Primitives
 	public enum PrimitiveMeshType
 	{
 		Capsule,
+		Cone,
 		Cube,
 		Cylinder,
+		Disc,
 		GeoSphere,
 		Plane,
 		Sphere,
@@ -20,41 +22,49 @@ namespace Nursia.Primitives
 		public PrimitiveMesh PrimitiveMesh { get; set; }
 
 		[JsonIgnore]
-		public PrimitiveMeshType? PrimitiveMeshType
+		public PrimitiveMeshType? MeshType
 		{
 			get
 			{
 				if (PrimitiveMesh is Capsule)
 				{
-					return Primitives.PrimitiveMeshType.Capsule;
+					return PrimitiveMeshType.Capsule;
+				}
+				else if (PrimitiveMesh is Cone)
+				{
+					return PrimitiveMeshType.Cone;
 				}
 				else if (PrimitiveMesh is Cube)
 				{
-					return Primitives.PrimitiveMeshType.Cube;
+					return PrimitiveMeshType.Cube;
 				}
 				else if (PrimitiveMesh is Cylinder)
 				{
-					return Primitives.PrimitiveMeshType.Cylinder;
+					return PrimitiveMeshType.Cylinder;
+				}
+				else if (PrimitiveMesh is Disc)
+				{
+					return PrimitiveMeshType.Disc;
 				}
 				else if (PrimitiveMesh is GeoSphere)
 				{
-					return Primitives.PrimitiveMeshType.GeoSphere;
+					return PrimitiveMeshType.GeoSphere;
 				}
 				else if (PrimitiveMesh is Plane)
 				{
-					return Primitives.PrimitiveMeshType.Plane;
+					return PrimitiveMeshType.Plane;
 				}
 				else if (PrimitiveMesh is Sphere)
 				{
-					return Primitives.PrimitiveMeshType.Sphere;
+					return PrimitiveMeshType.Sphere;
 				}
 				else if (PrimitiveMesh is Teapot)
 				{
-					return Primitives.PrimitiveMeshType.Teapot;
+					return PrimitiveMeshType.Teapot;
 				}
 				else if (PrimitiveMesh is Torus)
 				{
-					return Primitives.PrimitiveMeshType.Torus;
+					return PrimitiveMeshType.Torus;
 				}
 
 				return null;
@@ -62,35 +72,41 @@ namespace Nursia.Primitives
 
 			set
 			{
-				if (value == PrimitiveMeshType)
+				if (value == MeshType)
 				{
 					return;
 				}
 
 				switch (value)
 				{
-					case Primitives.PrimitiveMeshType.Capsule:
+					case PrimitiveMeshType.Capsule:
 						PrimitiveMesh = new Capsule();
 						break;
-					case Primitives.PrimitiveMeshType.Cube:
+					case PrimitiveMeshType.Cone:
+						PrimitiveMesh = new Cone();
+						break;
+					case PrimitiveMeshType.Cube:
 						PrimitiveMesh = new Cube();
 						break;
-					case Primitives.PrimitiveMeshType.Cylinder:
+					case PrimitiveMeshType.Cylinder:
 						PrimitiveMesh = new Cylinder();
 						break;
-					case Primitives.PrimitiveMeshType.GeoSphere:
+					case PrimitiveMeshType.Disc:
+						PrimitiveMesh = new Disc();
+						break;
+					case PrimitiveMeshType.GeoSphere:
 						PrimitiveMesh = new GeoSphere();
 						break;
-					case Primitives.PrimitiveMeshType.Plane:
+					case PrimitiveMeshType.Plane:
 						PrimitiveMesh = new Plane();
 						break;
-					case Primitives.PrimitiveMeshType.Sphere:
+					case PrimitiveMeshType.Sphere:
 						PrimitiveMesh = new Sphere();
 						break;
-					case Primitives.PrimitiveMeshType.Teapot:
+					case PrimitiveMeshType.Teapot:
 						PrimitiveMesh = new Teapot();
 						break;
-					case Primitives.PrimitiveMeshType.Torus:
+					case PrimitiveMeshType.Torus:
 						PrimitiveMesh = new Torus();
 						break;
 					default:

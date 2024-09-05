@@ -82,7 +82,7 @@ namespace Nursia.Primitives
 	public class Cylinder : PrimitiveMesh
 	{
 		private float _height = 1.0f;
-		private float _diameter = 1.0f;
+		private float _radius = 0.5f;
 		private int _tessellation = 32;
 
 		public float Height
@@ -101,18 +101,18 @@ namespace Nursia.Primitives
 			}
 		}
 
-		public float Diameter
+		public float Radius
 		{
-			get => _diameter;
+			get => _radius;
 
 			set
 			{
-				if (value.EpsilonEquals(_diameter))
+				if (value.EpsilonEquals(_radius))
 				{
 					return;
 				}
 
-				_diameter = value;
+				_radius = value;
 				InvalidateMesh();
 			}
 		}
@@ -137,30 +137,30 @@ namespace Nursia.Primitives
 		private static Vector3 GetCircleVector(int i, int tessellation)
 		{
 			var angle = (float)(i * 2.0 * Math.PI / tessellation);
-			var dx = (float)Math.Sin(angle);
-			var dz = (float)Math.Cos(angle);
+			var dx = MathF.Sin(angle);
+			var dz = MathF.Cos(angle);
 
 			return new Vector3(dx, 0, dz);
 		}
 
 		// Helper creates a triangle fan to close the end of a cylinder.
-		private static void CreateCylinderCap(List<VertexPositionNormalTexture> vertices, List<short> indices, int tessellation, float height, float radius, bool isTop)
+		void CreateCylinderCap(Builder builder, float height, bool isTop)
 		{
 			// Create cap indices.
-			for (int i = 0; i < tessellation - 2; i++)
+			for (int i = 0; i < _tessellation - 2; i++)
 			{
-				int i1 = (i + 1) % tessellation;
-				int i2 = (i + 2) % tessellation;
+				int i1 = (i + 1) % _tessellation;
+				int i2 = (i + 2) % _tessellation;
 
 				if (isTop)
 				{
 					Utils.Swap(ref i1, ref i2);
 				}
 
-				int vbase = vertices.Count;
-				indices.Add((short)(vbase));
-				indices.Add((short)(vbase + i1));
-				indices.Add((short)(vbase + i2));
+				int vbase = builder.Vertices.Count;
+				builder.Indices.Add((short)(vbase));
+				builder.Indices.Add((short)(vbase + i1));
+				builder.Indices.Add((short)(vbase + i2));
 			}
 
 			// Which end of the cylinder is this?
@@ -174,41 +174,38 @@ namespace Nursia.Primitives
 			}
 
 			// Create cap vertices.
-			for (int i = 0; i < tessellation; i++)
+			for (int i = 0; i < _tessellation; i++)
 			{
-				var circleVector = GetCircleVector(i, tessellation);
-				var position = (circleVector * radius) + (normal * height);
-				var textureCoordinate = new Vector2(circleVector.X * textureScale.X + 0.5f, circleVector.Z * textureScale.Y + 0.5f);
+				var circleVector = GetCircleVector(i, _tessellation);
+				var position = (circleVector * _radius) + (normal * height);
+				var textureCoordinate = new Vector2(UScale * (circleVector.X * textureScale.X + 0.5f), VScale * (circleVector.Z * textureScale.Y + 0.5f));
 
-				vertices.Add(new VertexPositionNormalTexture(position, normal, textureCoordinate));
+				builder.Vertices.Add(new VertexPositionNormalTexture(position, normal, textureCoordinate));
 			}
 		}
 
 		protected override Mesh CreateMesh()
 		{
 			if (_tessellation < 3)
-				throw new ArgumentOutOfRangeException("tessellation", "tessellation must be >= 3");
+				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
+
+			var height = Height / 2;
+			var stride = _tessellation + 1;
+			var topOffset = Vector3.UnitY * height;
 
 			var builder = new Builder();
-
-			_height /= 2;
-
-			var topOffset = Vector3.UnitY * _height;
-
-			float radius = _diameter / 2;
-			int stride = _tessellation + 1;
 
 			// Create a ring of triangles around the outside of the cylinder.
 			for (int i = 0; i <= _tessellation; i++)
 			{
 				var normal = GetCircleVector(i, _tessellation);
 
-				var sideOffset = normal * radius;
+				var sideOffset = normal * _radius;
 
 				var textureCoordinate = new Vector2((float)i / _tessellation, 0);
 
-				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset + topOffset, normal, textureCoordinate));
-				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset - topOffset, normal, textureCoordinate + Vector2.UnitY));
+				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset + topOffset, normal, textureCoordinate * new Vector2(UScale, VScale)));
+				builder.Vertices.Add(new VertexPositionNormalTexture(sideOffset - topOffset, normal, (textureCoordinate + Vector2.UnitY) * new Vector2(UScale, VScale)));
 
 				builder.Indices.Add((short)(i * 2));
 				builder.Indices.Add((short)((i * 2 + 2) % (stride * 2)));
@@ -220,8 +217,8 @@ namespace Nursia.Primitives
 			}
 
 			// Create flat triangle fan caps to seal the top and bottom.
-			CreateCylinderCap(builder.Vertices, builder.Indices, _tessellation, _height, radius, true);
-			CreateCylinderCap(builder.Vertices, builder.Indices, _tessellation, _height, radius, false);
+			CreateCylinderCap(builder, height, true);
+			CreateCylinderCap(builder, height, false);
 
 			// Create the primitive object.
 			return builder.Create(IsLeftHanded);

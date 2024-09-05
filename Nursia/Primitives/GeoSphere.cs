@@ -81,18 +81,18 @@ namespace Nursia.Primitives
 {
 	public class GeoSphere : PrimitiveMesh
 	{
-		private static readonly Vector3[] OctahedronVertices = new Vector3[]
+		private static readonly Vector3[] OctahedronVertices =
 		{
 			// when looking down the negative z-axis (into the screen)
-			new Vector3( 0,  1,  0), // 0 top
-			new Vector3( 0,  0, -1), // 1 front
-			new Vector3( 1,  0,  0), // 2 right
-			new Vector3( 0,  0,  1), // 3 back
+			new Vector3(+0,  1,  0), // 0 top
+			new Vector3(+0,  0, -1), // 1 front
+			new Vector3(+1,  0,  0), // 2 right
+			new Vector3(+0,  0,  1), // 3 back
 			new Vector3(-1,  0,  0), // 4 left
-			new Vector3( 0, -1,  0), // 5 bottom
+			new Vector3(+0, -1,  0), // 5 bottom
 		};
 
-		private static readonly short[] OctahedronIndices = new short[]
+		private static readonly short[] OctahedronIndices =
 		{
 			0, 1, 2, // top front-right face
 			0, 2, 3, // top back-right face
@@ -104,7 +104,7 @@ namespace Nursia.Primitives
 			5, 2, 1, // bottom front-right face
 		};
 
-		private unsafe class GeosphereBuilder : Builder
+		private unsafe class GeoSphereBuilder : Builder
 		{
 			public List<Vector3> Positions { get; } = new List<Vector3>(OctahedronVertices);
 
@@ -115,27 +115,27 @@ namespace Nursia.Primitives
 			// This map is used to avoid duplicating vertices when subdividing triangles along edges.
 			public Dictionary<UndirectedEdge, short> SubdividedEdges { get; } = new Dictionary<UndirectedEdge, short>();
 
-			public GeosphereBuilder()
+			public GeoSphereBuilder()
 			{
 				Indices.AddRange(OctahedronIndices);
 			}
 		}
 
-		private float _diameter = 1.0f;
+		private float _radius = 0.5f;
 		private int _tessellation = 3;
 
-		public float Diameter
+		public float Radius
 		{
-			get => _diameter;
+			get => _radius;
 
 			set
 			{
-				if (value.EpsilonEquals(_diameter))
+				if (value.EpsilonEquals(_radius))
 				{
 					return;
 				}
 
-				_diameter = value;
+				_radius = value;
 				InvalidateMesh();
 			}
 		}
@@ -158,9 +158,7 @@ namespace Nursia.Primitives
 
 		protected unsafe override Mesh CreateMesh()
 		{
-			var builder = new GeosphereBuilder();
-
-			float radius = _diameter / 2.0f;
+			var builder = new GeoSphereBuilder();
 
 			// We know these values by looking at the above index list for the octahedron. Despite the subdivisions that are
 			// about to go on, these values aren't ever going to change because the vertices don't move around in the array.
@@ -246,16 +244,17 @@ namespace Nursia.Primitives
 				var normal = vertexValue;
 				normal.Normalize();
 
-				var pos = normal * radius;
+				var pos = normal * _radius;
 
 				// calculate texture coordinates for this vertex
-				float longitude = (float)Math.Atan2(normal.X, -normal.Z);
-				float latitude = (float)Math.Acos(normal.Y);
+				float longitude = MathF.Atan2(normal.X, -normal.Z);
+				float latitude = MathF.Acos(normal.Y);
 
 				float u = (float)(longitude / (Math.PI * 2.0) + 0.5);
 				float v = (float)(latitude / Math.PI);
 
 				var texcoord = new Vector2(1.0f - u, v);
+				texcoord *= new Vector2(UScale, VScale);
 				builder.Vertices.Add(new VertexPositionNormalTexture(pos, normal, texcoord));
 			}
 
@@ -279,17 +278,21 @@ namespace Nursia.Primitives
 
 				for (int i = 0; i < preCount; ++i)
 				{
+					// Poles will be fixed separately
+					if (i == southPoleIndex || i == northPoleIndex)
+						continue;
+
 					// This vertex is on the prime meridian if position.x and texcoord.u are both zero (allowing for small epsilon).
 					bool isOnPrimeMeridian = Mathematics.EpsilonEquals(builder.Vertices[i].Position.X, 0, XMVectorSplatEpsilon)
 											 && Mathematics.EpsilonEquals(builder.Vertices[i].TextureCoordinate.X, 0, XMVectorSplatEpsilon);
 
 					if (isOnPrimeMeridian)
 					{
-						short newIndex = (short)builder.Vertices.Count;
+						int newIndex = builder.Vertices.Count;
 
 						// copy this vertex, correct the texture coordinate, and add the vertex
 						VertexPositionNormalTexture v = builder.Vertices[i];
-						v.TextureCoordinate.X = 1.0f;
+						v.TextureCoordinate.X = UScale;
 						builder.Vertices.Add(v);
 
 						// Now find all the triangles which contain this vertex and update them if necessary
@@ -311,7 +314,7 @@ namespace Nursia.Primitives
 							else if (*triIndex2 == i)
 							{
 								Utils.Swap(ref *triIndex0, ref *triIndex2);
-								Utils.Swap(ref *triIndex1, ref *triIndex2);
+								Utils.Swap(ref *triIndex2, ref *triIndex1);
 							}
 							else
 							{
@@ -320,11 +323,11 @@ namespace Nursia.Primitives
 							}
 
 							// check the other two vertices to see if we might need to fix this triangle
-							if (Math.Abs(builder.Vertices[*triIndex0].TextureCoordinate.X - builder.Vertices[*triIndex1].TextureCoordinate.X) > 0.5f ||
-								Math.Abs(builder.Vertices[*triIndex0].TextureCoordinate.X - builder.Vertices[*triIndex2].TextureCoordinate.X) > 0.5f)
+							if (Math.Abs(builder.Vertices[*triIndex0].TextureCoordinate.X - builder.Vertices[*triIndex1].TextureCoordinate.X) > 0.5f * UScale ||
+								Math.Abs(builder.Vertices[*triIndex0].TextureCoordinate.X - builder.Vertices[*triIndex2].TextureCoordinate.X) > 0.5f * UScale)
 							{
 								// yep; replace the specified index to point to the new, corrected vertex
-								builder.IndicesPtr[j + 0] = newIndex;
+								builder.IndicesPtr[j + 0] = (short)newIndex;
 							}
 						}
 					}
@@ -340,7 +343,7 @@ namespace Nursia.Primitives
 			return builder.Create(IsLeftHanded);
 		}
 
-		private static unsafe void FixPole(GeosphereBuilder builder, short poleIndex)
+		private unsafe void FixPole(GeoSphereBuilder builder, int poleIndex)
 		{
 			var poleVertex = builder.Vertices[poleIndex];
 			bool overwrittenPoleVertex = false; // overwriting the original pole vertex saves us one vertex
@@ -394,8 +397,8 @@ namespace Nursia.Primitives
 			}
 		}
 
-		// Function that, when given the index of two vertices, creates a new vertex at the midpoint of those vertices.
-		private static void DivideEdge(GeosphereBuilder builder, short i0, short i1, out Vector3 outVertex, out short outIndex)
+		// Function that, when given the index of two vertices, creates a new vertex at the midpoint of those builder.Vertices.
+		private void DivideEdge(GeoSphereBuilder builder, int i0, int i1, out Vector3 outVertex, out short outIndex)
 		{
 			var edge = new UndirectedEdge(i0, i1);
 
@@ -409,7 +412,7 @@ namespace Nursia.Primitives
 			{
 				// Haven't generated this vertex before: so add it now
 
-				// outVertex = (vertices[i0] + vertices[i1]) / 2
+				// outVertex = (builder.Vertices[i0] + builder.Vertices[i1]) / 2
 				outVertex = (builder.Positions[i0] + builder.Positions[i1]) * 0.5f;
 				outIndex = (short)builder.Positions.Count;
 				builder.Positions.Add(outVertex);

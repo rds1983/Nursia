@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Nursia.Utilities;
 
 namespace Nursia.Rendering
 {
@@ -138,6 +139,7 @@ namespace Nursia.Rendering
 						commonPars.WorldInverseTranspose.SetValue(worldInverseTranspose);
 					}
 
+					commonPars.View?.SetValue(camera.View);
 					commonPars.CameraPosition?.SetValue(camera.Position);
 					commonPars.LightType?.SetValue(_effectLightType);
 					commonPars.LightPosition?.SetValue(_effectLightPosition);

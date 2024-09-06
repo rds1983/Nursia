@@ -8,7 +8,7 @@ using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
-using Nursia.Rendering;
+using Nursia.Simple;
 using Nursia.Utilities;
 using static glTFLoader.Schema.AnimationChannelTarget;
 

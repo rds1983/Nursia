@@ -20,7 +20,7 @@ namespace Nursia
 
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);
 
-		private static Func<Effect> _colorEffect, _skyboxEffect;
+		private static Func<Effect> _colorEffect, _skyboxEffect, _billboardEffect;
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
@@ -73,6 +73,20 @@ namespace Nursia
 
 				_skyboxEffect = GetEffect("SkyboxEffect");
 				return _skyboxEffect;
+			}
+		}
+
+		public static Func<Effect> BillboardEffect
+		{
+			get
+			{
+				if (_billboardEffect != null)
+				{
+					return _billboardEffect;
+				}
+
+				_billboardEffect = GetEffect("BillboardEffect");
+				return _billboardEffect;
 			}
 		}
 

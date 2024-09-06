@@ -11,6 +11,7 @@ using Nursia.Modelling;
 using Nursia.Primitives;
 using Nursia.Rendering;
 using Nursia.Rendering.Lights;
+using Nursia.Simple;
 using NursiaEditor.Utility;
 
 namespace NursiaEditor.UI
@@ -234,6 +235,12 @@ namespace NursiaEditor.UI
 			AddNewNode(sceneNode, newNode);
 		}
 
+		private void OnAddBillboard(SceneNode sceneNode)
+		{
+			var newNode = new BillboardNode();
+			AddNewNode(sceneNode, newNode);
+		}
+
 		private void OnAddNewLight(SceneNode sceneNode)
 		{
 			var dialog = new AddNewItemDialog
@@ -425,6 +432,7 @@ namespace NursiaEditor.UI
 				new Tuple<string, Action>("Insert &Light...", () => OnAddNewLight(sceneNode)),
 				new Tuple<string, Action>("Insert &Geometric Primitive...", () => OnAddNewGeometricPrimitive(sceneNode)),
 				new Tuple<string, Action>("Insert &Gltf/Glb Model...", () => OnAddGltfModel(sceneNode)),
+				new Tuple<string, Action>("Insert &Billboard...", () => OnAddBillboard(sceneNode)),
 			};
 
 			if (treeNode != _treeFileExplorer.GetSubNode(0))

@@ -11,6 +11,7 @@ namespace Nursia.Rendering
 		private Effect _effect;
 
 		public EffectParameter WorldViewProj { get; private set; }
+		public EffectParameter View { get; private set; }
 		public EffectParameter World { get; private set; }
 		public EffectParameter WorldInverseTranspose { get; private set; }
 		public EffectParameter CameraPosition { get; private set; }
@@ -39,6 +40,7 @@ namespace Nursia.Rendering
 				_effect = value;
 				WorldViewProj = _effect.FindParameterByName("_worldViewProj");
 				World = _effect.FindParameterByName("_world");
+				View = _effect.FindParameterByName("_view");
 				WorldInverseTranspose = _effect.FindParameterByName("_worldInverseTranspose");
 				CameraPosition = _effect.FindParameterByName("_cameraPosition");
 

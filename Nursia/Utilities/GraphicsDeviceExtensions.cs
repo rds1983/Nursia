@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Nursia.Rendering;
 
-namespace Nursia.Rendering
+namespace Nursia.Utilities
 {
 	public static class GraphicsDeviceExtensions
 	{

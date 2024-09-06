@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Nursia.Rendering;
+using Nursia.Simple;
 
 namespace Nursia.Primitives
 {
@@ -17,7 +18,7 @@ namespace Nursia.Primitives
 		Torus
 	}
 
-	public class PrimitiveMeshNode: MeshNode
+	public class PrimitiveMeshNode : MeshNodeBaseMaterial
 	{
 		public PrimitiveMesh PrimitiveMesh { get; set; }
 
@@ -116,11 +117,6 @@ namespace Nursia.Primitives
 			}
 		}
 
-		protected internal override void Render(RenderContext context)
-		{
-			base.Render(context);
-
-			Mesh = PrimitiveMesh?.Mesh;
-		}
+		protected override Mesh RenderMesh => PrimitiveMesh?.Mesh;
 	}
 }

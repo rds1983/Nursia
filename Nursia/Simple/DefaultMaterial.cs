@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Nursia.Rendering;
 using Nursia.Utilities;
 using System.ComponentModel;
 
-namespace Nursia.Rendering
+namespace Nursia.Simple
 {
 	public class DefaultMaterial : Material, ISkinnedMaterial
 	{

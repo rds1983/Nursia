@@ -11,6 +11,7 @@ using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
+using Nursia.Simple;
 
 namespace NursiaEditor.UI
 {

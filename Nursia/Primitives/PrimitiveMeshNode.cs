@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Nursia.Rendering;
-using Nursia.Simple;
+using Nursia.Standard;
 
 namespace Nursia.Primitives
 {

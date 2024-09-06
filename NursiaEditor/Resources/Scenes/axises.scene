@@ -23,7 +23,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "75, 217, 97, 255",
             "SpecularPower": 250.0
@@ -44,7 +44,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "75, 217, 97, 255",
             "SpecularPower": 250.0
@@ -72,7 +72,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "254, 57, 48, 255",
             "SpecularPower": 250.0
@@ -93,7 +93,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "254, 57, 48, 255",
             "SpecularPower": 250.0
@@ -121,7 +121,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "3, 121, 255, 255",
             "SpecularPower": 250.0
@@ -142,7 +142,7 @@
             "VScale": 1.0
           },
           "Material": {
-            "$type": "Nursia.Simple.DefaultMaterial, Nursia",
+            "$type": "Nursia.Standard.DefaultMaterial, Nursia",
             "Lightning": false,
             "DiffuseColor": "3, 120, 255, 255",
             "SpecularPower": 250.0

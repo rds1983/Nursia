@@ -5,7 +5,7 @@ using Nursia.Rendering;
 using Nursia.Utilities;
 using System.ComponentModel;
 
-namespace Nursia.Simple
+namespace Nursia.Standard
 {
 	public class DefaultMaterial : Material, ISkinnedMaterial
 	{

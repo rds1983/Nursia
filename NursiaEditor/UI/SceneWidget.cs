@@ -11,7 +11,7 @@ using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
-using Nursia.Simple;
+using Nursia.Standard;
 
 namespace NursiaEditor.UI
 {
@@ -215,6 +215,30 @@ namespace NursiaEditor.UI
 				_renderer.Render(Scene, Scene.Camera);
 				_renderer.Render(GridMesh, Scene.Camera);
 
+				// Draw lights' icons'
+				Scene.Iterate(n =>
+				{
+					var asLight = n as BaseLight;
+					if (asLight != null)
+					{
+						BillboardNode node;
+						if (asLight.Tag == null)
+						{
+							var icon = NursiaEditor.Resources.IconDirectionalLight;
+							node = new BillboardNode
+							{
+								Translation = n.Translation,
+								Texture = icon
+							};
+
+							asLight.Tag = node;
+						}
+
+						node = (BillboardNode)asLight.Tag;
+						_renderer.Render(node, Scene.Camera);
+					}
+				});
+
 				device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
 					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);
 
@@ -251,27 +275,6 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = oldViewport;
 			}
-
-			var camera = Scene.Camera;
-			var viewport = new Viewport(0, 0, ActualBounds.Width, ActualBounds.Height);
-			var projection = camera.CalculateProjection(viewport.AspectRatio);
-
-			// Draw lights' icons'
-			Scene.Iterate(n =>
-			{
-				var asLight = n as BaseLight;
-				if (asLight != null)
-				{
-					var p = viewport.Project(asLight.Translation,
-						projection, camera.View, Matrix.Identity);
-
-					var icon = NursiaEditor.Resources.IconDirectionalLight;
-
-					p.X -= icon.Width / 2;
-					p.Y -= icon.Height / 2;
-					context.Draw(icon, new Vector2(p.X, p.Y), Color.White);
-				}
-			});
 		}
 
 		protected override void OnPlacedChanged()

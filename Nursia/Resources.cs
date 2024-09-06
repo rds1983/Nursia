@@ -1,4 +1,5 @@
 ﻿using AssetManagementBase;
+using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
@@ -19,18 +20,35 @@ namespace Nursia
 #endif
 
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);
+		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(Assembly, "Resources");
 
-		private static Func<Effect> _colorEffect, _skyboxEffect, _billboardEffect;
+		private static Func<Effect> _colorEffect, _skyboxEffect;
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
+		private static Func<Effect>[] _billboardEffects = new Func<Effect>[2];
 		private static Texture2D _white, _waterNormals1, _waterNormals2;
+		private static FontSystem _fontSystem;
+		private static SpriteBatch _spriteBatch;
 
 		private static Assembly Assembly
 		{
 			get
 			{
 				return typeof(Resources).Assembly;
+			}
+		}
+
+		public static FontSystem DefaultFontSystem
+		{
+			get
+			{
+				if (_fontSystem == null)
+				{
+					_fontSystem = _assetManager.LoadFontSystem("Fonts/Inter-Regular.ttf");
+				}
+
+				return _fontSystem;
 			}
 		}
 
@@ -76,30 +94,13 @@ namespace Nursia
 			}
 		}
 
-		public static Func<Effect> BillboardEffect
-		{
-			get
-			{
-				if (_billboardEffect != null)
-				{
-					return _billboardEffect;
-				}
-
-				_billboardEffect = GetEffect("BillboardEffect");
-				return _billboardEffect;
-			}
-		}
-
 		public static Texture2D WaterNormals1
 		{
 			get
 			{
 				if (_waterNormals1 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals1.png"))
-					{
-						_waterNormals1 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
-					}
+					_waterNormals1 = _assetManager.LoadTexture2D(Nrs.GraphicsDevice, "Images.waterNormals1.png");
 				}
 
 				return _waterNormals1;
@@ -112,13 +113,26 @@ namespace Nursia
 			{
 				if (_waterNormals2 == null)
 				{
-					using (var stream = Assembly.OpenResourceStream("Resources.Images.waterNormals2.png"))
+					using (var stream = Assembly.OpenResourceStream("Images.waterNormals2.png"))
 					{
 						_waterNormals2 = Texture2D.FromStream(Nrs.GraphicsDevice, stream);
 					}
 				}
 
 				return _waterNormals2;
+			}
+		}
+
+		public static SpriteBatch SpriteBatch
+		{
+			get
+			{
+				if (_spriteBatch == null)
+				{
+					_spriteBatch = new SpriteBatch(Nrs.GraphicsDevice);
+				}
+
+				return _spriteBatch;
 			}
 		}
 
@@ -272,6 +286,32 @@ namespace Nursia
 
 			var result = GetEffect("WaterEffect", defines);
 			_waterEffects[key] = result;
+
+			return result;
+		}
+
+		public static Func<Effect> GetBillboardEffect(bool texture)
+		{
+			var key = 0;
+
+			if (texture)
+			{
+				key |= 1;
+			}
+
+			if (_billboardEffects[key] != null)
+			{
+				return _billboardEffects[key];
+			}
+
+			var defines = new Dictionary<string, string>();
+			if (texture)
+			{
+				defines["TEXTURE"] = "1";
+			}
+
+			var result = GetEffect("BillboardEffect", defines);
+			_billboardEffects[key] = result;
 
 			return result;
 		}

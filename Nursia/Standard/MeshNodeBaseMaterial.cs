@@ -1,6 +1,6 @@
 ﻿using Nursia.Rendering;
 
-namespace Nursia.Simple
+namespace Nursia.Standard
 {
 	public abstract class MeshNodeBaseMaterial: MeshNodeBase
 	{

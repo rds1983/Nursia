@@ -2,7 +2,7 @@
 using Nursia.Rendering;
 using System.ComponentModel;
 
-namespace Nursia.Simple
+namespace Nursia.Standard
 {
 	public class MeshNode : MeshNodeBaseMaterial
 	{

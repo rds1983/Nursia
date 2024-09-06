@@ -117,6 +117,10 @@ namespace Nursia.Rendering
 		[Browsable(false)]
 		public ObservableCollection<SceneNode> Children { get; } = new ObservableCollection<SceneNode>();
 
+		[Browsable(false)]
+		[JsonIgnore]
+		public object Tag { get; set; }
+
 		public SceneNode()
 		{
 			Children.CollectionChanged += ChildrenOnCollectionChanged;

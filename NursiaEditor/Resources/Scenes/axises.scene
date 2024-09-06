@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "-3.3662252, 3.4230623, 5.656816",
-    "YawAngle": 154.69945,
-    "PitchAngle": 24.900017,
+    "Position": "0.962031, 3.072283, 6.314395",
+    "YawAngle": 181.09903,
+    "PitchAngle": 21.000093,
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -160,7 +160,7 @@
       "Text": "y",
       "FontSize": 32.0,
       "Color": "255, 255, 255, 255",
-      "Translation": "0, 1, 0",
+      "Translation": "0, 1, 0.05",
       "Scale": "1, 1, 1",
       "Children": []
     },
@@ -169,7 +169,7 @@
       "Text": "x",
       "FontSize": 32.0,
       "Color": "255, 255, 255, 255",
-      "Translation": "1, 0.1, 0",
+      "Translation": "1, 0.1, 0.05",
       "Scale": "1, 1, 1",
       "Children": []
     },
@@ -178,7 +178,7 @@
       "Text": "z",
       "FontSize": 32.0,
       "Color": "255, 255, 255, 255",
-      "Translation": "0, 0, 1",
+      "Translation": "0, 0, 1.05",
       "Scale": "1, 1, 1",
       "Children": []
     }

@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "-0.3293754, 2.4554636, 5.5733023",
-    "YawAngle": 177.89978,
-    "PitchAngle": 21.500101,
+    "Position": "-3.3662252, 3.4230623, 5.656816",
+    "YawAngle": 154.69945,
+    "PitchAngle": 24.900017,
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -154,6 +154,33 @@
         }
       ],
       "Id": "zAxis"
+    },
+    {
+      "$type": "Nursia.Standard.Text3DNode, Nursia",
+      "Text": "y",
+      "FontSize": 32.0,
+      "Color": "255, 255, 255, 255",
+      "Translation": "0, 1, 0",
+      "Scale": "1, 1, 1",
+      "Children": []
+    },
+    {
+      "$type": "Nursia.Standard.Text3DNode, Nursia",
+      "Text": "x",
+      "FontSize": 32.0,
+      "Color": "255, 255, 255, 255",
+      "Translation": "1, 0.1, 0",
+      "Scale": "1, 1, 1",
+      "Children": []
+    },
+    {
+      "$type": "Nursia.Standard.Text3DNode, Nursia",
+      "Text": "z",
+      "FontSize": 32.0,
+      "Color": "255, 255, 255, 255",
+      "Translation": "0, 0, 1",
+      "Scale": "1, 1, 1",
+      "Children": []
     }
   ],
   "Id": "Root"

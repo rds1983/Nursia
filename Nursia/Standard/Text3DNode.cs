@@ -10,7 +10,7 @@ namespace Nursia.Standard
 	{
 		private Texture2D _texture = null;
 		private string _text;
-		private float _fontSize = 16.0f;
+		private float _fontSize = 32.0f;
 
 		protected internal override Texture2D RenderTexture
 		{
@@ -63,6 +63,9 @@ namespace Nursia.Standard
 
 			var font = Resources.DefaultFontSystem.GetFont(_fontSize);
 			var size = font.MeasureString(_text);
+
+			Width = size.X / 64.0f;
+			Height = size.Y / 64.0f;
 
 			var device = Nrs.GraphicsDevice;
 			var target = new RenderTarget2D(device, (int)size.X, (int)size.Y);

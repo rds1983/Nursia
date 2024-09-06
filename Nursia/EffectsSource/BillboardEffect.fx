@@ -2,11 +2,14 @@
 
 BEGIN_CONSTANTS
 
+float _width;
+float _height;
 float4 _color;
 
 MATRIX_CONSTANTS
 
-float4x4 _transform;
+float4x4 _worldViewProj;
+float4x4 _view;
 
 END_CONSTANTS
 
@@ -32,7 +35,14 @@ VSOutput VertexShaderFunction(VSInput input)
 {
 	VSOutput output = (VSOutput)0;
 
-	output.Position = mul(float4(input.Position, 1), _transform);
+	float3 right = _view._m00_m10_m20;
+	float3 up = _view._m01_m11_m21;
+
+	float3 position = 0;
+	position += right * (input.TexCoord.x - 0.5) * _width;
+	position += up * (0.5 - input.TexCoord.y) * _height;
+
+	output.Position = mul(float4(position, 1), _worldViewProj);
 	output.TexCoord = input.TexCoord;
 
 	return output;

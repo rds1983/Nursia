@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
-using Nursia.Primitives;
 using Nursia.Rendering;
 using System.ComponentModel;
 using Plane = Nursia.Primitives.Plane;
@@ -13,6 +12,9 @@ namespace Nursia.Standard
 		private class BillboardMaterial : Material
 		{
 			private Texture2D _texture;
+
+			public float Width { get; set; } = 1.0f;
+			public float Height { get; set; } = 1.0f;
 
 			public Color Color { get; set; } = Color.White;
 
@@ -34,21 +36,20 @@ namespace Nursia.Standard
 				}
 			}
 
-			public Matrix Transform;
-
-
+			private EffectParameter WidthParameter { get; set; }
+			private EffectParameter HeightParameter { get; set; }
 			private EffectParameter ColorParameter { get; set; }
 			private EffectParameter TextureParameter { get; set; }
-			private EffectParameter TransformParameter { get; set; }
 
 
 			protected override Effect CreateEffect()
 			{
 				var effect = Resources.GetBillboardEffect(Texture != null)();
 
+				WidthParameter = effect.Parameters["_width"];
+				HeightParameter = effect.Parameters["_height"];
 				ColorParameter = effect.Parameters["_color"];
 				TextureParameter = effect?.Parameters["_texture"];
-				TransformParameter = effect.Parameters["_transform"];
 
 				return effect;
 			}
@@ -57,9 +58,10 @@ namespace Nursia.Standard
 			{
 				base.SetMaterialParameters();
 
+				WidthParameter.SetValue(Width);
+				HeightParameter.SetValue(Height);
 				ColorParameter.SetValue(Color.ToVector4());
 				TextureParameter?.SetValue(Texture);
-				TransformParameter.SetValue(Transform);
 			}
 		}
 
@@ -87,6 +89,18 @@ namespace Nursia.Standard
 			set => _material.Color = value;
 		}
 
+		protected internal float Width
+		{
+			get => _material.Width;
+			set => _material.Width = value;
+		}
+
+		protected internal float Height
+		{
+			get => _material.Height;
+			set => _material.Height = value;
+		}
+
 		protected abstract internal Texture2D RenderTexture { get; }
 
 		protected internal override void BeforeRender(RenderContext context)
@@ -94,9 +108,6 @@ namespace Nursia.Standard
 			base.BeforeRender(context);
 
 			_material.Texture = RenderTexture;
-
-			var transform = Matrix.CreateBillboard(Translation, context.Camera.Position, context.Camera.Up, context.Camera.Direction);
-			_material.Transform = GlobalTransform * transform * context.ViewProjection;
 		}
 	}
 }

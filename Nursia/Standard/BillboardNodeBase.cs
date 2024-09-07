@@ -62,6 +62,8 @@ namespace Nursia.Standard
 			}
 		}
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public EffectBinding DefaultEffect
 		{
 			get
@@ -75,6 +77,8 @@ namespace Nursia.Standard
 			}
 		}
 
+		[Browsable(false)]
+		[JsonIgnore]
 		public EffectBinding ShadowMapEffect => null;
 
 		protected internal override void Render(RenderContext context)

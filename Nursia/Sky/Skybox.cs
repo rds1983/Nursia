@@ -90,7 +90,7 @@ namespace Nursia.Sky
 			// Set to the material
 			Material.Transform = transform;
 
-			context.BatchJob("Default", Material, GlobalTransform, MeshData);
+			context.BatchJob(Material, GlobalTransform, MeshData);
 		}
 
 		public override void Load(AssetManager assetManager)

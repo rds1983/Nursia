@@ -11,8 +11,9 @@ namespace Nursia.Utilities
 			device.Indices = meshData.IndexBuffer;
 		}
 
-		public static void DrawIndexedPrimitives(this GraphicsDevice device, EffectTechnique technique, Mesh meshData, int startIndex = 0)
+		public static void DrawIndexedPrimitives(this GraphicsDevice device, Effect effect, EffectTechnique technique, Mesh meshData, int startIndex = 0)
 		{
+			effect.CurrentTechnique = technique;
 			foreach (var pass in technique.Passes)
 			{
 				pass.Apply();
@@ -26,7 +27,7 @@ namespace Nursia.Utilities
 
 		public static void DrawIndexedPrimitives(this GraphicsDevice device, Effect effect, Mesh meshData, int startIndex = 0)
 		{
-			device.DrawIndexedPrimitives(effect.CurrentTechnique, meshData, startIndex);
+			device.DrawIndexedPrimitives(effect, effect.CurrentTechnique, meshData, startIndex);
 		}
 	}
 }

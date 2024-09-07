@@ -73,7 +73,7 @@ namespace Nursia.Modelling
 				{
 					var m = mesh.Transform * AbsoluteTransform * rootTransform;
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
-					if (context.Frustrum.Contains(boundingBox) == ContainmentType.Disjoint)
+					if (context.Frustum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{
 						continue;
 					}
@@ -87,7 +87,7 @@ namespace Nursia.Modelling
 						}
 					}
 
-					context.BatchJob("Default", mesh.Material, mesh.Transform * meshTransform, mesh.MeshData);
+					context.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.MeshData);
 
 					if (Nrs.DrawBoundingBoxes)
 					{

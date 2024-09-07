@@ -1,12 +1,20 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using Nursia.Utilities;
+using glTFLoader.Schema;
+using Nursia.Rendering.Lights;
+using System.IO;
 
 namespace Nursia.Rendering
 {
 	public class ForwardRenderer
 	{
+		private enum RenderPassType
+		{
+			ShadowMap,
+			Default
+		}
+
 		private int[] _effectLightType = new int[Constants.MaxLights];
 		private Vector3[] _effectLightPosition = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
@@ -21,7 +29,7 @@ namespace Nursia.Rendering
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullCounterClockwise;
-		public BlendState BlendState { get; set; } = BlendState.NonPremultiplied;
+		public BlendState BlendState { get; set; } = BlendState.Opaque;
 
 		public RenderStatistics Statistics => _context.Statistics;
 
@@ -42,7 +50,6 @@ namespace Nursia.Rendering
 			device.RasterizerState = RasterizerState;
 
 			device.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-
 		}
 
 		private void RestoreState()
@@ -98,6 +105,91 @@ namespace Nursia.Rendering
 			}
 		}
 
+		private void RenderPass(Camera camera, RenderPassType passType)
+		{
+			var device = Nrs.GraphicsDevice;
+			foreach (var job in _context.Jobs)
+			{
+				var commonPars = job.Material.CommonParameters;
+
+				commonPars.World?.SetValue(job.Transform);
+
+				if (commonPars.WorldViewProj != null)
+				{
+					var worldViewProj = job.Transform * _context.ViewProjection;
+					commonPars.WorldViewProj.SetValue(worldViewProj);
+				}
+
+				if (commonPars.WorldInverseTranspose != null)
+				{
+					var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(job.Transform));
+					commonPars.WorldInverseTranspose.SetValue(worldInverseTranspose);
+				}
+
+				commonPars.View?.SetValue(camera.View);
+				commonPars.CameraPosition?.SetValue(camera.Position);
+				commonPars.LightType?.SetValue(_effectLightType);
+				commonPars.LightPosition?.SetValue(_effectLightPosition);
+				commonPars.LightDirection?.SetValue(_effectLightDirection);
+				commonPars.LightColor?.SetValue(_effectLightColor);
+				commonPars.LightCount?.SetValue(_lightCount);
+
+				job.Material.SetMaterialParameters();
+
+				device.Apply(job.Mesh);
+				Nrs.GraphicsDevice.DrawIndexedPrimitives(job.Material.Effect, job.Material.DefaultTechnique, job.Mesh);
+
+				++_context.Statistics.MeshesDrawn;
+			}
+		}
+
+		private void ShadowMapRun(BaseLight light, Camera camera)
+		{
+			if (light.ShadowMap == null || !light.ShadowMapDirty)
+			{
+				return;
+			}
+
+			var device = Nrs.GraphicsDevice;
+			var oldViewport = device.Viewport;
+			try
+			{
+				device.SetRenderTarget(light.ShadowMap);
+
+				// Clear the render target to white or all 1's
+				// We set the clear to white since that represents the 
+				// furthest the object could be away
+				device.Clear(Color.White);
+
+				// Shadow map pass
+				var lightViewProj = light.CreateLightViewProjectionMatrix(_context);
+				foreach (var job in _context.Jobs)
+				{
+					if (job.Material.ShadowMapTechnique == null)
+					{
+						continue;
+					}
+
+					var commonPars = job.Material.CommonParameters;
+
+					commonPars.WorldViewProj?.SetValue(job.Transform * lightViewProj);
+					commonPars.View?.SetValue(camera.View);
+					commonPars.CameraPosition?.SetValue(camera.Position);
+
+					device.Apply(job.Mesh);
+					Nrs.GraphicsDevice.DrawIndexedPrimitives(job.Material.Effect, job.Material.ShadowMapTechnique, job.Mesh);
+
+					++_context.Statistics.MeshesDrawn;
+				}
+			}
+			finally
+			{
+				// Set render target back to the back buffer
+				device.SetRenderTarget(null);
+				device.Viewport = oldViewport;
+			}
+		}
+
 		public void Render(SceneNode node, Camera camera)
 		{
 			// Prepare render context
@@ -115,46 +207,14 @@ namespace Nursia.Rendering
 			// Set light parameters
 			SetLights();
 
-			// Process render jobs
-			var device = Nrs.GraphicsDevice;
-
-			List<RenderJob> colorJob;
-			if (_context.Jobs.TryGetValue("Default", out colorJob))
+			// Shadow map runs
+			foreach(var directLight in _context.DirectLights)
 			{
-				foreach (var job in colorJob)
-				{
-					var commonPars = job.Material.CommonParameters;
-
-					commonPars.World?.SetValue(job.Transform);
-
-					if (commonPars.WorldViewProj != null)
-					{
-						var worldViewProj = job.Transform * _context.ViewProjection;
-						commonPars.WorldViewProj.SetValue(worldViewProj);
-					}
-
-					if (commonPars.WorldInverseTranspose != null)
-					{
-						var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(job.Transform));
-						commonPars.WorldInverseTranspose.SetValue(worldInverseTranspose);
-					}
-
-					commonPars.View?.SetValue(camera.View);
-					commonPars.CameraPosition?.SetValue(camera.Position);
-					commonPars.LightType?.SetValue(_effectLightType);
-					commonPars.LightPosition?.SetValue(_effectLightPosition);
-					commonPars.LightDirection?.SetValue(_effectLightDirection);
-					commonPars.LightColor?.SetValue(_effectLightColor);
-					commonPars.LightCount?.SetValue(_lightCount);
-
-					job.Material.SetMaterialParameters();
-
-					device.Apply(job.Mesh);
-					Nrs.GraphicsDevice.DrawIndexedPrimitives(job.Material.Effect.Techniques[job.TechniqueName], job.Mesh);
-
-					++_context.Statistics.MeshesDrawn;
-				}
+				ShadowMapRun(directLight, camera);
 			}
+
+			// Default run
+			RenderPass(camera, RenderPassType.Default);
 
 			// Restore state
 			RestoreState();

@@ -68,6 +68,8 @@ namespace Nursia.Standard
 
 		public Color DiffuseColor { get; set; } = Color.White;
 
+		public Texture2D ShadowMap { get; set; }
+
 		[Browsable(false)]
 		[JsonIgnore]
 		public Matrix[] BonesTransforms { get; set; }
@@ -75,6 +77,7 @@ namespace Nursia.Standard
 		private EffectParameter DiffuseColorParameter { get; set; }
 		private EffectParameter TextureParameter { get; set; }
 		private EffectParameter BonesTransformsParameter { get; set; }
+		private EffectParameter ShadowMapParameter { get; set; }
 
 		protected override Effect CreateEffect()
 		{
@@ -83,6 +86,7 @@ namespace Nursia.Standard
 			DiffuseColorParameter = result.FindParameterByName("_diffuseColor");
 			TextureParameter = result.FindParameterByName("_texture");
 			BonesTransformsParameter = result.FindParameterByName("_bones");
+			ShadowMapParameter = result.FindParameterByName("_shadowMap");
 
 			return result;
 		}
@@ -99,6 +103,8 @@ namespace Nursia.Standard
 			{
 				BonesTransformsParameter.SetValue(BonesTransforms);
 			}
+
+			ShadowMapParameter.SetValue(ShadowMap);
 		}
 	}
 }

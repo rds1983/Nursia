@@ -23,7 +23,7 @@ namespace Nursia.Standard
 				return;
 			}
 
-			context.BatchJob("Default", RenderMaterial, GlobalTransform, RenderMesh);
+			context.BatchJob(RenderMaterial, GlobalTransform, RenderMesh);
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace Nursia.Rendering
 
 		public Matrix Projection { get; private set; }
 		public Matrix ViewProjection { get; private set; }
-		public BoundingFrustum Frustrum { get; private set; }
+		public BoundingFrustum Frustum { get; private set; }
 
 		public RenderStatistics Statistics { get; } = new RenderStatistics();
 
@@ -20,7 +20,7 @@ namespace Nursia.Rendering
 		public List<PointLight> PointLights { get; } = new List<PointLight>();
 
 
-		internal Dictionary<string, List<RenderJob>> Jobs { get; } = new Dictionary<string, List<RenderJob>>();
+		internal List<RenderJob> Jobs { get; } = new List<RenderJob>();
 
 		internal bool PrepareRender(Camera camera)
 		{
@@ -34,7 +34,7 @@ namespace Nursia.Rendering
 			// Calculate matrices
 			Projection = camera.CalculateProjection();
 			ViewProjection = _camera.View * Projection;
-			Frustrum = new BoundingFrustum(ViewProjection);
+			Frustum = new BoundingFrustum(ViewProjection);
 
 			Statistics.Reset();
 			Jobs.Clear();
@@ -44,19 +44,10 @@ namespace Nursia.Rendering
 			return true;
 		}
 
-		public void BatchJob(string techniqueName, Material material,
-			Matrix transform, Mesh mesh)
+		public void BatchJob(Material material, Matrix transform, Mesh mesh)
 		{
-			List<RenderJob> passJobs;
-
-			if (!Jobs.TryGetValue(techniqueName, out passJobs))
-			{
-				passJobs = new List<RenderJob>();
-				Jobs[techniqueName] = passJobs;
-			}
-
-			var job = new RenderJob(techniqueName, material, transform, mesh);
-			passJobs.Add(job);
+			var job = new RenderJob(material, transform, mesh);
+			Jobs.Add(job);
 		}
 	}
 }

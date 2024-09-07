@@ -53,7 +53,7 @@ namespace Nursia.Rendering
 		}
 	}
 
-	public abstract class Material: ItemWithId
+	public abstract class Material : ItemWithId
 	{
 		private bool _dirty = true;
 		private readonly MaterialCommonParameters _commonParameters = new MaterialCommonParameters();
@@ -78,6 +78,14 @@ namespace Nursia.Rendering
 
 		[Category("Behavior")]
 		public float SpecularPower { get; set; } = 250.0f;
+
+		[Browsable(false)]
+		[JsonIgnore]
+		public EffectTechnique DefaultTechnique { get; private set; }
+
+		[Browsable(false)]
+		[JsonIgnore]
+		public EffectTechnique ShadowMapTechnique { get; private set; }
 
 		private EffectParameter SpecularFactorParameter { get; set; }
 		private EffectParameter SpecularPowerParameter { get; set; }
@@ -104,9 +112,13 @@ namespace Nursia.Rendering
 			}
 
 			var effect = CreateEffect();
+
 			_commonParameters.Effect = effect;
 			SpecularFactorParameter = effect.FindParameterByName("_specularFactor");
 			SpecularPowerParameter = effect.FindParameterByName("_specularPower");
+
+			DefaultTechnique = effect.Techniques["Default"];
+			ShadowMapTechnique = effect.Techniques["ShadowMap"];
 
 			_dirty = false;
 		}

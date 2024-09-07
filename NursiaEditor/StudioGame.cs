@@ -36,7 +36,8 @@ namespace NursiaEditor
 			_graphics = new GraphicsDeviceManager(this)
 			{
 				PreferredBackBufferWidth = 1200,
-				PreferredBackBufferHeight = 800
+				PreferredBackBufferHeight = 800,
+				PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8
 			};
 
 			Window.AllowUserResizing = true;

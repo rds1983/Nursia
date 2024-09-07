@@ -18,6 +18,8 @@ DECLARE_TEXTURE_LINEAR_WRAP(_texture);
 
 #endif
 
+DECLARE_TEXTURE_LINEAR_WRAP(_shadowMap);
+
 BEGIN_CONSTANTS
 
 #ifdef CLIP_PLANE
@@ -46,7 +48,7 @@ END_CONSTANTS
 
 struct VSInput
 {
-	float4 Position : SV_POSITION;
+	float4 Position : POSITION0;
 
 #ifdef LIGHTNING
 	float3 Normal   : NORMAL;
@@ -64,7 +66,7 @@ struct VSInput
 
 struct VSOutput
 {
-	float4 Position: SV_POSITION;
+	float4 Position: POSITION0;
     float3 ToCamera: TEXCOORD0;
 
 #ifdef TEXTURE
@@ -81,6 +83,17 @@ struct VSOutput
 #endif
 
 	float2 Depth: TEXCOORD5;
+};
+
+struct VSOutputShadowMap
+{
+	float4 Position: POSITION0;
+
+#ifdef CLIP_PLANE
+	float4 ClipDistances: TEXCOORD0;
+#endif
+
+	float2 Depth: TEXCOORD1;
 };
 
 VSOutput VS(VSInput input)
@@ -128,7 +141,32 @@ VSOutput VS(VSInput input)
 	return output;
 }
 
-float4 PSDefault(VSOutput input) : SV_Target0
+VSOutputShadowMap VSShadowMap(VSInput input)
+{
+    VSOutputShadowMap output;
+
+#ifdef SKINNING
+	float4x3 skinning = 0;
+	skinning += _bones[(int)input.Indices[0]] * input.Weights[0];
+	skinning += _bones[(int)input.Indices[1]] * input.Weights[1];
+	skinning += _bones[(int)input.Indices[2]] * input.Weights[2];
+	skinning += _bones[(int)input.Indices[3]] * input.Weights[3];
+	input.Position.xyz = mul(input.Position, skinning);
+#endif
+
+	output.Position = mul(float4(input.Position.xyz, 1), mul(_world, _worldViewProj));
+	output.Depth.x = output.Position.z;
+	output.Depth.y = output.Position.w;
+
+#ifdef CLIP_PLANE
+	output.ClipDistances.yzw = 0;
+	output.ClipDistances.x = dot(output.Position, _clipPlane); 
+#endif
+
+	return output;
+}
+
+float4 PSDefault(VSOutput input): COLOR
 {
 #ifdef CLIP_PLANE
     clip(input.ClipDistances.x); 
@@ -154,7 +192,17 @@ float4 PSDefault(VSOutput input) : SV_Target0
 	return color;
 }
 
-float4 PSDepth(VSOutput input) : COLOR
+float4 PSDepth(VSOutput input): COLOR
+{
+#ifdef CLIP_PLANE
+	clip(input.ClipDistances.x); 
+#endif
+
+	float depth = input.Depth.x / input.Depth.y;
+	return float4(depth, 0.0f, 0.0f, 1.0f);
+}
+
+float4 PSShadowMap(VSOutputShadowMap input): COLOR
 {
 #ifdef CLIP_PLANE
 	clip(input.ClipDistances.x); 
@@ -165,4 +213,5 @@ float4 PSDepth(VSOutput input) : COLOR
 }
 
 TECHNIQUE(Default, VS, PSDefault);
+TECHNIQUE(ShadowMap, VSShadowMap, PSShadowMap);
 TECHNIQUE(Depth, VS, PSDepth);

@@ -1,4 +1,6 @@
-﻿namespace Nursia.Rendering.Lights
+﻿using Microsoft.Xna.Framework;
+
+namespace Nursia.Rendering.Lights
 {
 	public class PointLight : BaseLight
 	{
@@ -7,6 +9,11 @@
 			base.Render(context);
 
 			context.PointLights.Add(this);
+		}
+
+		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿using glTFLoader.Schema;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Nursia.Utilities;
 using System;

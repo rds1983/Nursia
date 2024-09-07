@@ -275,6 +275,10 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = oldViewport;
 			}
+
+			var directLight = Scene.QueryByType<DirectLight>()[0];
+
+			context.Draw(directLight.ShadowMap, new Rectangle(0, 0, 256, 256), Color.White);
 		}
 
 		protected override void OnPlacedChanged()

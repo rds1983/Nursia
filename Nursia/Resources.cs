@@ -24,6 +24,7 @@ namespace Nursia
 
 		private static Func<Effect> _colorEffect, _skyboxEffect;
 		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
+		private static Func<Effect>[] _defaultShadowMapEffects = new Func<Effect>[8];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
 		private static Func<Effect>[] _billboardEffects = new Func<Effect>[2];
@@ -188,6 +189,42 @@ namespace Nursia
 
 			var result = GetEffect("DefaultEffect", defines);
 			_defaultEffects[key] = result;
+
+			return result;
+		}
+
+		public static Func<Effect> GetDefaultShadowMapEffect(bool skinning, bool clipPlane)
+		{
+			var key = 0;
+
+			if (clipPlane)
+			{
+				key |= 1;
+			}
+
+			if (skinning)
+			{
+				key |= 2;
+			}
+
+			if (_defaultShadowMapEffects[key] != null)
+			{
+				return _defaultShadowMapEffects[key];
+			}
+
+			var defines = new Dictionary<string, string>();
+			if (skinning)
+			{
+				defines["SKINNING"] = "1";
+			}
+
+			if (clipPlane)
+			{
+				defines["CLIP_PLANE"] = "1";
+			}
+
+			var result = GetEffect("DefaultEffect_ShadowMap", defines);
+			_defaultShadowMapEffects[key] = result;
 
 			return result;
 		}

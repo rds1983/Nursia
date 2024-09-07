@@ -86,11 +86,11 @@ namespace Nursia.Standard
 			}
 
 			_texture = target;
-
-			using (var stream = File.OpenWrite(@"D:\Temp\test.png"))
+			
+			/*using (var stream = File.OpenWrite(@"D:\Temp\test.png"))
 			{
 				_texture.SaveAsPng(stream, _texture.Width, _texture.Height);
-			}
+			}*/
 		}
 
 		private void Invalidate()

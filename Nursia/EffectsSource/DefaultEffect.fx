@@ -3,7 +3,6 @@
 #ifdef LIGHTNING
 
 #include "Lightning.fxh"
-
 #endif
 
 #ifdef SKINNING
@@ -28,6 +27,7 @@ float4 _clipPlane;
 
 #endif
 
+float DepthBias = 0.001f;
 float4 _diffuseColor;
 float3 _cameraPosition;
 
@@ -41,6 +41,7 @@ float3x3 _worldInverseTranspose;
 float4x3 _bones[MAX_BONES];
 #endif
 
+float4x4 _lightViewProj;
 float4x4 _worldViewProj;
 float4x4 _world;
 
@@ -67,33 +68,23 @@ struct VSInput
 struct VSOutput
 {
 	float4 Position: POSITION0;
-    float3 ToCamera: TEXCOORD0;
+	float3 ToCamera: TEXCOORD0;
 
 #ifdef TEXTURE
-    float2 TexCoord: TEXCOORD1;
+	float2 TexCoord: TEXCOORD1;
 #endif
 
 #ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD2;
 	float4 SourcePosition: TEXCOORD3;
+	float4 WorldPosition: TEXCOORD4;
 #endif
 
 #ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD4;
+	float4 ClipDistances: TEXCOORD5;
 #endif
 
-	float2 Depth: TEXCOORD5;
-};
-
-struct VSOutputShadowMap
-{
-	float4 Position: POSITION0;
-
-#ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD0;
-#endif
-
-	float2 Depth: TEXCOORD1;
+	float2 Depth: TEXCOORD6;
 };
 
 VSOutput VS(VSInput input)
@@ -123,6 +114,7 @@ VSOutput VS(VSInput input)
 	
 #ifdef LIGHTNING
 	output.SourcePosition = input.Position;
+	output.WorldPosition = mul(input.Position, _world);
 #endif
 
 #ifdef TEXTURE
@@ -141,32 +133,7 @@ VSOutput VS(VSInput input)
 	return output;
 }
 
-VSOutputShadowMap VSShadowMap(VSInput input)
-{
-    VSOutputShadowMap output;
-
-#ifdef SKINNING
-	float4x3 skinning = 0;
-	skinning += _bones[(int)input.Indices[0]] * input.Weights[0];
-	skinning += _bones[(int)input.Indices[1]] * input.Weights[1];
-	skinning += _bones[(int)input.Indices[2]] * input.Weights[2];
-	skinning += _bones[(int)input.Indices[3]] * input.Weights[3];
-	input.Position.xyz = mul(input.Position, skinning);
-#endif
-
-	output.Position = mul(float4(input.Position.xyz, 1), mul(_world, _worldViewProj));
-	output.Depth.x = output.Position.z;
-	output.Depth.y = output.Position.w;
-
-#ifdef CLIP_PLANE
-	output.ClipDistances.yzw = 0;
-	output.ClipDistances.x = dot(output.Position, _clipPlane); 
-#endif
-
-	return output;
-}
-
-float4 PSDefault(VSOutput input): COLOR
+float4 PS(VSOutput input): COLOR
 {
 #ifdef CLIP_PLANE
     clip(input.ClipDistances.x); 
@@ -185,6 +152,29 @@ float4 PSDefault(VSOutput input): COLOR
 	LightPower lightPower = CalculateLightPower(normal, src, input.ToCamera);
 	color *= float4(lightPower.Diffuse, 1);
 	color += float4(lightPower.Specular, 0);
+	
+    // Find the position of this pixel in light space
+    float4 lightingPosition = mul(input.WorldPosition, _lightViewProj);
+    
+    // Find the position in the shadow map for this pixel
+    float2 ShadowTexCoord = 0.5 * lightingPosition.xy / 
+                            lightingPosition.w + float2( 0.5, 0.5 );
+    ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+
+    // Get the current depth stored in the shadow map
+    float shadowdepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord).r;
+	
+    // Calculate the current pixel depth
+    // The bias is used to prevent folating point errors that occur when
+    // the pixel of the occluder is being drawn
+    float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+    
+    // Check to see if this pixel is in front or behind the value in the shadow map
+    if (shadowdepth < ourdepth)
+    {
+        // Shadow the pixel by lowering the intensity
+        color *= float4(0.5,0.5,0.5,1);
+    };	
 #endif
 
 	clip(color.a < 0.1?-1:1);
@@ -192,26 +182,4 @@ float4 PSDefault(VSOutput input): COLOR
 	return color;
 }
 
-float4 PSDepth(VSOutput input): COLOR
-{
-#ifdef CLIP_PLANE
-	clip(input.ClipDistances.x); 
-#endif
-
-	float depth = input.Depth.x / input.Depth.y;
-	return float4(depth, 0.0f, 0.0f, 1.0f);
-}
-
-float4 PSShadowMap(VSOutputShadowMap input): COLOR
-{
-#ifdef CLIP_PLANE
-	clip(input.ClipDistances.x); 
-#endif
-
-	float depth = input.Depth.x / input.Depth.y;
-	return float4(depth, 0.0f, 0.0f, 1.0f);
-}
-
-TECHNIQUE(Default, VS, PSDefault);
-TECHNIQUE(ShadowMap, VSShadowMap, PSShadowMap);
-TECHNIQUE(Depth, VS, PSDepth);
+TECHNIQUE(Default, VS, PS);

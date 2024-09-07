@@ -19,36 +19,36 @@ namespace Nursia.Modelling
 		public BoundingBox BoundingBox => MeshData.BoundingBox;
 		public int VertexCount => MeshData.VertexCount;
 
-		public Material Material { get; set; }
+		public IMaterial Material { get; set; }
 		public Matrix Transform = Matrix.Identity;
 
-		public ModelMesh(Mesh meshData, Material material)
+		public ModelMesh(Mesh meshData, IMaterial material)
 		{
 			MeshData = meshData ?? throw new ArgumentNullException(nameof(meshData));
 			Material = material ?? throw new ArgumentNullException(nameof(material));
 		}
 
-		public ModelMesh(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, IEnumerable<Vector3> positions, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, IEnumerable<Vector3> positions, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertexBuffer, indexBuffer, positions, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPositionNormalTexture[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionNormalTexture[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPositionTexture[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionTexture[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPositionNormal[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionNormal[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPosition[] vertices, short[] indices, Material material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPosition[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}

@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public class MeshNode : MeshNodeBaseMaterial
+	public class MeshNode : MeshNodeBase
 	{
 		[Browsable(false)]
 		[JsonIgnore]

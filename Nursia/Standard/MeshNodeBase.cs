@@ -1,4 +1,5 @@
 ﻿using Nursia.Rendering;
+using System.ComponentModel;
 
 namespace Nursia.Standard
 {
@@ -6,24 +7,18 @@ namespace Nursia.Standard
 	{
 		protected abstract Mesh RenderMesh { get; }
 
-		protected abstract Material RenderMaterial { get; }
-
-		protected internal virtual void BeforeRender(RenderContext context)
-		{
-		}
+		public IMaterial Material { get; set; }
 
 		protected internal override void Render(RenderContext context)
 		{
 			base.Render(context);
 
-			BeforeRender(context);
-
-			if (RenderMaterial == null || RenderMesh == null)
+			if (Material == null || RenderMesh == null)
 			{
 				return;
 			}
 
-			context.BatchJob(RenderMaterial, GlobalTransform, RenderMesh);
+			context.BatchJob(Material, GlobalTransform, RenderMesh);
 		}
 	}
 }

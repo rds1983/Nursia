@@ -8,49 +8,27 @@ using System.ComponentModel;
 
 namespace Nursia.Sky
 {
-	public class Skybox : SceneNode
+	public class Skybox : SceneNode, IMaterial
 	{
-		private class SkyboxMaterial : Material
+		private class SkyboxEffectBinding : EffectBinding
 		{
-			public TextureCube _texture;
-
-			public TextureCube Texture
-			{
-				get => _texture;
-
-				set
-				{
-					if (value == _texture)
-					{
-						return;
-					}
-
-					_texture = value;
-					Invalidate();
-				}
-			}
-
-			public Matrix Transform;
-
 			private EffectParameter TextureParameter { get; set; }
 			private EffectParameter TransformParameter { get; set; }
 
-			protected override Effect CreateEffect()
+			public SkyboxEffectBinding() : base(Resources.SkyboxEffect())
 			{
-				var effect = Resources.SkyboxEffect();
-
-				TextureParameter = effect.Parameters["_texture"];
-				TransformParameter = effect.Parameters["_transform"];
-
-				return effect;
+				TextureParameter = Effect.Parameters["_texture"];
+				TransformParameter = Effect.Parameters["_transform"];
 			}
 
-			protected internal override void SetMaterialParameters()
+			protected internal override void SetMaterialParams(IMaterial material)
 			{
-				base.SetMaterialParameters();
+				base.SetMaterialParams(material);
 
-				TextureParameter.SetValue(Texture);
-				TransformParameter.SetValue(Transform);
+				var skybox = (Skybox)material;
+
+				TextureParameter.SetValue(skybox.Texture);
+				TransformParameter.SetValue(skybox.Transform);
 			}
 		}
 
@@ -62,16 +40,18 @@ namespace Nursia.Sky
 
 		[Browsable(false)]
 		[JsonIgnore]
-		public TextureCube Texture
-		{
-			get => Material.Texture;
-			set => Material.Texture = value;
-		}
+		public TextureCube Texture { get; set; }
+
+		[Browsable(false)]
+		[JsonIgnore]
+		public Matrix Transform { get; set; }
 
 		[Browsable(false)]
 		public string TexturePath { get; set; }
 
-		private SkyboxMaterial Material { get; } = new SkyboxMaterial();
+		public EffectBinding DefaultEffect => new SkyboxEffectBinding();
+
+		public EffectBinding ShadowMapEffect => null;
 
 		public Skybox()
 		{
@@ -85,12 +65,9 @@ namespace Nursia.Sky
 			// Calculate special world-view-project matrix with zero translation
 			var view = context.Camera.View;
 			view.Translation = Vector3.Zero;
-			var transform = GlobalTransform * view * context.Projection;
+			Transform = GlobalTransform * view * context.Projection;
 
-			// Set to the material
-			Material.Transform = transform;
-
-			context.BatchJob(Material, GlobalTransform, MeshData);
+			context.BatchJob(this, GlobalTransform, MeshData);
 		}
 
 		public override void Load(AssetManager assetManager)
@@ -98,6 +75,11 @@ namespace Nursia.Sky
 			base.Load(assetManager);
 
 			Texture = assetManager.LoadTextureCube(Nrs.GraphicsDevice, TexturePath);
+		}
+
+		public void SetMaterialParameters(EffectBinding effectBinding)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

@@ -7,8 +7,72 @@ using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public class DefaultMaterial : Material, ISkinnedMaterial
+	public class DefaultMaterial : ItemWithId, IMaterial, ISkinnedMaterial
 	{
+		private class DefaultBinding : EffectBinding
+		{
+			public EffectParameter SpecularFactorParameter { get; set; }
+			public EffectParameter SpecularPowerParameter { get; set; }
+			private EffectParameter DiffuseColorParameter { get; }
+			private EffectParameter TextureParameter { get; }
+			private EffectParameter BonesTransformsParameter { get; }
+			private EffectParameter ShadowMapParameter { get; }
+
+			public DefaultBinding(Effect effect) : base(effect)
+			{
+				SpecularFactorParameter = effect.FindParameterByName("_specularFactor");
+				SpecularPowerParameter = effect.FindParameterByName("_specularPower");
+				DiffuseColorParameter = effect.FindParameterByName("_diffuseColor");
+				TextureParameter = effect.FindParameterByName("_texture");
+				BonesTransformsParameter = effect.FindParameterByName("_bones");
+				ShadowMapParameter = effect.FindParameterByName("_shadowMap");
+			}
+
+			protected internal override void SetMaterialParams(IMaterial material)
+			{
+				base.SetMaterialParams(material);
+
+				var defaultMaterial = (DefaultMaterial)material;
+
+				SpecularFactorParameter?.SetValue(defaultMaterial.SpecularFactor);
+				SpecularPowerParameter?.SetValue(defaultMaterial.SpecularPower);
+
+				DiffuseColorParameter.SetValue(defaultMaterial.DiffuseColor.ToVector4());
+				TextureParameter?.SetValue(defaultMaterial.Texture);
+
+				if (BonesTransformsParameter != null && defaultMaterial.BonesTransforms != null)
+				{
+					BonesTransformsParameter.SetValue(defaultMaterial.BonesTransforms);
+				}
+
+				ShadowMapParameter.SetValue(defaultMaterial.ShadowMap);
+			}
+		}
+
+		private class ShadowMapBinding : EffectBinding
+		{
+			private EffectParameter BonesTransformsParameter { get; }
+
+			public ShadowMapBinding(Effect effect) : base(effect)
+			{
+				BonesTransformsParameter = effect.FindParameterByName("_bones");
+			}
+
+			protected internal override void SetMaterialParams(IMaterial material)
+			{
+				base.SetMaterialParams(material);
+
+				var defaultMaterial = (DefaultMaterial)material;
+
+				if (BonesTransformsParameter != null && defaultMaterial.BonesTransforms != null)
+				{
+					BonesTransformsParameter.SetValue(defaultMaterial.BonesTransforms);
+				}
+			}
+		}
+
+		private EffectBinding _defaultBinding, _shadowMapBinding;
+		private bool _shadowMapBindingDirty = true;
 		private bool _lightning = true;
 		private bool _skinning = false;
 		private Texture2D _texture;
@@ -27,7 +91,7 @@ namespace Nursia.Standard
 				}
 
 				_texture = value;
-				Invalidate();
+				InvalidateDefault();
 			}
 		}
 
@@ -44,7 +108,8 @@ namespace Nursia.Standard
 				}
 
 				_lightning = value;
-				Invalidate();
+				InvalidateDefault();
+				InvalidateShadowMap();
 			}
 		}
 
@@ -62,9 +127,14 @@ namespace Nursia.Standard
 				}
 
 				_skinning = value;
-				Invalidate();
+				InvalidateDefault();
+				InvalidateShadowMap();
 			}
 		}
+
+		public float SpecularFactor { get; set; } = 0.0f;
+
+		public float SpecularPower { get; set; } = 250.0f;
 
 		public Color DiffuseColor { get; set; } = Color.White;
 
@@ -74,37 +144,52 @@ namespace Nursia.Standard
 		[JsonIgnore]
 		public Matrix[] BonesTransforms { get; set; }
 
-		private EffectParameter DiffuseColorParameter { get; set; }
-		private EffectParameter TextureParameter { get; set; }
-		private EffectParameter BonesTransformsParameter { get; set; }
-		private EffectParameter ShadowMapParameter { get; set; }
-
-		protected override Effect CreateEffect()
+		[Browsable(false)]
+		[JsonIgnore]
+		public EffectBinding DefaultEffect
 		{
-			var result = Resources.GetDefaultEffect(Texture != null, _skinning, false, _lightning)();
+			get
+			{
+				if (_defaultBinding == null)
+				{
+					var effect = Resources.GetDefaultEffect(Texture != null, _skinning, false, _lightning)();
+					_defaultBinding = new DefaultBinding(effect);
+				}
 
-			DiffuseColorParameter = result.FindParameterByName("_diffuseColor");
-			TextureParameter = result.FindParameterByName("_texture");
-			BonesTransformsParameter = result.FindParameterByName("_bones");
-			ShadowMapParameter = result.FindParameterByName("_shadowMap");
-
-			return result;
+				return _defaultBinding;
+			}
 		}
 
-		protected internal override void SetMaterialParameters()
+		[Browsable(false)]
+		[JsonIgnore]
+		public EffectBinding ShadowMapEffect
 		{
-			base.SetMaterialParameters();
-
-			DiffuseColorParameter.SetValue(DiffuseColor.ToVector4());
-
-			TextureParameter?.SetValue(Texture);
-
-			if (BonesTransformsParameter != null && BonesTransforms != null)
+			get
 			{
-				BonesTransformsParameter.SetValue(BonesTransforms);
-			}
+				if (_shadowMapBindingDirty)
+				{
+					if (Lightning)
+					{
+						var effect = Resources.GetDefaultShadowMapEffect(Skinning, false)();
+						_shadowMapBinding = new ShadowMapBinding(effect);
+					}
 
-			ShadowMapParameter.SetValue(ShadowMap);
+					_shadowMapBindingDirty = false;
+				}
+
+				return _shadowMapBinding;
+			}
+		}
+
+		private void InvalidateDefault()
+		{
+			_defaultBinding = null;
+		}
+
+		private void InvalidateShadowMap()
+		{
+			_shadowMapBinding = null;
+			_shadowMapBindingDirty = false;
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Nursia.Primitives
 		Torus
 	}
 
-	public class PrimitiveMeshNode : MeshNodeBaseMaterial
+	public class PrimitiveMeshNode : MeshNodeBase
 	{
 		public PrimitiveMesh PrimitiveMesh { get; set; }
 

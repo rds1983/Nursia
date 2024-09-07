@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
-using glTFLoader.Schema;
 using Nursia.Rendering.Lights;
-using System.IO;
 
 namespace Nursia.Rendering
 {
@@ -20,6 +18,7 @@ namespace Nursia.Rendering
 		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
 		private int _lightCount = 0;
+		private Matrix _lightViewProj;
 
 		private DepthStencilState _oldDepthStencilState;
 		private RasterizerState _oldRasterizerState;
@@ -105,39 +104,55 @@ namespace Nursia.Rendering
 			}
 		}
 
-		private void RenderPass(Camera camera, RenderPassType passType)
+		private void RenderPass(RenderPassType passType)
 		{
 			var device = Nrs.GraphicsDevice;
+			var camera = _context.Camera;
 			foreach (var job in _context.Jobs)
 			{
-				var commonPars = job.Material.CommonParameters;
+				EffectBinding effectBinding = null;
+				switch (passType)
+				{
+					case RenderPassType.ShadowMap:
+						effectBinding = job.Material.ShadowMapEffect;
+						break;
+					case RenderPassType.Default:
+						effectBinding = job.Material.DefaultEffect;
+						break;
+				}
 
-				commonPars.World?.SetValue(job.Transform);
+				if (effectBinding == null)
+				{
+					continue;
+				}
 
-				if (commonPars.WorldViewProj != null)
+				effectBinding.World?.SetValue(job.Transform);
+
+				if (effectBinding.WorldViewProj != null)
 				{
 					var worldViewProj = job.Transform * _context.ViewProjection;
-					commonPars.WorldViewProj.SetValue(worldViewProj);
+					effectBinding.WorldViewProj.SetValue(worldViewProj);
 				}
 
-				if (commonPars.WorldInverseTranspose != null)
+				if (effectBinding.WorldInverseTranspose != null)
 				{
 					var worldInverseTranspose = Matrix.Transpose(Matrix.Invert(job.Transform));
-					commonPars.WorldInverseTranspose.SetValue(worldInverseTranspose);
+					effectBinding.WorldInverseTranspose.SetValue(worldInverseTranspose);
 				}
 
-				commonPars.View?.SetValue(camera.View);
-				commonPars.CameraPosition?.SetValue(camera.Position);
-				commonPars.LightType?.SetValue(_effectLightType);
-				commonPars.LightPosition?.SetValue(_effectLightPosition);
-				commonPars.LightDirection?.SetValue(_effectLightDirection);
-				commonPars.LightColor?.SetValue(_effectLightColor);
-				commonPars.LightCount?.SetValue(_lightCount);
+				effectBinding.LightViewProj?.SetValue(_lightViewProj);
+				effectBinding.View?.SetValue(camera.View);
+				effectBinding.CameraPosition?.SetValue(camera.Position);
+				effectBinding.LightType?.SetValue(_effectLightType);
+				effectBinding.LightPosition?.SetValue(_effectLightPosition);
+				effectBinding.LightDirection?.SetValue(_effectLightDirection);
+				effectBinding.LightColor?.SetValue(_effectLightColor);
+				effectBinding.LightCount?.SetValue(_lightCount);
 
-				job.Material.SetMaterialParameters();
+				effectBinding.SetMaterialParams(job.Material);
 
 				device.Apply(job.Mesh);
-				Nrs.GraphicsDevice.DrawIndexedPrimitives(job.Material.Effect, job.Material.DefaultTechnique, job.Mesh);
+				Nrs.GraphicsDevice.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
 
 				++_context.Statistics.MeshesDrawn;
 			}
@@ -162,25 +177,8 @@ namespace Nursia.Rendering
 				device.Clear(Color.White);
 
 				// Shadow map pass
-				var lightViewProj = light.CreateLightViewProjectionMatrix(_context);
-				foreach (var job in _context.Jobs)
-				{
-					if (job.Material.ShadowMapTechnique == null)
-					{
-						continue;
-					}
-
-					var commonPars = job.Material.CommonParameters;
-
-					commonPars.WorldViewProj?.SetValue(job.Transform * lightViewProj);
-					commonPars.View?.SetValue(camera.View);
-					commonPars.CameraPosition?.SetValue(camera.Position);
-
-					device.Apply(job.Mesh);
-					Nrs.GraphicsDevice.DrawIndexedPrimitives(job.Material.Effect, job.Material.ShadowMapTechnique, job.Mesh);
-
-					++_context.Statistics.MeshesDrawn;
-				}
+				_lightViewProj = light.CreateLightViewProjectionMatrix(_context);
+				RenderPass(RenderPassType.ShadowMap);
 			}
 			finally
 			{
@@ -214,7 +212,7 @@ namespace Nursia.Rendering
 			}
 
 			// Default run
-			RenderPass(camera, RenderPassType.Default);
+			RenderPass(RenderPassType.Default);
 
 			// Restore state
 			RestoreState();

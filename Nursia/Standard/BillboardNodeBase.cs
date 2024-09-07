@@ -7,69 +7,48 @@ using Plane = Nursia.Primitives.Plane;
 
 namespace Nursia.Standard
 {
-	public abstract class BillboardNodeBase : MeshNodeBase
+	public abstract class BillboardNodeBase : SceneNode, IMaterial
 	{
-		private class BillboardMaterial : Material
+		private class BillboardEffectBinding : EffectBinding
 		{
-			private Texture2D _texture;
-
-			public float Width { get; set; } = 1.0f;
-			public float Height { get; set; } = 1.0f;
-
-			public Color Color { get; set; } = Color.White;
-
-			[Browsable(false)]
-			[JsonIgnore]
-			public Texture2D Texture
-			{
-				get => _texture;
-
-				set
-				{
-					if (value == _texture)
-					{
-						return;
-					}
-
-					_texture = value;
-					Invalidate();
-				}
-			}
-
 			private EffectParameter WidthParameter { get; set; }
 			private EffectParameter HeightParameter { get; set; }
 			private EffectParameter ColorParameter { get; set; }
 			private EffectParameter TextureParameter { get; set; }
 
-
-			protected override Effect CreateEffect()
+			public BillboardEffectBinding(bool hasTexture) :
+				base(Resources.GetBillboardEffect(hasTexture)())
 			{
-				var effect = Resources.GetBillboardEffect(Texture != null)();
-
-				WidthParameter = effect.Parameters["_width"];
-				HeightParameter = effect.Parameters["_height"];
-				ColorParameter = effect.Parameters["_color"];
-				TextureParameter = effect?.Parameters["_texture"];
-
-				return effect;
+				WidthParameter = Effect.Parameters["_width"];
+				HeightParameter = Effect.Parameters["_height"];
+				ColorParameter = Effect.Parameters["_color"];
+				TextureParameter = Effect.Parameters["_texture"];
 			}
 
-			protected internal override void SetMaterialParameters()
+			protected internal override void SetMaterialParams(IMaterial material)
 			{
-				base.SetMaterialParameters();
+				base.SetMaterialParams(material);
 
-				WidthParameter.SetValue(Width);
-				HeightParameter.SetValue(Height);
-				ColorParameter.SetValue(Color.ToVector4());
-				TextureParameter?.SetValue(Texture);
+				var billboard = (BillboardNodeBase)material;
+
+				WidthParameter.SetValue(billboard.Width);
+				HeightParameter.SetValue(billboard.Height);
+				ColorParameter.SetValue(billboard.Color.ToVector4());
+				TextureParameter?.SetValue(billboard.RenderTexture);
 			}
 		}
 
-		private readonly BillboardMaterial _material = new BillboardMaterial();
 		private static Mesh _mesh;
 
-		protected override Material RenderMaterial => _material;
-		protected override Mesh RenderMesh
+		private BillboardEffectBinding _default = null;
+
+		protected internal float Width { get; set; } = 1.0f;
+		protected internal float Height { get; set; } = 1.0f;
+		protected internal abstract Texture2D RenderTexture { get; }
+
+		public Color Color { get; set; } = Color.White;
+
+		private static Mesh Mesh
 		{
 			get
 			{
@@ -83,31 +62,31 @@ namespace Nursia.Standard
 			}
 		}
 
-		public Color Color
+		public EffectBinding DefaultEffect
 		{
-			get => _material.Color;
-			set => _material.Color = value;
+			get
+			{
+				if (_default == null)
+				{
+					_default = new BillboardEffectBinding(RenderTexture != null);
+				}
+
+				return _default;
+			}
 		}
 
-		protected internal float Width
+		public EffectBinding ShadowMapEffect => null;
+
+		protected internal override void Render(RenderContext context)
 		{
-			get => _material.Width;
-			set => _material.Width = value;
+			base.Render(context);
+
+			context.BatchJob(this, GlobalTransform, Mesh);
 		}
 
-		protected internal float Height
+		protected void InvalidateDefault()
 		{
-			get => _material.Height;
-			set => _material.Height = value;
-		}
-
-		protected abstract internal Texture2D RenderTexture { get; }
-
-		protected internal override void BeforeRender(RenderContext context)
-		{
-			base.BeforeRender(context);
-
-			_material.Texture = RenderTexture;
+			_default = null;
 		}
 	}
 }

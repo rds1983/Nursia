@@ -44,7 +44,7 @@ namespace Nursia.Rendering
 			return true;
 		}
 
-		public void BatchJob(Material material, Matrix transform, Mesh mesh)
+		public void BatchJob(IMaterial material, Matrix transform, Mesh mesh)
 		{
 			var job = new RenderJob(material, transform, mesh);
 			Jobs.Add(job);

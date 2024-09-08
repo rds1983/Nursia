@@ -9,7 +9,7 @@ namespace Nursia.Rendering
 	{
 		private Vector3 _position;
 		private float _yawAngle, _pitchAngle, _rollAngle;
-		private float _viewAngle = 60.0f;
+		private float _viewAngle = 90.0f;
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private float _nearPlaneDistance = 0.1f;

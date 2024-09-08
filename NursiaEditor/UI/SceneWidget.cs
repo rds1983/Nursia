@@ -214,6 +214,20 @@ namespace NursiaEditor.UI
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
 				_renderer.Render(Scene, Scene.Camera);
+
+				if (_renderer.ShadowCastingLight != null)
+				{
+					var lightViewProj = _renderer.ShadowCastingLight.CreateLightViewProjectionMatrix(_renderer.Context);
+					var frustum = new BoundingFrustum(lightViewProj);
+
+					Matrix view = Scene.Camera.View;
+					Matrix projection = Scene.Camera.CalculateProjection();
+
+					DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
+					DebugShapeRenderer.Draw(StudioGame.Instance.GameTime, view, projection);
+				}
+
+
 				_renderer.Render(GridMesh, Scene.Camera);
 
 				// Draw lights' icons'
@@ -239,18 +253,6 @@ namespace NursiaEditor.UI
 						_renderer.Render(node, Scene.Camera);
 					}
 				});
-
-				var directLight = Scene.QueryByType<DirectLight>()[0];
-
-				var cameraFrustum = new BoundingFrustum(Scene.Camera.View * Scene.Camera.CalculateProjection());
-				var lightViewProj = directLight.CreateLightViewProjectionMatrix(Scene.Camera);
-				var frustum = new BoundingFrustum(lightViewProj);
-
-				Matrix view = Scene.Camera.View;
-				Matrix projection = Scene.Camera.CalculateProjection();
-
-				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
-				DebugShapeRenderer.Draw(StudioGame.Instance.GameTime, view, projection);
 
 				/*device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
 					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);

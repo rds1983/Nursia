@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Nursia.Rendering;
 using Nursia.Standard;
+using System.ComponentModel;
 
 namespace Nursia.Primitives
 {
@@ -115,6 +116,14 @@ namespace Nursia.Primitives
 						break;
 				}
 			}
+		}
+
+		[DefaultValue(true)]
+		public bool CastsShadow
+		{
+			get => PrimitiveMesh.Mesh.CastsShadow;
+
+			set => PrimitiveMesh.Mesh.CastsShadow = value;
 		}
 
 		protected override Mesh RenderMesh => PrimitiveMesh?.Mesh;

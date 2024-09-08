@@ -107,6 +107,14 @@ namespace Nursia.Utilities
 			return new BoundingBox(min, max);
 		}
 
+		public static Vector3 CalculateCenter(this BoundingBox source)
+		{
+			return new Vector3(
+				source.Min.X + (source.Max.X - source.Min.X) / 2,
+				source.Min.Y + (source.Max.Y - source.Min.Y) / 2,
+				source.Min.Z + (source.Max.Z - source.Min.Z) / 2);
+		}
+
 		public static Vector4 Lerp(Vector4 a, Vector4 b, float s)
 		{
 			return new Vector4(MathHelper.Lerp(a.X, b.X, s),

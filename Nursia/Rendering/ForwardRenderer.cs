@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
 using Nursia.Rendering.Lights;
+using glTFLoader.Schema;
 
 namespace Nursia.Rendering
 {
@@ -32,6 +33,10 @@ namespace Nursia.Rendering
 		public BlendState BlendState { get; set; } = BlendState.Opaque;
 
 		public RenderStatistics Statistics => _context.Statistics;
+
+		public BaseLight ShadowCastingLight { get; private set; }
+
+		public RenderContext Context => _context;
 
 		public ForwardRenderer()
 		{
@@ -187,7 +192,7 @@ namespace Nursia.Rendering
 				device.Clear(Color.White);
 
 				// Shadow map pass
-				_lightViewProj = light.CreateLightViewProjectionMatrix(_context.Camera);
+				_lightViewProj = light.CreateLightViewProjectionMatrix(_context);
 				RenderPass(RenderPassType.ShadowMap);
 			}
 			finally
@@ -217,12 +222,18 @@ namespace Nursia.Rendering
 			// Set light parameters
 			SetLights();
 
-			_shadowMap = null;
+			// Determine shadow casting light
+			ShadowCastingLight = null;
 
-			// Shadow map runs
-			foreach(var directLight in _context.DirectLights)
+			if (_context.DirectLights.Count > 0)
 			{
-				ShadowMapRun(directLight, camera);
+				ShadowCastingLight = _context.DirectLights[0];
+			}
+
+			// Shadow map run
+			if (ShadowCastingLight != null)
+			{
+				ShadowMapRun(ShadowCastingLight, camera);
 			}
 
 			// Default run

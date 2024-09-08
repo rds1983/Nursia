@@ -1,9 +1,9 @@
 {
   "Camera": {
-    "Position": "8.82119, 9.624448, 6.816273",
-    "YawAngle": 191.09912,
-    "PitchAngle": 36.999493,
-    "ViewAngle": 90.0,
+    "Position": "20.524986, 20.003895, 17.452747",
+    "YawAngle": 204.99953,
+    "PitchAngle": 42.199364,
+    "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
   },
@@ -21,7 +21,7 @@
     {
       "$type": "Nursia.Modelling.NursiaModel, Nursia",
       "ModelPath": "Models\\BrainStem.gltf",
-      "Scale": "4, 4, 4",
+      "Scale": "1, 1, 1",
       "Children": []
     },
     {
@@ -34,6 +34,7 @@
         "UScale": 1.0,
         "VScale": 1.0
       },
+      "CastsShadow": false,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularPower": 250.0,
@@ -60,7 +61,7 @@
         "DiffuseColor": "255, 255, 255, 255"
       },
       "Translation": "16, 8, 0",
-      "Scale": "4, 4, 4",
+      "Scale": "1, 1, 1",
       "Children": [],
       "Id": "t"
     }

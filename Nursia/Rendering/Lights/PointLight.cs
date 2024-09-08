@@ -11,7 +11,7 @@ namespace Nursia.Rendering.Lights
 			context.PointLights.Add(this);
 		}
 
-		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
+		public override Matrix CreateLightViewProjectionMatrix(Camera camera)
 		{
 			throw new System.NotImplementedException();
 		}

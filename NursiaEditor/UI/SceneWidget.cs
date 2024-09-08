@@ -12,6 +12,7 @@ using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
 using Nursia.Standard;
+using System.Transactions;
 
 namespace NursiaEditor.UI
 {
@@ -239,7 +240,19 @@ namespace NursiaEditor.UI
 					}
 				});
 
-				device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
+				var directLight = Scene.QueryByType<DirectLight>()[0];
+
+				var cameraFrustum = new BoundingFrustum(Scene.Camera.View * Scene.Camera.CalculateProjection());
+				var lightViewProj = directLight.CreateLightViewProjectionMatrix(Scene.Camera);
+				var frustum = new BoundingFrustum(lightViewProj);
+
+				Matrix view = Scene.Camera.View;
+				Matrix projection = Scene.Camera.CalculateProjection();
+
+				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
+				DebugShapeRenderer.Draw(StudioGame.Instance.GameTime, view, projection);
+
+				/*device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
 					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);
 
 				var m = NursiaEditor.Resources.ModelAxises;
@@ -248,7 +261,7 @@ namespace NursiaEditor.UI
 				// Make the gizmo placed always in front of the camera
 				c.Position = Vector3.Zero;
 				m.Translation = c.Direction * 2;
-				_renderer.Render(m, c);
+				_renderer.Render(m, c);*/
 
 				//				UpdateMarker();
 				/*				_renderer.Begin();
@@ -276,9 +289,9 @@ namespace NursiaEditor.UI
 				device.Viewport = oldViewport;
 			}
 
-			var directLight = Scene.QueryByType<DirectLight>()[0];
+			var directLight2 = Scene.QueryByType<DirectLight>()[0];
 
-			context.Draw(directLight.ShadowMap, new Rectangle(0, 0, 256, 256), Color.White);
+			context.Draw(directLight2.ShadowMap, new Rectangle(0, 0, 256, 256), Color.White);
 		}
 
 		protected override void OnPlacedChanged()

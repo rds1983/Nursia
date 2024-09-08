@@ -17,6 +17,6 @@ namespace Nursia.Rendering.Lights
 		public Color Color { get; set; } = Color.White;
 		internal bool ShadowMapDirty { get; set; } = true;
 
-		public abstract Matrix CreateLightViewProjectionMatrix(RenderContext context);
+		public abstract Matrix CreateLightViewProjectionMatrix(Camera camera);
 	}
 }

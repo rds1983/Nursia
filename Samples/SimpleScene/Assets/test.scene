@@ -1,9 +1,9 @@
 {
   "Camera": {
-    "Position": "1.816368, 84.19472, 87.92483",
-    "YawAngle": 186.19933,
-    "PitchAngle": 47.399525,
-    "ViewAngle": 60.0,
+    "Position": "8.82119, 9.624448, 6.816273",
+    "YawAngle": 191.09912,
+    "PitchAngle": 36.999493,
+    "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
   },
@@ -21,7 +21,7 @@
     {
       "$type": "Nursia.Modelling.NursiaModel, Nursia",
       "ModelPath": "Models\\BrainStem.gltf",
-      "Scale": "16, 16, 16",
+      "Scale": "4, 4, 4",
       "Children": []
     },
     {
@@ -40,9 +40,29 @@
         "DiffuseColor": "255, 255, 255, 255"
       },
       "Translation": "0, 0.05, 0",
-      "Scale": "120, 1, 120",
+      "Scale": "100, 1, 100",
       "Children": [],
       "Id": "p"
+    },
+    {
+      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+      "PrimitiveMesh": {
+        "$type": "Nursia.Primitives.Torus, Nursia",
+        "MajorRadius": 0.5,
+        "MinorRadius": 0.16666,
+        "Tessellation": 32,
+        "UScale": 1.0,
+        "VScale": 1.0
+      },
+      "Material": {
+        "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "SpecularPower": 250.0,
+        "DiffuseColor": "255, 255, 255, 255"
+      },
+      "Translation": "16, 8, 0",
+      "Scale": "4, 4, 4",
+      "Children": [],
+      "Id": "t"
     }
   ],
   "Id": "Root"

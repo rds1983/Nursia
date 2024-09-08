@@ -187,7 +187,7 @@ namespace Nursia.Rendering
 				device.Clear(Color.White);
 
 				// Shadow map pass
-				_lightViewProj = light.CreateLightViewProjectionMatrix(_context);
+				_lightViewProj = light.CreateLightViewProjectionMatrix(_context.Camera);
 				RenderPass(RenderPassType.ShadowMap);
 			}
 			finally

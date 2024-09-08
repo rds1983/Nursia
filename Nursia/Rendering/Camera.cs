@@ -13,7 +13,7 @@ namespace Nursia.Rendering
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private float _nearPlaneDistance = 0.1f;
-		private float _farPlaneDistance = 1000.0f;
+		private float _farPlaneDistance = 1000f;
 
 		private bool _dirty = true;
 		private string _string;

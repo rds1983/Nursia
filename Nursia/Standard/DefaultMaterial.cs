@@ -16,7 +16,6 @@ namespace Nursia.Standard
 			private EffectParameter DiffuseColorParameter { get; }
 			private EffectParameter TextureParameter { get; }
 			private EffectParameter BonesTransformsParameter { get; }
-			private EffectParameter ShadowMapParameter { get; }
 
 			public DefaultBinding(Effect effect) : base(effect)
 			{
@@ -25,7 +24,6 @@ namespace Nursia.Standard
 				DiffuseColorParameter = effect.FindParameterByName("_diffuseColor");
 				TextureParameter = effect.FindParameterByName("_texture");
 				BonesTransformsParameter = effect.FindParameterByName("_bones");
-				ShadowMapParameter = effect.FindParameterByName("_shadowMap");
 			}
 
 			protected internal override void SetMaterialParams(IMaterial material)
@@ -44,8 +42,6 @@ namespace Nursia.Standard
 				{
 					BonesTransformsParameter.SetValue(defaultMaterial.BonesTransforms);
 				}
-
-				ShadowMapParameter.SetValue(defaultMaterial.ShadowMap);
 			}
 		}
 
@@ -138,8 +134,6 @@ namespace Nursia.Standard
 
 		public Color DiffuseColor { get; set; } = Color.White;
 
-		public Texture2D ShadowMap { get; set; }
-
 		[Browsable(false)]
 		[JsonIgnore]
 		public Matrix[] BonesTransforms { get; set; }
@@ -170,7 +164,7 @@ namespace Nursia.Standard
 				{
 					if (Lightning)
 					{
-						var effect = Resources.GetDefaultShadowMapEffect(Skinning, false)();
+						var effect = Resources.GetDefaultShadowMapEffect(_skinning, false)();
 						_shadowMapBinding = new ShadowMapBinding(effect);
 					}
 
@@ -189,7 +183,7 @@ namespace Nursia.Standard
 		private void InvalidateShadowMap()
 		{
 			_shadowMapBinding = null;
-			_shadowMapBindingDirty = false;
+			_shadowMapBindingDirty = true;
 		}
 	}
 }

@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "-5.1609187, 9.432808, 11.411411",
-    "YawAngle": 162.59937,
-    "PitchAngle": 36.39955,
+    "Position": "1.816368, 84.19472, 87.92483",
+    "YawAngle": 186.19933,
+    "PitchAngle": 47.399525,
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -11,9 +11,9 @@
   "Children": [
     {
       "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
-      "Direction": "1, -1, -1",
+      "Direction": "0, -1, -1",
       "Color": "255, 255, 255, 255",
-      "Translation": "-5, 5, 5",
+      "Translation": "-5, 100, 5",
       "Scale": "1, 1, 1",
       "Children": [],
       "Id": "DirectLight"
@@ -21,24 +21,7 @@
     {
       "$type": "Nursia.Modelling.NursiaModel, Nursia",
       "ModelPath": "Models\\BrainStem.gltf",
-      "Scale": "1, 1, 1",
-      "Children": []
-    },
-    {
-      "$type": "Nursia.Rendering.Lights.PointLight, Nursia",
-      "Color": "255, 204, 1, 255",
-      "Translation": "0, 0, 9",
-      "Scale": "1, 1, 1",
-      "Children": [],
-      "Id": "l"
-    },
-    {
-      "$type": "Nursia.Standard.Text3DNode, Nursia",
-      "Text": "test",
-      "FontSize": 16.0,
-      "Color": "255, 255, 255, 255",
-      "Translation": "0, 4, 0",
-      "Scale": "1, 1, 1",
+      "Scale": "16, 16, 16",
       "Children": []
     },
     {
@@ -57,7 +40,7 @@
         "DiffuseColor": "255, 255, 255, 255"
       },
       "Translation": "0, 0.05, 0",
-      "Scale": "12, 1, 12",
+      "Scale": "120, 1, 120",
       "Children": [],
       "Id": "p"
     }

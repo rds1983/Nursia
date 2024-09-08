@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using Nursia.Standard;
 using Nursia.Utilities;
+using static glTFLoader.Schema.Accessor;
 using static glTFLoader.Schema.AnimationChannelTarget;
 
 namespace Nursia.Modelling
@@ -123,22 +124,22 @@ namespace Nursia.Modelling
 			}
 
 			var accessor = _gltf.Accessors[accessorIndex];
-			if (accessor.Type == Accessor.TypeEnum.SCALAR && type != typeof(float))
+			if (accessor.Type == TypeEnum.SCALAR && type != typeof(float))
 			{
 				throw new NotSupportedException("Scalar type could be converted only to float");
 			}
 
-			if (accessor.Type == Accessor.TypeEnum.VEC3 && type != typeof(Vector3))
+			if (accessor.Type == TypeEnum.VEC3 && type != typeof(Vector3))
 			{
 				throw new NotSupportedException("VEC3 type could be converted only to Vector3");
 			}
 
-			if (accessor.Type == Accessor.TypeEnum.VEC4 && type != typeof(Vector4) && type != typeof(Quaternion))
+			if (accessor.Type == TypeEnum.VEC4 && type != typeof(Vector4) && type != typeof(Quaternion))
 			{
 				throw new NotSupportedException("VEC4 type could be converted only to Vector4 or Quaternion");
 			}
 
-			if (accessor.Type == Accessor.TypeEnum.MAT4 && type != typeof(Matrix))
+			if (accessor.Type == TypeEnum.MAT4 && type != typeof(Matrix))
 			{
 				throw new NotSupportedException("MAT4 type could be converted only to Matrix");
 			}
@@ -171,28 +172,28 @@ namespace Nursia.Modelling
 
 			switch (accessor.Type)
 			{
-				case Accessor.TypeEnum.VEC2:
-					if (accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT)
+				case TypeEnum.VEC2:
+					if (accessor.ComponentType == ComponentTypeEnum.FLOAT)
 					{
 						return VertexElementFormat.Vector2;
 					}
 					break;
-				case Accessor.TypeEnum.VEC3:
-					if (accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT)
+				case TypeEnum.VEC3:
+					if (accessor.ComponentType == ComponentTypeEnum.FLOAT)
 					{
 						return VertexElementFormat.Vector3;
 					}
 					break;
-				case Accessor.TypeEnum.VEC4:
-					if (accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT)
+				case TypeEnum.VEC4:
+					if (accessor.ComponentType == ComponentTypeEnum.FLOAT)
 					{
 						return VertexElementFormat.Vector4;
 					}
-					else if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE)
+					else if (accessor.ComponentType == ComponentTypeEnum.UNSIGNED_BYTE)
 					{
 						return VertexElementFormat.Byte4;
 					}
-					else if (accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT)
+					else if (accessor.ComponentType == ComponentTypeEnum.UNSIGNED_SHORT)
 					{
 						return VertexElementFormat.Short4;
 					}
@@ -235,6 +236,83 @@ namespace Nursia.Modelling
 			}
 
 			animationTransforms.Interpolation = sampler.Interpolation;
+		}
+
+		private IndexBuffer CreateIndexBuffer(MeshPrimitive primitive)
+		{
+			if (primitive.Indices == null)
+			{
+				throw new NotSupportedException("Meshes without indices arent supported");
+			}
+
+			var indexAccessor = _gltf.Accessors[primitive.Indices.Value];
+			if (indexAccessor.Type != TypeEnum.SCALAR)
+			{
+				throw new NotSupportedException("Only scalar index buffer are supported");
+			}
+
+			if (indexAccessor.ComponentType != ComponentTypeEnum.SHORT &&
+				indexAccessor.ComponentType != ComponentTypeEnum.UNSIGNED_SHORT &&
+				indexAccessor.ComponentType != ComponentTypeEnum.UNSIGNED_INT)
+			{
+				throw new NotSupportedException($"Index of type {indexAccessor.ComponentType} isn't supported");
+			}
+
+			var indexData = GetAccessorData(primitive.Indices.Value);
+
+			var elementSize = (indexAccessor.ComponentType == ComponentTypeEnum.SHORT ||
+				indexAccessor.ComponentType == ComponentTypeEnum.UNSIGNED_SHORT) ?
+				IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
+
+			var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, elementSize, indexAccessor.Count, BufferUsage.None);
+			indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
+
+			// Since gltf uses ccw winding by default
+			// We need to unwind it
+			if (indexAccessor.ComponentType == ComponentTypeEnum.UNSIGNED_SHORT)
+			{
+				var data = new ushort[indexData.Count / 2];
+				System.Buffer.BlockCopy(indexData.Array, indexData.Offset, data, 0, indexData.Count);
+
+				for (var i = 0; i < data.Length / 3; i++)
+				{
+					var temp = data[i * 3];
+					data[i * 3] = data[i * 3 + 2];
+					data[i * 3 + 2] = temp;
+				}
+
+				indexBuffer.SetData(data);
+			}
+			else if (indexAccessor.ComponentType == ComponentTypeEnum.SHORT)
+			{
+				var data = new short[indexData.Count / 2];
+				System.Buffer.BlockCopy(indexData.Array, indexData.Offset, data, 0, indexData.Count);
+
+				for (var i = 0; i < data.Length / 3; i++)
+				{
+					var temp = data[i * 3];
+					data[i * 3] = data[i * 3 + 2];
+					data[i * 3 + 2] = temp;
+				}
+
+				indexBuffer.SetData(data);
+			}
+			else
+			{
+				var data = new uint[indexData.Count / 4];
+				System.Buffer.BlockCopy(indexData.Array, indexData.Offset, data, 0, indexData.Count);
+
+				for (var i = 0; i < data.Length / 3; i++)
+				{
+					var temp = data[i * 3];
+					data[i * 3] = data[i * 3 + 2];
+					data[i * 3 + 2] = temp;
+				}
+
+				indexBuffer.SetData(data);
+			}
+
+			return indexBuffer;
 		}
 
 		private void LoadMeshes()
@@ -367,31 +445,7 @@ namespace Nursia.Modelling
 
 					vertexBuffer.SetData(vertexData);
 
-					if (primitive.Indices == null)
-					{
-						throw new NotSupportedException("Meshes without indices arent supported");
-					}
-
-					var indexAccessor = _gltf.Accessors[primitive.Indices.Value];
-					if (indexAccessor.Type != Accessor.TypeEnum.SCALAR)
-					{
-						throw new NotSupportedException("Only scalar index buffer are supported");
-					}
-
-					if (indexAccessor.ComponentType != Accessor.ComponentTypeEnum.SHORT &&
-						indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_SHORT &&
-						indexAccessor.ComponentType != Accessor.ComponentTypeEnum.UNSIGNED_INT)
-					{
-						throw new NotSupportedException($"Index of type {indexAccessor.ComponentType} isn't supported");
-					}
-
-					var indexData = GetAccessorData(primitive.Indices.Value);
-
-					var elementSize = (indexAccessor.ComponentType == Accessor.ComponentTypeEnum.SHORT ||
-						indexAccessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT) ?
-						IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
-					var indexBuffer = new IndexBuffer(Nrs.GraphicsDevice, elementSize, indexAccessor.Count, BufferUsage.None);
-					indexBuffer.SetData(0, indexData.Array, indexData.Offset, indexData.Count);
+					var indexBuffer = CreateIndexBuffer(primitive);
 
 					var material = new DefaultMaterial
 					{

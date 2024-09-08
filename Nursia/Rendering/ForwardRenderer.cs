@@ -24,6 +24,7 @@ namespace Nursia.Rendering
 		private RasterizerState _oldRasterizerState;
 		private BlendState _oldBlendState;
 		private RenderTargetUsage _oldRenderTargetUsage;
+		private RenderTarget2D _shadowMap;
 		private readonly RenderContext _context = new RenderContext();
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
@@ -108,6 +109,7 @@ namespace Nursia.Rendering
 		{
 			var device = Nrs.GraphicsDevice;
 			var camera = _context.Camera;
+
 			foreach (var job in _context.Jobs)
 			{
 				EffectBinding effectBinding = null;
@@ -149,6 +151,14 @@ namespace Nursia.Rendering
 				effectBinding.LightColor?.SetValue(_effectLightColor);
 				effectBinding.LightCount?.SetValue(_lightCount);
 
+				if (passType != RenderPassType.ShadowMap)
+				{
+					if (effectBinding.ShadowMap != null)
+					{
+						effectBinding.ShadowMap.SetValue(_shadowMap);
+					}
+				}
+
 				effectBinding.SetMaterialParams(job.Material);
 
 				device.Apply(job.Mesh);
@@ -186,6 +196,8 @@ namespace Nursia.Rendering
 				device.SetRenderTarget(null);
 				device.Viewport = oldViewport;
 			}
+
+			_shadowMap = light.ShadowMap;
 		}
 
 		public void Render(SceneNode node, Camera camera)
@@ -204,6 +216,8 @@ namespace Nursia.Rendering
 
 			// Set light parameters
 			SetLights();
+
+			_shadowMap = null;
 
 			// Shadow map runs
 			foreach(var directLight in _context.DirectLights)

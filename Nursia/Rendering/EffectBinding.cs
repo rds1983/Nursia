@@ -19,6 +19,7 @@ namespace Nursia.Rendering
 		public EffectParameter LightDirection { get; }
 		public EffectParameter LightColor { get; }
 		public EffectParameter LightCount { get; }
+		public EffectParameter ShadowMap { get; }
 
 		public EffectBinding(Effect effect)
 		{
@@ -35,6 +36,7 @@ namespace Nursia.Rendering
 			LightDirection = Effect.FindParameterByName("_lightDirection");
 			LightColor = Effect.FindParameterByName("_lightColor");
 			LightCount = Effect.FindParameterByName("_lightCount");
+			ShadowMap = Effect.FindParameterByName("_shadowMap");
 		}
 
 		protected internal virtual void SetMaterialParams(IMaterial material)

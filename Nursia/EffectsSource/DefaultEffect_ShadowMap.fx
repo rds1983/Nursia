@@ -43,7 +43,7 @@ struct VSOutput
 	float4 ClipDistances: TEXCOORD0;
 #endif
 
-	float2 Depth: TEXCOORD1;
+	float Depth: TEXCOORD1;
 };
 
 VSOutput VS(VSInput input)
@@ -60,8 +60,7 @@ VSOutput VS(VSInput input)
 #endif
 
 	output.Position = mul(float4(input.Position.xyz, 1), mul(_world, _lightViewProj));
-	output.Depth.x = output.Position.z;
-	output.Depth.y = output.Position.w;
+	output.Depth = output.Position.z / output.Position.w;
 
 #ifdef CLIP_PLANE
 	output.ClipDistances.yzw = 0;
@@ -77,8 +76,7 @@ float4 PS(VSOutput input): COLOR
 	clip(input.ClipDistances.x); 
 #endif
 
-	float depth = input.Depth.x / input.Depth.y;
-	return float4(depth, 0.0f, 0.0f, 1.0f);
+	return float4(input.Depth, 0.0f, 0.0f, 0.0f);
 }
 
 TECHNIQUE(Default, VS, PS);

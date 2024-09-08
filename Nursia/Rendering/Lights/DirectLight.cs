@@ -38,7 +38,7 @@ namespace Nursia.Rendering.Lights
 
 		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
 		{
-			Vector3 lightDir = new Vector3(-0.3333333f, 0.6666667f, 0.6666667f);
+			Vector3 lightDir = -NormalizedDirection;
 
 			// Matrix with that will rotate in points the direction of the light
 			Matrix lightRotation = Matrix.CreateLookAt(Vector3.Zero,

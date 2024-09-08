@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
 using Nursia.Rendering.Lights;
-using glTFLoader.Schema;
 
 namespace Nursia.Rendering
 {
@@ -241,6 +240,17 @@ namespace Nursia.Rendering
 
 			// Restore state
 			RestoreState();
+
+			if (DebugSettings.DrawLightViewFrustrum && ShadowCastingLight != null)
+			{
+				var frustum = new BoundingFrustum(_lightViewProj);
+
+				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
+
+				Matrix view = camera.View;
+				Matrix projection = camera.CalculateProjection();
+				DebugShapeRenderer.Draw(view, projection);
+			}
 		}
 	}
 }

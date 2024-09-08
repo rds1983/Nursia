@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Rendering;
 using System;
 using System.Reflection;
 
@@ -29,6 +30,7 @@ namespace Nursia
 				}
 
 				_game = value;
+				DebugShapeRenderer.Initialize(GraphicsDevice);
 
 				if (_game != null)
 				{

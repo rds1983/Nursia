@@ -9,11 +9,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Nursia.Utilities
+namespace Nursia.Rendering
 {
 	/// <summary>
 	/// A system for handling rendering of various debug shapes.
@@ -78,8 +77,7 @@ namespace Nursia.Utilities
 		/// Initializes the renderer.
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering.</param>
-		[Conditional("DEBUG")]
-		public static void Initialize(GraphicsDevice graphicsDevice)
+		internal static void Initialize(GraphicsDevice graphicsDevice)
 		{
 			// If we already have a graphics device, we've already initialized once. We don't allow that.
 			if (graphics != null)
@@ -89,11 +87,13 @@ namespace Nursia.Utilities
 			graphics = graphicsDevice;
 
 			// Create and initialize our effect
-			effect = new BasicEffect(graphicsDevice);
-			effect.VertexColorEnabled = true;
-			effect.TextureEnabled = false;
-			effect.DiffuseColor = Vector3.One;
-			effect.World = Matrix.Identity;
+			effect = new BasicEffect(graphicsDevice)
+			{
+				VertexColorEnabled = true,
+				TextureEnabled = false,
+				DiffuseColor = Vector3.One,
+				World = Matrix.Identity
+			};
 
 			// Create our unit sphere vertices
 			InitializeSphere();
@@ -105,7 +105,6 @@ namespace Nursia.Utilities
 		/// <param name="a">The first point of the line.</param>
 		/// <param name="b">The second point of the line.</param>
 		/// <param name="color">The color in which to draw the line.</param>
-		[Conditional("DEBUG")]
 		public static void AddLine(Vector3 a, Vector3 b, Color color)
 		{
 			AddLine(a, b, color, 0f);
@@ -118,7 +117,6 @@ namespace Nursia.Utilities
 		/// <param name="b">The second point of the line.</param>
 		/// <param name="color">The color in which to draw the line.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the line.</param>
-		[Conditional("DEBUG")]
 		public static void AddLine(Vector3 a, Vector3 b, Color color, float life)
 		{
 			// Get a DebugShape we can use to draw the line
@@ -136,7 +134,6 @@ namespace Nursia.Utilities
 		/// <param name="b">The second vertex of the triangle.</param>
 		/// <param name="c">The third vertex of the triangle.</param>
 		/// <param name="color">The color in which to draw the triangle.</param>
-		[Conditional("DEBUG")]
 		public static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color)
 		{
 			AddTriangle(a, b, c, color, 0f);
@@ -150,7 +147,6 @@ namespace Nursia.Utilities
 		/// <param name="c">The third vertex of the triangle.</param>
 		/// <param name="color">The color in which to draw the triangle.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the triangle.</param>
-		[Conditional("DEBUG")]
 		public static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float life)
 		{
 			// Get a DebugShape we can use to draw the triangle
@@ -170,7 +166,6 @@ namespace Nursia.Utilities
 		/// </summary>
 		/// <param name="frustum">The frustum to render.</param>
 		/// <param name="color">The color in which to draw the frustum.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingFrustum(BoundingFrustum frustum, Color color)
 		{
 			AddBoundingFrustum(frustum, color, 0f);
@@ -182,7 +177,6 @@ namespace Nursia.Utilities
 		/// <param name="frustum">The frustum to render.</param>
 		/// <param name="color">The color in which to draw the frustum.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the frustum.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingFrustum(BoundingFrustum frustum, Color color, float life)
 		{
 			// Get a DebugShape we can use to draw the frustum
@@ -227,7 +221,6 @@ namespace Nursia.Utilities
 		/// </summary>
 		/// <param name="box">The bounding box to render.</param>
 		/// <param name="color">The color in which to draw the bounding box.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingBox(BoundingBox box, Color color)
 		{
 			AddBoundingBox(box, color, 0f);
@@ -239,7 +232,6 @@ namespace Nursia.Utilities
 		/// <param name="box">The bounding box to render.</param>
 		/// <param name="color">The color in which to draw the bounding box.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the bounding box.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingBox(BoundingBox box, Color color, float life)
 		{
 			// Get a DebugShape we can use to draw the box
@@ -284,7 +276,6 @@ namespace Nursia.Utilities
 		/// </summary>
 		/// <param name="sphere">The bounding sphere to render.</param>
 		/// <param name="color">The color in which to draw the bounding sphere.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingSphere(BoundingSphere sphere, Color color)
 		{
 			AddBoundingSphere(sphere, color, 0f);
@@ -296,7 +287,6 @@ namespace Nursia.Utilities
 		/// <param name="sphere">The bounding sphere to render.</param>
 		/// <param name="color">The color in which to draw the bounding sphere.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the bounding sphere.</param>
-		[Conditional("DEBUG")]
 		public static void AddBoundingSphere(BoundingSphere sphere, Color color, float life)
 		{
 			// Get a DebugShape we can use to draw the sphere
@@ -316,11 +306,9 @@ namespace Nursia.Utilities
 		/// <summary>
 		/// Draws the shapes that were added to the renderer and are still alive.
 		/// </summary>
-		/// <param name="gameTime">The current game timestamp.</param>
 		/// <param name="view">The view matrix to use when rendering the shapes.</param>
 		/// <param name="projection">The projection matrix to use when rendering the shapes.</param>
-		[Conditional("DEBUG")]
-		public static void Draw(GameTime gameTime, Matrix view, Matrix projection)
+		public static void Draw(Matrix view, Matrix projection)
 		{
 			// Update our effect with the matrices.
 			effect.View = view;
@@ -378,25 +366,9 @@ namespace Nursia.Utilities
 				}
 			}
 
-			// Go through our active shapes and retire any shapes that have expired to the
-			// cache list. 
-			bool resort = false;
-			for (int i = activeShapes.Count - 1; i >= 0; i--)
-			{
-				DebugShape s = activeShapes[i];
-				s.Lifetime -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-				if (s.Lifetime <= 0)
-				{
-					cachedShapes.Add(s);
-					activeShapes.RemoveAt(i);
-					resort = true;
-				}
-			}
-
-			// If we move any shapes around, we need to resort the cached list
-			// to ensure that the smallest shapes are first in the list.
-			if (resort)
-				cachedShapes.Sort(CachedShapesSort);
+			// Put active shapes to the cache
+			cachedShapes.AddRange(activeShapes);
+			activeShapes.Clear();
 		}
 
 		/// <summary>

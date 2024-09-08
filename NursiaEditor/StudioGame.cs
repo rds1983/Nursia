@@ -5,7 +5,6 @@ using Myra.Graphics2D.UI;
 using Nursia.Rendering;
 using Nursia;
 using NursiaEditor.UI;
-using Nursia.Utilities;
 
 namespace NursiaEditor
 {
@@ -91,7 +90,7 @@ namespace NursiaEditor
 				}
 			}
 
-			DebugShapeRenderer.Initialize(GraphicsDevice);
+			DebugSettings.DrawLightViewFrustrum = true;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -101,13 +100,9 @@ namespace NursiaEditor
 			_fpsCounter.Update(gameTime);
 		}
 
-		public GameTime GameTime;
-
 		protected override void Draw(GameTime gameTime)
 		{
 			base.Draw(gameTime);
-
-			GameTime = gameTime;
 
 			GraphicsDevice.Clear(Color.Black);
 

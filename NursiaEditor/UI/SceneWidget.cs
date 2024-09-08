@@ -214,20 +214,6 @@ namespace NursiaEditor.UI
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
 				_renderer.Render(Scene, Scene.Camera);
-
-				if (_renderer.ShadowCastingLight != null)
-				{
-					var lightViewProj = _renderer.ShadowCastingLight.CreateLightViewProjectionMatrix(_renderer.Context);
-					var frustum = new BoundingFrustum(lightViewProj);
-
-					Matrix view = Scene.Camera.View;
-					Matrix projection = Scene.Camera.CalculateProjection();
-
-					DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
-					DebugShapeRenderer.Draw(StudioGame.Instance.GameTime, view, projection);
-				}
-
-
 				_renderer.Render(GridMesh, Scene.Camera);
 
 				// Draw lights' icons'

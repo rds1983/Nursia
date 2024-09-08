@@ -73,6 +73,8 @@ namespace SimpleScene
 			_controller = new CameraInputController(_scene.Camera);
 
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
+
+			DebugSettings.DrawLightViewFrustrum = true;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -120,9 +122,9 @@ namespace SimpleScene
 
 			_spriteBatch.Begin();
 
-			_spriteBatch.Draw(_light.ShadowMap, 
+/*			_spriteBatch.Draw(_light.ShadowMap, 
 				new Rectangle(0, 0, 256, 256), 
-				Color.White);
+				Color.White);*/
 
 			_spriteBatch.End();
 		}

@@ -116,6 +116,11 @@ namespace Nursia.Rendering
 
 			foreach (var job in _context.Jobs)
 			{
+				if (passType == RenderPassType.ShadowMap && !job.Mesh.CastsShadow)
+				{
+					continue;
+				}
+
 				EffectBinding effectBinding = null;
 				switch (passType)
 				{
@@ -204,6 +209,8 @@ namespace Nursia.Rendering
 			_shadowMap = light.ShadowMap;
 		}
 
+		private int ang = 0;
+
 		public void Render(SceneNode node, Camera camera)
 		{
 			// Prepare render context
@@ -241,16 +248,24 @@ namespace Nursia.Rendering
 			// Restore state
 			RestoreState();
 
+			if (DebugSettings.DrawBoundingBoxes)
+			{
+				foreach(var job in _context.Jobs)
+				{
+					var t = job.Transform;
+					var bb = job.Mesh.BoundingBox.Transform(ref t);
+					DebugShapeRenderer.AddBoundingBox(bb, Color.Blue);
+				}
+			}
+
 			if (DebugSettings.DrawLightViewFrustrum && ShadowCastingLight != null)
 			{
 				var frustum = new BoundingFrustum(_lightViewProj);
 
 				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
-
-				Matrix view = camera.View;
-				Matrix projection = camera.CalculateProjection();
-				DebugShapeRenderer.Draw(view, projection);
 			}
+
+			DebugShapeRenderer.Draw(camera.View, _context.Projection);
 		}
 	}
 }

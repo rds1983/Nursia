@@ -90,6 +90,7 @@ namespace NursiaEditor
 				}
 			}
 
+			DebugSettings.DrawBoundingBoxes = true;
 			DebugSettings.DrawLightViewFrustrum = true;
 		}
 

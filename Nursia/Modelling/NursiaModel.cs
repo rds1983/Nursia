@@ -7,8 +7,6 @@ namespace Nursia.Modelling
 {
 	public class NursiaModel: SceneNode
 	{
-
-
 		[Browsable(false)]
 		[JsonIgnore]
 		public ModelInstance Model { get; set; }

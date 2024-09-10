@@ -17,7 +17,7 @@ DECLARE_TEXTURE_LINEAR_WRAP(_texture);
 
 #endif
 
-DECLARE_TEXTURE_LINEAR_CLAMP(_shadowMap);
+DECLARE_TEXTURE_POINT_CLAMP(_shadowMap);
 
 BEGIN_CONSTANTS
 
@@ -153,31 +153,29 @@ float4 PS(VSOutput input): COLOR
 	color *= float4(lightPower.Diffuse, 1);
 	color += float4(lightPower.Specular, 0);
 	
-    // Find the position of this pixel in light space
-    float4 lightingPosition = mul(input.WorldPosition, _lightViewProj);
-    
-    // Find the position in the shadow map for this pixel
-    float2 ShadowTexCoord = 0.5 * lightingPosition.xy / 
-                            lightingPosition.w + float2( 0.5, 0.5 );
-    ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+	// Find the position of this pixel in light space
+	float4 lightingPosition = mul(input.WorldPosition, _lightViewProj);
 
-    // Get the current depth stored in the shadow map
-    float shadowdepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord).r;
-	
-    // Calculate the current pixel depth
-    // The bias is used to prevent folating point errors that occur when
-    // the pixel of the occluder is being drawn
-    float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
-    
-    // Check to see if this pixel is in front or behind the value in the shadow map
-    if (shadowdepth < ourdepth)
-    {
-        // Shadow the pixel by lowering the intensity
-        color *= float4(0.5,0.5,0.5,1);
-    };	
+	// Find the position in the shadow map for this pixel
+	float2 ShadowTexCoord = 0.5 * lightingPosition.xy / 
+							lightingPosition.w + float2( 0.5, 0.5 );
+	ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+
+	// Get the current depth stored in the shadow map
+	float shadowdepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord).r;    
+
+	// Calculate the current pixel depth
+	// The bias is used to prevent folating point errors that occur when
+	// the pixel of the occluder is being drawn
+	float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+
+	// Check to see if this pixel is in front or behind the value in the shadow map
+	if (shadowdepth < ourdepth)
+	{
+		// Shadow the pixel by lowering the intensity
+		color *= float4(0.5,0.5,0.5,0);
+	};
 #endif
-
-	clip(color.a < 0.1?-1:1);
 
 	return color;
 }

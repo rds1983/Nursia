@@ -47,11 +47,6 @@ namespace Nursia.Rendering
 			/// The number of lines to draw for this shape.
 			/// </summary>
 			public int LineCount;
-
-			/// <summary>
-			/// The length of time to keep this shape visible.
-			/// </summary>
-			public float Lifetime;
 		}
 
 		// We use a cache system to reuse our DebugShape instances to avoid creating garbage
@@ -100,43 +95,20 @@ namespace Nursia.Rendering
 		}
 
 		/// <summary>
-		/// Adds a line to be rendered for just one frame.
-		/// </summary>
-		/// <param name="a">The first point of the line.</param>
-		/// <param name="b">The second point of the line.</param>
-		/// <param name="color">The color in which to draw the line.</param>
-		public static void AddLine(Vector3 a, Vector3 b, Color color)
-		{
-			AddLine(a, b, color, 0f);
-		}
-
-		/// <summary>
 		/// Adds a line to be rendered for a set amount of time.
 		/// </summary>
 		/// <param name="a">The first point of the line.</param>
 		/// <param name="b">The second point of the line.</param>
 		/// <param name="color">The color in which to draw the line.</param>
 		/// <param name="life">The amount of time, in seconds, to keep rendering the line.</param>
-		public static void AddLine(Vector3 a, Vector3 b, Color color, float life)
+		public static void AddLine(Vector3 a, Vector3 b, Color color)
 		{
 			// Get a DebugShape we can use to draw the line
-			DebugShape shape = GetShapeForLines(1, life);
+			DebugShape shape = GetShapeForLines(1);
 
 			// Add the two vertices to the shape
 			shape.Vertices[0] = new VertexPositionColor(a, color);
 			shape.Vertices[1] = new VertexPositionColor(b, color);
-		}
-
-		/// <summary>
-		/// Adds a triangle to be rendered for just one frame.
-		/// </summary>
-		/// <param name="a">The first vertex of the triangle.</param>
-		/// <param name="b">The second vertex of the triangle.</param>
-		/// <param name="c">The third vertex of the triangle.</param>
-		/// <param name="color">The color in which to draw the triangle.</param>
-		public static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color)
-		{
-			AddTriangle(a, b, c, color, 0f);
 		}
 
 		/// <summary>
@@ -146,11 +118,10 @@ namespace Nursia.Rendering
 		/// <param name="b">The second vertex of the triangle.</param>
 		/// <param name="c">The third vertex of the triangle.</param>
 		/// <param name="color">The color in which to draw the triangle.</param>
-		/// <param name="life">The amount of time, in seconds, to keep rendering the triangle.</param>
-		public static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float life)
+		public static void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Color color)
 		{
 			// Get a DebugShape we can use to draw the triangle
-			DebugShape shape = GetShapeForLines(3, life);
+			DebugShape shape = GetShapeForLines(3);
 
 			// Add the vertices to the shape
 			shape.Vertices[0] = new VertexPositionColor(a, color);
@@ -162,25 +133,14 @@ namespace Nursia.Rendering
 		}
 
 		/// <summary>
-		/// Adds a frustum to be rendered for just one frame.
+		/// Adds a frustum to be rendered for a set amount of time.
 		/// </summary>
 		/// <param name="frustum">The frustum to render.</param>
 		/// <param name="color">The color in which to draw the frustum.</param>
 		public static void AddBoundingFrustum(BoundingFrustum frustum, Color color)
 		{
-			AddBoundingFrustum(frustum, color, 0f);
-		}
-
-		/// <summary>
-		/// Adds a frustum to be rendered for a set amount of time.
-		/// </summary>
-		/// <param name="frustum">The frustum to render.</param>
-		/// <param name="color">The color in which to draw the frustum.</param>
-		/// <param name="life">The amount of time, in seconds, to keep rendering the frustum.</param>
-		public static void AddBoundingFrustum(BoundingFrustum frustum, Color color, float life)
-		{
 			// Get a DebugShape we can use to draw the frustum
-			DebugShape shape = GetShapeForLines(12, life);
+			DebugShape shape = GetShapeForLines(12);
 
 			// Get the corners of the frustum
 			frustum.GetCorners(corners);
@@ -217,25 +177,14 @@ namespace Nursia.Rendering
 		}
 
 		/// <summary>
-		/// Adds a bounding box to be rendered for just one frame.
+		/// Adds a bounding box to be rendered for a set amount of time.
 		/// </summary>
 		/// <param name="box">The bounding box to render.</param>
 		/// <param name="color">The color in which to draw the bounding box.</param>
 		public static void AddBoundingBox(BoundingBox box, Color color)
 		{
-			AddBoundingBox(box, color, 0f);
-		}
-
-		/// <summary>
-		/// Adds a bounding box to be rendered for a set amount of time.
-		/// </summary>
-		/// <param name="box">The bounding box to render.</param>
-		/// <param name="color">The color in which to draw the bounding box.</param>
-		/// <param name="life">The amount of time, in seconds, to keep rendering the bounding box.</param>
-		public static void AddBoundingBox(BoundingBox box, Color color, float life)
-		{
 			// Get a DebugShape we can use to draw the box
-			DebugShape shape = GetShapeForLines(12, life);
+			DebugShape shape = GetShapeForLines(12);
 
 			// Get the corners of the box
 			box.GetCorners(corners);
@@ -278,19 +227,8 @@ namespace Nursia.Rendering
 		/// <param name="color">The color in which to draw the bounding sphere.</param>
 		public static void AddBoundingSphere(BoundingSphere sphere, Color color)
 		{
-			AddBoundingSphere(sphere, color, 0f);
-		}
-
-		/// <summary>
-		/// Adds a bounding sphere to be rendered for a set amount of time.
-		/// </summary>
-		/// <param name="sphere">The bounding sphere to render.</param>
-		/// <param name="color">The color in which to draw the bounding sphere.</param>
-		/// <param name="life">The amount of time, in seconds, to keep rendering the bounding sphere.</param>
-		public static void AddBoundingSphere(BoundingSphere sphere, Color color, float life)
-		{
 			// Get a DebugShape we can use to draw the sphere
-			DebugShape shape = GetShapeForLines(sphereLineCount, life);
+			DebugShape shape = GetShapeForLines(sphereLineCount);
 
 			// Iterate our unit sphere vertices
 			for (int i = 0; i < unitSphere.Length; i++)
@@ -408,17 +346,9 @@ namespace Nursia.Rendering
 		}
 
 		/// <summary>
-		/// A method used for sorting our cached shapes based on the size of their vertex arrays.
-		/// </summary>
-		private static int CachedShapesSort(DebugShape s1, DebugShape s2)
-		{
-			return s1.Vertices.Length.CompareTo(s2.Vertices.Length);
-		}
-
-		/// <summary>
 		/// Gets a DebugShape instance for a given line counta and lifespan.
 		/// </summary>
-		private static DebugShape GetShapeForLines(int lineCount, float life)
+		private static DebugShape GetShapeForLines(int lineCount)
 		{
 			DebugShape shape = null;
 
@@ -448,7 +378,6 @@ namespace Nursia.Rendering
 
 			// Set the line count and lifetime of the shape based on our parameters.
 			shape.LineCount = lineCount;
-			shape.Lifetime = life;
 
 			return shape;
 		}

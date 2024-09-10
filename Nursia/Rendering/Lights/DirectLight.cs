@@ -9,8 +9,8 @@ namespace Nursia.Rendering.Lights
 	public class DirectLight : BaseLight
 	{
 		private const int ShadowMapSize = 2048;
-
-		private Vector3[] _boundingBoxCorners = new Vector3[8];
+		
+		private Vector3[] _corners = new Vector3[8];
 
 		private Vector3 _direction;
 		private Vector3 _normalizedDirection;
@@ -44,11 +44,8 @@ namespace Nursia.Rendering.Lights
 
 		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
 		{
-			// Matrix with that will rotate in points the direction of the light
-			var lightRotation = Matrix.CreateLookAt(Vector3.Zero, NormalizedDirection, Vector3.Up);
-
-			// Calculate total bounding box
-			var lightBox = new BoundingBox();
+			// Determine visible objects' bounding box
+			var bb = new BoundingBox();
 			foreach (var job in context.Jobs)
 			{
 				if (job.Mesh == null || !job.Mesh.CastsShadow)
@@ -56,25 +53,31 @@ namespace Nursia.Rendering.Lights
 					continue;
 				}
 
-				var m = job.Transform;
-				var meshBoundingBox = job.Mesh.BoundingBox.Transform(ref m);
+				var t = job.Transform;
+				var lb = job.Mesh.BoundingBox.Transform(ref t);
 
-				lightBox = BoundingBox.CreateMerged(lightBox, meshBoundingBox);
+				bb = BoundingBox.CreateMerged(bb, lb);
 			}
 
-			// Apply rotating to the bounding box
-			lightBox.GetCorners(_boundingBoxCorners);
+			// Get the corners of the box
+			bb.GetCorners(_corners);
 
-			for(var i = 0; i < _boundingBoxCorners.Length; i++)
+			var lightDir = -NormalizedDirection;
+
+			// Matrix with that will rotate in points the direction of the light
+			Matrix lightRotation = Matrix.CreateLookAt(Vector3.Zero,
+													   -lightDir,
+													   Vector3.Up);
+
+
+			// Transform the positions of the corners into the direction of the light
+			for (int i = 0; i < _corners.Length; i++)
 			{
-				Vector3 v;
-				Vector3.Transform(ref _boundingBoxCorners[i], ref lightRotation, out v);
-
-				_boundingBoxCorners[i] = v;
+				_corners[i] = Vector3.Transform(_corners[i], lightRotation);
 			}
 
 			// Find the smallest box around the points
-			lightBox = BoundingBox.CreateFromPoints(_boundingBoxCorners);
+			BoundingBox lightBox = BoundingBox.CreateFromPoints(_corners);
 
 			Vector3 boxSize = lightBox.Max - lightBox.Min;
 			Vector3 halfBoxSize = boxSize * 0.5f;
@@ -91,7 +94,7 @@ namespace Nursia.Rendering.Lights
 
 			// Create the view matrix for the light
 			Matrix lightView = Matrix.CreateLookAt(lightPosition,
-												   lightPosition + NormalizedDirection,
+												   lightPosition - lightDir,
 												   Vector3.Up);
 
 			// Create the projection matrix for the light

@@ -75,7 +75,7 @@ namespace Nursia.Modelling
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
 					if (context.Frustum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{
-						continue;
+//						continue;
 					}
 
 					if (HasSkin)

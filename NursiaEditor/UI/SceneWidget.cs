@@ -229,7 +229,8 @@ namespace NursiaEditor.UI
 							node = new BillboardNode
 							{
 								Translation = n.Translation,
-								Texture = icon
+								Texture = icon,
+								BlendMode = NodeBlendMode.Transparent,
 							};
 
 							asLight.Tag = node;
@@ -240,8 +241,7 @@ namespace NursiaEditor.UI
 					}
 				});
 
-				device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
-					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);
+				device.Viewport = new Viewport(bounds.Right - 160, bounds.Y, 160, 160);
 
 				var m = NursiaEditor.Resources.ModelAxises;
 				var c = Scene.Camera.Clone();

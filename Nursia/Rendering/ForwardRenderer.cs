@@ -7,10 +7,13 @@ namespace Nursia.Rendering
 {
 	public class ForwardRenderer
 	{
+		private const int ShadowMapSize = 2048;
+
 		private enum RenderPassType
 		{
 			ShadowMap,
-			Default
+			Opaque,
+			Transparent
 		}
 
 		private int[] _effectLightType = new int[Constants.MaxLights];
@@ -18,13 +21,12 @@ namespace Nursia.Rendering
 		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
 		private int _lightCount = 0;
-		private Matrix _lightViewProj;
+		private Matrix? _lightViewProj;
 
 		private DepthStencilState _oldDepthStencilState;
 		private RasterizerState _oldRasterizerState;
 		private BlendState _oldBlendState;
 		private RenderTargetUsage _oldRenderTargetUsage;
-		private RenderTarget2D _shadowMap;
 		private readonly RenderContext _context = new RenderContext();
 
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
@@ -36,9 +38,14 @@ namespace Nursia.Rendering
 		public BaseLight ShadowCastingLight { get; private set; }
 
 		public RenderContext Context => _context;
+		private RenderTarget2D ShadowMap { get; set; }
 
 		public ForwardRenderer()
 		{
+			ShadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
+								ShadowMapSize, ShadowMapSize,
+								false, SurfaceFormat.Single,
+								DepthFormat.Depth24);
 		}
 
 		private void SetState()
@@ -116,7 +123,7 @@ namespace Nursia.Rendering
 
 			foreach (var job in _context.Jobs)
 			{
-				if (passType == RenderPassType.ShadowMap && !job.Mesh.CastsShadow)
+				if (job.Mesh == null)
 				{
 					continue;
 				}
@@ -125,9 +132,28 @@ namespace Nursia.Rendering
 				switch (passType)
 				{
 					case RenderPassType.ShadowMap:
-						effectBinding = job.Material.ShadowMapEffect;
+						{
+							var asCastsShadow = job.SceneNode as ICastsShadow;
+							if (asCastsShadow == null || !asCastsShadow.CastsShadow)
+							{
+								continue;
+							}
+
+							effectBinding = job.Material.ShadowMapEffect;
+						}
 						break;
-					case RenderPassType.Default:
+					case RenderPassType.Opaque:
+						if (job.SceneNode.BlendMode != NodeBlendMode.Opaque)
+						{
+							continue;
+						}
+						effectBinding = job.Material.DefaultEffect;
+						break;
+					case RenderPassType.Transparent:
+						if (job.SceneNode.BlendMode != NodeBlendMode.Transparent)
+						{
+							continue;
+						}
 						effectBinding = job.Material.DefaultEffect;
 						break;
 				}
@@ -151,7 +177,10 @@ namespace Nursia.Rendering
 					effectBinding.WorldInverseTranspose.SetValue(worldInverseTranspose);
 				}
 
-				effectBinding.LightViewProj?.SetValue(_lightViewProj);
+				if (_lightViewProj != null)
+				{
+					effectBinding.LightViewProj?.SetValue(_lightViewProj.Value);
+				}
 				effectBinding.View?.SetValue(camera.View);
 				effectBinding.CameraPosition?.SetValue(camera.Position);
 				effectBinding.LightType?.SetValue(_effectLightType);
@@ -162,41 +191,42 @@ namespace Nursia.Rendering
 
 				if (passType != RenderPassType.ShadowMap)
 				{
-					if (effectBinding.ShadowMap != null)
-					{
-						effectBinding.ShadowMap.SetValue(_shadowMap);
-					}
+					effectBinding.ShadowMap?.SetValue(ShadowMap);
 				}
 
 				effectBinding.SetMaterialParams(job.Material);
-
-				device.Apply(job.Mesh);
-				Nrs.GraphicsDevice.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
+				device.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
 
 				++_context.Statistics.MeshesDrawn;
 			}
 		}
 
-		private void ShadowMapRun(BaseLight light, Camera camera)
+		private void ShadowMapRun()
 		{
-			if (light.ShadowMap == null || !light.ShadowMapDirty)
-			{
-				return;
-			}
-
 			var device = Nrs.GraphicsDevice;
+
 			var oldViewport = device.Viewport;
 			try
 			{
-				device.SetRenderTarget(light.ShadowMap);
+				device.SetRenderTarget(ShadowMap);
 
 				// Clear the render target to white or all 1's
 				// We set the clear to white since that represents the 
 				// furthest the object could be away
 				device.Clear(Color.White);
 
+				if (ShadowCastingLight == null)
+				{
+					return;
+				}
+
+				_lightViewProj = ShadowCastingLight.CreateLightViewProjectionMatrix(_context);
+				if (_lightViewProj == null)
+				{
+					return;
+				}
+
 				// Shadow map pass
-				_lightViewProj = light.CreateLightViewProjectionMatrix(_context);
 				RenderPass(RenderPassType.ShadowMap);
 			}
 			finally
@@ -205,11 +235,7 @@ namespace Nursia.Rendering
 				device.SetRenderTarget(null);
 				device.Viewport = oldViewport;
 			}
-
-			_shadowMap = light.ShadowMap;
 		}
-
-		private int ang = 0;
 
 		public void Render(SceneNode node, Camera camera)
 		{
@@ -230,27 +256,36 @@ namespace Nursia.Rendering
 
 			// Determine shadow casting light
 			ShadowCastingLight = null;
-
-			if (_context.DirectLights.Count > 0)
+			foreach (var light in _context.DirectLights)
 			{
-				ShadowCastingLight = _context.DirectLights[0];
+				if (!light.RenderCastsShadow)
+				{
+					continue;
+				}
+
+				ShadowCastingLight = light;
+				break;
 			}
 
 			// Shadow map run
-			if (ShadowCastingLight != null)
-			{
-				ShadowMapRun(ShadowCastingLight, camera);
-			}
+			ShadowMapRun();
 
-			// Default run
-			RenderPass(RenderPassType.Default);
+			// Opaque run
+			RenderPass(RenderPassType.Opaque);
+
+			// Transparent Run
+			var device = Nrs.GraphicsDevice;
+			device.BlendState = BlendState.NonPremultiplied;
+			device.RasterizerState = RasterizerState.CullNone;
+			device.DepthStencilState = DepthStencilState.DepthRead;
+			RenderPass(RenderPassType.Transparent);
 
 			// Restore state
 			RestoreState();
 
 			if (DebugSettings.DrawBoundingBoxes)
 			{
-				foreach(var job in _context.Jobs)
+				foreach (var job in _context.Jobs)
 				{
 					var t = job.Transform;
 					var bb = job.Mesh.BoundingBox.Transform(ref t);
@@ -258,9 +293,9 @@ namespace Nursia.Rendering
 				}
 			}
 
-			if (DebugSettings.DrawLightViewFrustrum && ShadowCastingLight != null)
+			if (DebugSettings.DrawLightViewFrustrum && _lightViewProj != null)
 			{
-				var frustum = new BoundingFrustum(_lightViewProj);
+				var frustum = new BoundingFrustum(_lightViewProj.Value);
 
 				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
 			}

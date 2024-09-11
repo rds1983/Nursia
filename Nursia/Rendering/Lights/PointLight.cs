@@ -4,6 +4,8 @@ namespace Nursia.Rendering.Lights
 {
 	public class PointLight : BaseLight
 	{
+		public override bool RenderCastsShadow => false;
+
 		protected internal override void Render(RenderContext context)
 		{
 			base.Render(context);
@@ -11,7 +13,7 @@ namespace Nursia.Rendering.Lights
 			context.PointLights.Add(this);
 		}
 
-		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
+		public override Matrix? CreateLightViewProjectionMatrix(RenderContext context)
 		{
 			throw new System.NotImplementedException();
 		}

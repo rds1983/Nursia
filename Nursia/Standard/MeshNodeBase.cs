@@ -3,11 +3,16 @@ using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public abstract class MeshNodeBase : SceneNode
+	public abstract class MeshNodeBase : SceneNode, ICastsShadow
 	{
 		protected abstract Mesh RenderMesh { get; }
 
+		[Category("Appearance")]
 		public IMaterial Material { get; set; }
+
+		[DefaultValue(true)]
+		[Category("Behavior")]
+		public bool CastsShadow { get; set; } = true;
 
 		protected internal override void Render(RenderContext context)
 		{
@@ -18,7 +23,7 @@ namespace Nursia.Standard
 				return;
 			}
 
-			context.BatchJob(Material, GlobalTransform, RenderMesh);
+			context.BatchJob(this, Material, GlobalTransform, RenderMesh);
 		}
 	}
 }

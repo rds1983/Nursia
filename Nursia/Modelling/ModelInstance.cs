@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -40,6 +39,8 @@ namespace Nursia.Modelling
 		}
 
 		public BoundingBox BoundingBox { get; internal set; }
+
+		public bool CastsShadow { get; set; } = true;
 
 		internal ModelInstance()
 		{

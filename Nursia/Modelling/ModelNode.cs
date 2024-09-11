@@ -52,7 +52,7 @@ namespace Nursia.Modelling
 			return _boneTransforms;
 		}
 
-		internal void Render(RenderContext context, ref Matrix rootTransform)
+		internal void Render(NursiaModel node, RenderContext context, ref Matrix rootTransform)
 		{
 			if (Meshes.Count > 0)
 			{
@@ -75,7 +75,7 @@ namespace Nursia.Modelling
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
 					if (context.Frustum.Contains(boundingBox) == ContainmentType.Disjoint)
 					{
-//						continue;
+						//						continue;
 					}
 
 					if (HasSkin)
@@ -87,7 +87,7 @@ namespace Nursia.Modelling
 						}
 					}
 
-					context.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.MeshData);
+					context.BatchJob(node, mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
 
 					if (Nrs.DrawBoundingBoxes)
 					{
@@ -104,7 +104,6 @@ namespace Nursia.Modelling
 						colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * m * context.ViewProjection);
 						colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
 
-						device.Apply(PrimitiveMeshes.CubePositionFromZeroToOne);
 						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePositionFromZeroToOne);
 
 						//						device.RasterizerState = RasterizerState;
@@ -114,7 +113,7 @@ namespace Nursia.Modelling
 
 			foreach (var child in Children)
 			{
-				child.Render(context, ref rootTransform);
+				child.Render(node, context, ref rootTransform);
 			}
 		}
 	}

@@ -5,22 +5,19 @@ namespace Nursia.Utilities
 {
 	public static class GraphicsDeviceExtensions
 	{
-		public static void Apply(this GraphicsDevice device, Mesh meshData)
+		public static void DrawIndexedPrimitives(this GraphicsDevice device, Effect effect, Mesh mesh)
 		{
-			device.SetVertexBuffer(meshData.VertexBuffer);
-			device.Indices = meshData.IndexBuffer;
-		}
+			device.SetVertexBuffer(mesh.VertexBuffer);
+			device.Indices = mesh.IndexBuffer;
 
-		public static void DrawIndexedPrimitives(this GraphicsDevice device, Effect effect, Mesh meshData, int startIndex = 0)
-		{
 			foreach (var pass in effect.CurrentTechnique.Passes)
 			{
 				pass.Apply();
-				device.DrawIndexedPrimitives(meshData.PrimitiveType, 0,
+				device.DrawIndexedPrimitives(mesh.PrimitiveType, 0,
 					0,
-					meshData.VertexCount,
+					mesh.VertexCount,
 					0,
-					meshData.PrimitiveCount);
+					mesh.PrimitiveCount);
 			}
 		}
 	}

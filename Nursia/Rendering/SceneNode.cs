@@ -10,6 +10,12 @@ using System.ComponentModel;
 
 namespace Nursia.Rendering
 {
+	public enum NodeBlendMode
+	{
+		Opaque,
+		Transparent
+	}
+
 	/// <summary>
 	/// Base 3D Scene Node
 	/// </summary>
@@ -67,6 +73,8 @@ namespace Nursia.Rendering
 				InvalidateTransform();
 			}
 		}
+
+		public NodeBlendMode BlendMode { get; set; }
 
 		[Browsable(false)]
 		[JsonIgnore]

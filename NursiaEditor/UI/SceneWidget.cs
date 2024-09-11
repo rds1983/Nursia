@@ -240,7 +240,7 @@ namespace NursiaEditor.UI
 					}
 				});
 
-				/*device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
+				device.Viewport = new Viewport(bounds.Right - bounds.Width / 10 - 16,
 					bounds.Y + 16, bounds.Width / 10, bounds.Height / 10);
 
 				var m = NursiaEditor.Resources.ModelAxises;
@@ -249,7 +249,7 @@ namespace NursiaEditor.UI
 				// Make the gizmo placed always in front of the camera
 				c.Position = Vector3.Zero;
 				m.Translation = c.Direction * 2;
-				_renderer.Render(m, c);*/
+				_renderer.Render(m, c);
 
 				//				UpdateMarker();
 				/*				_renderer.Begin();
@@ -276,10 +276,6 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = oldViewport;
 			}
-
-			var directLight2 = Scene.QueryByType<DirectLight>()[0];
-
-			context.Draw(directLight2.ShadowMap, new Rectangle(0, 0, 256, 256), Color.White);
 		}
 
 		protected override void OnPlacedChanged()

@@ -10,21 +10,21 @@ namespace Nursia.Modelling
 {
 	public class ModelMesh : IDisposable
 	{
-		public Mesh MeshData { get; private set; }
+		public Mesh Mesh { get; private set; }
 
-		public VertexBuffer VertexBuffer => MeshData.VertexBuffer;
-		public IndexBuffer IndexBuffer => MeshData.IndexBuffer;
-		public int PrimitiveCount => MeshData.PrimitiveCount;
-		public bool HasNormals => MeshData.HasNormals;
-		public BoundingBox BoundingBox => MeshData.BoundingBox;
-		public int VertexCount => MeshData.VertexCount;
+		public VertexBuffer VertexBuffer => Mesh.VertexBuffer;
+		public IndexBuffer IndexBuffer => Mesh.IndexBuffer;
+		public int PrimitiveCount => Mesh.PrimitiveCount;
+		public bool HasNormals => Mesh.HasNormals;
+		public BoundingBox BoundingBox => Mesh.BoundingBox;
+		public int VertexCount => Mesh.VertexCount;
 
 		public IMaterial Material { get; set; }
 		public Matrix Transform = Matrix.Identity;
 
 		public ModelMesh(Mesh meshData, IMaterial material)
 		{
-			MeshData = meshData ?? throw new ArgumentNullException(nameof(meshData));
+			Mesh = meshData ?? throw new ArgumentNullException(nameof(meshData));
 			Material = material ?? throw new ArgumentNullException(nameof(material));
 		}
 
@@ -55,13 +55,13 @@ namespace Nursia.Modelling
 
 		public void Dispose()
 		{
-			if (MeshData == null)
+			if (Mesh == null)
 			{
 				return;
 			}
 
-			MeshData.Dispose();
-			MeshData = null;
+			Mesh.Dispose();
+			Mesh = null;
 		}
 	}
 }

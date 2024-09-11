@@ -74,7 +74,7 @@ namespace Nursia.Standard
 			{
 				device.SetRenderTarget(target);
 
-				device.Clear(Color.Black);
+				device.Clear(Color.Transparent);
 				var spriteBatch = Resources.SpriteBatch;
 				spriteBatch.Begin();
 				spriteBatch.DrawString(font, _text, Vector2.Zero, Color.White);

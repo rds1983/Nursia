@@ -12,11 +12,10 @@ namespace Nursia.Rendering.Lights
 	{
 		[Browsable(false)]
 		[JsonIgnore]
-		public RenderTarget2D ShadowMap { get; protected set; }
-
+		public abstract bool RenderCastsShadow { get; }
+		
 		public Color Color { get; set; } = Color.White;
-		internal bool ShadowMapDirty { get; set; } = true;
 
-		public abstract Matrix CreateLightViewProjectionMatrix(RenderContext context);
+		public abstract Matrix? CreateLightViewProjectionMatrix(RenderContext context);
 	}
 }

@@ -90,8 +90,8 @@ namespace NursiaEditor
 				}
 			}
 
-			DebugSettings.DrawBoundingBoxes = true;
-			DebugSettings.DrawLightViewFrustrum = true;
+//			DebugSettings.DrawBoundingBoxes = true;
+//			DebugSettings.DrawLightViewFrustrum = true;
 		}
 
 		protected override void Update(GameTime gameTime)

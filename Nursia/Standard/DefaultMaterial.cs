@@ -68,9 +68,9 @@ namespace Nursia.Standard
 		}
 
 		private EffectBinding _defaultBinding, _shadowMapBinding;
-		private bool _shadowMapBindingDirty = true;
-		private bool _lightning = true;
+		private bool _receivesLight = true;
 		private bool _skinning = false;
+		private bool _receivesShadows = true;
 		private Texture2D _texture;
 
 		[Browsable(false)]
@@ -92,20 +92,36 @@ namespace Nursia.Standard
 		}
 
 		[DefaultValue(true)]
-		public bool Lightning
+		public bool ReceivesLight
 		{
-			get => _lightning;
+			get => _receivesLight;
 
 			set
 			{
-				if (value == _lightning)
+				if (value == _receivesLight)
 				{
 					return;
 				}
 
-				_lightning = value;
+				_receivesLight = value;
 				InvalidateDefault();
-				InvalidateShadowMap();
+			}
+		}
+
+		[DefaultValue(true)]
+		public bool ReceivesShadows
+		{
+			get => _receivesShadows;
+
+			set
+			{
+				if (value == _receivesShadows)
+				{
+					return;
+				}
+
+				_receivesShadows = value;
+				InvalidateDefault();
 			}
 		}
 
@@ -146,7 +162,7 @@ namespace Nursia.Standard
 			{
 				if (_defaultBinding == null)
 				{
-					var effect = Resources.GetDefaultEffect(Texture != null, _skinning, false, _lightning)();
+					var effect = Resources.GetDefaultEffect(Texture != null, _skinning, false, _receivesLight, _receivesShadows)();
 					_defaultBinding = new DefaultBinding(effect);
 				}
 
@@ -160,15 +176,10 @@ namespace Nursia.Standard
 		{
 			get
 			{
-				if (_shadowMapBindingDirty)
+				if (_shadowMapBinding == null)
 				{
-					if (Lightning)
-					{
-						var effect = Resources.GetDefaultShadowMapEffect(_skinning, false)();
-						_shadowMapBinding = new ShadowMapBinding(effect);
-					}
-
-					_shadowMapBindingDirty = false;
+					var effect = Resources.GetDefaultShadowMapEffect(_skinning, false)();
+					_shadowMapBinding = new ShadowMapBinding(effect);
 				}
 
 				return _shadowMapBinding;
@@ -183,7 +194,6 @@ namespace Nursia.Standard
 		private void InvalidateShadowMap()
 		{
 			_shadowMapBinding = null;
-			_shadowMapBindingDirty = true;
 		}
 	}
 }

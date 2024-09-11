@@ -32,11 +32,11 @@ namespace Nursia.Sky
 			}
 		}
 
-		private readonly Mesh _meshData;
+		private readonly Mesh _mesh;
 
 		[Browsable(false)]
 		[JsonIgnore]
-		public Mesh MeshData => _meshData;
+		public Mesh Mesh => _mesh;
 
 		[Browsable(false)]
 		[JsonIgnore]
@@ -55,7 +55,7 @@ namespace Nursia.Sky
 
 		public Skybox()
 		{
-			_meshData = PrimitiveMeshes.CubePositionFromMinusOneToOne;
+			_mesh = PrimitiveMeshes.CubePositionFromMinusOneToOne;
 		}
 
 		protected internal override void Render(RenderContext context)
@@ -67,7 +67,7 @@ namespace Nursia.Sky
 			view.Translation = Vector3.Zero;
 			Transform = GlobalTransform * view * context.Projection;
 
-			context.BatchJob(this, GlobalTransform, MeshData);
+			context.BatchJob(this, this, GlobalTransform, Mesh);
 		}
 
 		public override void Load(AssetManager assetManager)

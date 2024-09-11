@@ -115,6 +115,13 @@ namespace Nursia.Utilities
 				source.Min.Z + (source.Max.Z - source.Min.Z) / 2);
 		}
 
+		public static bool IsEmpty(this BoundingBox source)
+		{
+			var d = source.Max - source.Min;
+
+			return d.X.IsZero() && d.Y.IsZero() && d.Z.IsZero();
+		}
+
 		public static Vector4 Lerp(Vector4 a, Vector4 b, float s)
 		{
 			return new Vector4(MathHelper.Lerp(a.X, b.X, s),

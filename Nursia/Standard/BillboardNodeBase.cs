@@ -85,7 +85,7 @@ namespace Nursia.Standard
 		{
 			base.Render(context);
 
-			context.BatchJob(this, GlobalTransform, Mesh);
+			context.BatchJob(this, this, GlobalTransform, Mesh);
 		}
 
 		protected void InvalidateDefault()

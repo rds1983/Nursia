@@ -8,12 +8,15 @@ namespace Nursia.Rendering.Lights
 {
 	public class DirectLight : BaseLight
 	{
-		private const int ShadowMapSize = 2048;
-		
 		private Vector3[] _corners = new Vector3[8];
 
 		private Vector3 _direction;
 		private Vector3 _normalizedDirection;
+
+		public override bool RenderCastsShadow => CastsShadow;
+
+		[DefaultValue(true)]
+		public bool CastsShadow { get; set; } = true;
 
 		public Vector3 Direction
 		{
@@ -29,26 +32,24 @@ namespace Nursia.Rendering.Lights
 		[JsonIgnore]
 		public Vector3 NormalizedDirection => _normalizedDirection;
 
-		public BoundingBox SceneBoundingBox { get; private set; }
-
-
 		public DirectLight()
 		{
 			Direction = new Vector3(1, 0, 0);
-
-			ShadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
-								ShadowMapSize, ShadowMapSize,
-								false, SurfaceFormat.Single,
-								DepthFormat.Depth24);
 		}
 
-		public override Matrix CreateLightViewProjectionMatrix(RenderContext context)
+		public override Matrix? CreateLightViewProjectionMatrix(RenderContext context)
 		{
 			// Determine visible objects' bounding box
 			var bb = new BoundingBox();
 			foreach (var job in context.Jobs)
 			{
-				if (job.Mesh == null || !job.Mesh.CastsShadow)
+				if (job.Mesh == null)
+				{
+					continue;
+				}
+
+				var castsShadow = job.SceneNode as ICastsShadow;
+				if(castsShadow == null || !castsShadow.CastsShadow)
 				{
 					continue;
 				}
@@ -57,6 +58,11 @@ namespace Nursia.Rendering.Lights
 				var lb = job.Mesh.BoundingBox.Transform(ref t);
 
 				bb = BoundingBox.CreateMerged(bb, lb);
+			}
+
+			if (bb.IsEmpty())
+			{
+				return null;
 			}
 
 			// Get the corners of the box
@@ -68,7 +74,6 @@ namespace Nursia.Rendering.Lights
 			Matrix lightRotation = Matrix.CreateLookAt(Vector3.Zero,
 													   -lightDir,
 													   Vector3.Up);
-
 
 			// Transform the positions of the corners into the direction of the light
 			for (int i = 0; i < _corners.Length; i++)

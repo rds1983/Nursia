@@ -23,7 +23,7 @@ namespace Nursia
 		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(Assembly, "Resources");
 
 		private static Func<Effect> _colorEffect, _skyboxEffect;
-		private static Func<Effect>[] _defaultEffects = new Func<Effect>[16];
+		private static Func<Effect>[] _defaultEffects = new Func<Effect>[32];
 		private static Func<Effect>[] _defaultShadowMapEffects = new Func<Effect>[8];
 		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
 		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
@@ -137,7 +137,7 @@ namespace Nursia
 			}
 		}
 
-		public static Func<Effect> GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning)
+		public static Func<Effect> GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning, bool shadows)
 		{
 			var key = 0;
 
@@ -159,6 +159,11 @@ namespace Nursia
 			if (texture)
 			{
 				key |= 8;
+			}
+
+			if (shadows)
+			{
+				key |= 16;
 			}
 
 			if (_defaultEffects[key] != null)
@@ -185,6 +190,11 @@ namespace Nursia
 			if (texture)
 			{
 				defines["TEXTURE"] = "1";
+			}
+
+			if (shadows)
+			{
+				defines["SHADOWS"] = "1";
 			}
 
 			var result = GetEffect("DefaultEffect", defines);

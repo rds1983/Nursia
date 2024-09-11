@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "0.962031, 3.072283, 6.314395",
-    "YawAngle": 181.09903,
-    "PitchAngle": 21.000093,
+    "Position": "-0.8133185, 2.7738385, 6.0870695",
+    "YawAngle": 183.39908,
+    "PitchAngle": 25.000088,
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -24,10 +24,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "75, 217, 97, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "75, 217, 97, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.8, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -45,10 +47,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "75, 217, 97, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "75, 217, 97, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.4, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -73,10 +77,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "254, 57, 48, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "254, 57, 48, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.8, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -94,10 +100,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "254, 57, 48, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "254, 57, 48, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.4, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -122,10 +130,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "3, 121, 255, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "3, 121, 255, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.8, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -143,10 +153,12 @@
           },
           "Material": {
             "$type": "Nursia.Standard.DefaultMaterial, Nursia",
-            "Lightning": false,
-            "DiffuseColor": "3, 120, 255, 255",
-            "SpecularPower": 250.0
+            "ReceivesLight": false,
+            "ReceivesShadows": false,
+            "SpecularPower": 250.0,
+            "DiffuseColor": "3, 120, 255, 255"
           },
+          "CastsShadow": false,
           "Translation": "0, 0.4, 0",
           "Scale": "1, 1, 1",
           "Children": [],
@@ -162,6 +174,7 @@
       "Color": "255, 255, 255, 255",
       "Translation": "0, 1, 0.05",
       "Scale": "1, 1, 1",
+      "BlendMode": 1,
       "Children": []
     },
     {
@@ -171,6 +184,7 @@
       "Color": "255, 255, 255, 255",
       "Translation": "1, 0.1, 0.05",
       "Scale": "1, 1, 1",
+      "BlendMode": 1,
       "Children": []
     },
     {
@@ -180,6 +194,7 @@
       "Color": "255, 255, 255, 255",
       "Translation": "0, 0, 1.05",
       "Scale": "1, 1, 1",
+      "BlendMode": 1,
       "Children": []
     }
   ],

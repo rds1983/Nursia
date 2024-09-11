@@ -107,6 +107,12 @@ namespace SimpleScene
 			{
 				var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
 				_model.Model.UpdateCurrentAnimation(passed);
+
+				if (passed > _model.Model.CurrentAnimation.Time)
+				{
+					// Restart
+					_animationMoment = DateTime.Now;
+				}
 			}
 		}
 
@@ -122,9 +128,9 @@ namespace SimpleScene
 
 			_spriteBatch.Begin();
 
-			_spriteBatch.Draw(_light.ShadowMap, 
+/*			_spriteBatch.Draw(_light.ShadowMap, 
 				new Rectangle(0, 0, 256, 256), 
-				Color.White);
+				Color.White);*/
 
 			_spriteBatch.End();
 		}

@@ -118,14 +118,6 @@ namespace Nursia.Primitives
 			}
 		}
 
-		[DefaultValue(true)]
-		public bool CastsShadow
-		{
-			get => PrimitiveMesh.Mesh.CastsShadow;
-
-			set => PrimitiveMesh.Mesh.CastsShadow = value;
-		}
-
 		protected override Mesh RenderMesh => PrimitiveMesh?.Mesh;
 	}
 }

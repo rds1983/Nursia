@@ -3,6 +3,13 @@
 #ifdef LIGHTNING
 
 #include "Lightning.fxh"
+
+#endif
+
+#ifdef SHADOWS
+
+#include "Shadows.fxh"
+
 #endif
 
 #ifdef SKINNING
@@ -17,21 +24,14 @@ DECLARE_TEXTURE_LINEAR_WRAP(_texture);
 
 #endif
 
-DECLARE_TEXTURE_POINT_CLAMP(_shadowMap);
-
-BEGIN_CONSTANTS
-
 #ifdef CLIP_PLANE
 
 float4 _clipPlane;
 
 #endif
 
-float DepthBias = 0.001f;
 float4 _diffuseColor;
 float3 _cameraPosition;
-
-MATRIX_CONSTANTS
 
 #ifdef LIGHTNING
 float3x3 _worldInverseTranspose;
@@ -41,11 +41,8 @@ float3x3 _worldInverseTranspose;
 float4x3 _bones[MAX_BONES];
 #endif
 
-float4x4 _lightViewProj;
 float4x4 _worldViewProj;
 float4x4 _world;
-
-END_CONSTANTS
 
 struct VSInput
 {
@@ -77,14 +74,15 @@ struct VSOutput
 #ifdef LIGHTNING
 	float3 WorldNormal: TEXCOORD2;
 	float4 SourcePosition: TEXCOORD3;
-	float4 WorldPosition: TEXCOORD4;
+#endif
+
+#ifdef SHADOWS
+	float4 LightPosition: TEXCOORD4;
 #endif
 
 #ifdef CLIP_PLANE
 	float4 ClipDistances: TEXCOORD5;
 #endif
-
-	float2 Depth: TEXCOORD6;
 };
 
 VSOutput VS(VSInput input)
@@ -108,13 +106,13 @@ VSOutput VS(VSInput input)
 #endif
 
 	output.Position = mul(input.Position, _worldViewProj);
-	output.Depth.x = output.Position.z;
-	output.Depth.y = output.Position.w;
-	
-	
+
 #ifdef LIGHTNING
 	output.SourcePosition = input.Position;
-	output.WorldPosition = mul(input.Position, _world);
+#endif
+
+#ifdef SHADOWS
+	output.LightPosition = mul(float4(worldPosition, 1), _lightViewProj);
 #endif
 
 #ifdef TEXTURE
@@ -152,29 +150,14 @@ float4 PS(VSOutput input): COLOR
 	LightPower lightPower = CalculateLightPower(normal, src, input.ToCamera);
 	color *= float4(lightPower.Diffuse, 1);
 	color += float4(lightPower.Specular, 0);
-	
-	// Find the position of this pixel in light space
-	float4 lightingPosition = mul(input.WorldPosition, _lightViewProj);
+#endif
 
-	// Find the position in the shadow map for this pixel
-	float2 ShadowTexCoord = 0.5 * lightingPosition.xy / 
-							lightingPosition.w + float2( 0.5, 0.5 );
-	ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+#ifdef SHADOWS
+	// Finish the projection
+	float3 lightingPosition = input.LightPosition.xyz / input.LightPosition.w;
 
-	// Get the current depth stored in the shadow map
-	float shadowdepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord).r;    
-
-	// Calculate the current pixel depth
-	// The bias is used to prevent folating point errors that occur when
-	// the pixel of the occluder is being drawn
-	float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
-
-	// Check to see if this pixel is in front or behind the value in the shadow map
-	if (shadowdepth < ourdepth)
-	{
-		// Shadow the pixel by lowering the intensity
-		color *= float4(0.5,0.5,0.5,0);
-	};
+	float4 shadowFactor = CalculateShadowFactor(lightingPosition);
+	color *= shadowFactor;
 #endif
 
 	return color;

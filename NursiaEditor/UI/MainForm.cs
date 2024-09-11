@@ -78,8 +78,28 @@ namespace NursiaEditor.UI
 			set => _propertyGrid.Settings.AssetManager = value;
 		}
 
+		public object SelectedObject
+		{
+			get => _propertyGrid.Object;
+			set => _propertyGrid.Object = value;
+		}
+
 		public ForwardRenderer Renderer { get => _sceneWidget.Renderer; }
 		private readonly List<InstrumentButton> _allButtons = new List<InstrumentButton>();
+
+		public event EventHandler SelectedObjectChanged
+		{
+			add
+			{
+				_treeFileExplorer.SelectionChanged += value;
+			}
+
+			remove
+			{
+				_treeFileExplorer.SelectionChanged -= value;
+			}
+		}
+
 
 		public MainForm()
 		{

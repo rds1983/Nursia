@@ -18,6 +18,11 @@ namespace NursiaEditor
 
 		public static StudioGame Instance { get; private set; }
 
+		public MainForm MainForm
+		{
+			get => _mainForm;
+		}
+
 		public Scene Scene
 		{
 			get => _mainForm.Scene;

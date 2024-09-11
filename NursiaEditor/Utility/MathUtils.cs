@@ -34,5 +34,12 @@ namespace Nursia.Utility
 
 			return new BoundingBox(min, max);
 		}
+
+		public static Vector3 ToScale(this BoundingBox box)
+		{
+			return new Vector3(box.Max.X - box.Min.X,
+				box.Max.Y - box.Min.Y,
+				box.Max.Z - box.Min.Z);
+		}
 	}
 }

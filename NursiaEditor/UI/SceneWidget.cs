@@ -12,7 +12,8 @@ using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
 using Nursia.Standard;
-using System.Transactions;
+using NursiaEditor.Utility;
+using Nursia.Utility;
 
 namespace NursiaEditor.UI
 {
@@ -215,6 +216,14 @@ namespace NursiaEditor.UI
 
 				_renderer.Render(Scene, Scene.Camera);
 				_renderer.Render(GridMesh, Scene.Camera);
+
+				// Selected object
+				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.Instance.MainForm.SelectedObject as SceneNode);
+
+				if (selectionNode != null)
+				{
+					_renderer.Render(selectionNode, Scene.Camera);
+				}
 
 				// Draw lights' icons'
 				Scene.Iterate(n =>

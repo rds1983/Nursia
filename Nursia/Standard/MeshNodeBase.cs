@@ -1,4 +1,6 @@
-﻿using Nursia.Rendering;
+﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
+using Nursia.Rendering;
 using System.ComponentModel;
 
 namespace Nursia.Standard
@@ -13,6 +15,10 @@ namespace Nursia.Standard
 		[DefaultValue(true)]
 		[Category("Behavior")]
 		public bool CastsShadow { get; set; } = true;
+
+		[Browsable(false)]
+		[JsonIgnore]
+		public BoundingBox BoundingBox => RenderMesh.BoundingBox;
 
 		protected internal override void Render(RenderContext context)
 		{

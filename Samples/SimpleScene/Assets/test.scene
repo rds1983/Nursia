@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "-10.540083, 60.9657, 27.905993",
-    "YawAngle": 164.50014,
-    "PitchAngle": 34.799202,
+    "Position": "0.526914, 60.42708, 70.96211",
+    "YawAngle": 184.70027,
+    "PitchAngle": 43.699333,
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -50,7 +50,7 @@
       "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
       "PrimitiveMesh": {
         "$type": "Nursia.Primitives.Torus, Nursia",
-        "MajorRadius": 0.5,
+        "MajorRadius": 2.5,
         "MinorRadius": 0.16666,
         "Tessellation": 32,
         "UScale": 1.0,
@@ -86,6 +86,25 @@
       "Scale": "8, 8, 8",
       "Children": [],
       "Id": "s"
+    },
+    {
+      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+      "PrimitiveMesh": {
+        "$type": "Nursia.Primitives.Teapot, Nursia",
+        "Size": 1.0,
+        "Tessellation": 8,
+        "UScale": 1.0,
+        "VScale": 1.0
+      },
+      "Material": {
+        "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "SpecularPower": 250.0,
+        "DiffuseColor": "254, 57, 48, 255"
+      },
+      "Translation": "0, 24, 64",
+      "Scale": "4, 4, 4",
+      "Children": [],
+      "Id": "tea"
     }
   ],
   "Id": "Root"

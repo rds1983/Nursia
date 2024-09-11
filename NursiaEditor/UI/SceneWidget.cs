@@ -219,7 +219,6 @@ namespace NursiaEditor.UI
 
 				// Selected object
 				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.Instance.MainForm.SelectedObject as SceneNode);
-
 				if (selectionNode != null)
 				{
 					_renderer.Render(selectionNode, Scene.Camera);

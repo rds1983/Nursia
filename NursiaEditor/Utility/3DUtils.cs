@@ -54,7 +54,7 @@ namespace NursiaEditor.Utility
 						7, 0,
 						6, 4,
 						1, 4,
-						2, 7
+						3, 6
 					};
 
 					_selectionMesh = new Mesh(vertices, indices, PrimitiveType.LineList);

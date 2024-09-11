@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "2.9108117, 56.53617, 46.25583",
-    "YawAngle": 179.20003,
-    "PitchAngle": 36.89904,
+    "Position": "-10.540083, 60.9657, 27.905993",
+    "YawAngle": 164.50014,
+    "PitchAngle": 34.799202,
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -13,7 +13,7 @@
       "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
       "Direction": "0, -1, -1",
       "Color": "255, 255, 255, 255",
-      "Translation": "-5, 100, 6",
+      "Translation": "-5, 50, 6",
       "Scale": "1, 1, 1",
       "Children": [],
       "Id": "DirectLight"
@@ -35,12 +35,12 @@
         "UScale": 1.0,
         "VScale": 1.0
       },
-      "CastsShadow": false,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularPower": 250.0,
         "DiffuseColor": "255, 255, 255, 255"
       },
+      "CastsShadow": false,
       "Translation": "0, 1, 0",
       "Scale": "1000, 1, 1000",
       "Children": [],

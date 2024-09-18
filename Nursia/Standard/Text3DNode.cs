@@ -70,6 +70,7 @@ namespace Nursia.Standard
 			var device = Nrs.GraphicsDevice;
 			var target = new RenderTarget2D(device, (int)size.X, (int)size.Y);
 
+			var oldViewport = device.Viewport;
 			try
 			{
 				device.SetRenderTarget(target);
@@ -83,6 +84,7 @@ namespace Nursia.Standard
 			finally
 			{
 				device.SetRenderTarget(null);
+				device.Viewport = oldViewport;
 			}
 
 			_texture = target;

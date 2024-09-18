@@ -484,7 +484,7 @@ namespace NursiaEditor.UI
 				Id = "Root"
 			};
 
-			scene.Camera.Position = new Vector3(0, 7, 7);
+			scene.Camera.Position = new Vector3(0, 15, 15);
 			scene.Camera.YawAngle = 180;
 			scene.Camera.PitchAngle = 30;
 
@@ -527,16 +527,33 @@ namespace NursiaEditor.UI
 
 			effectsNode.IsExpanded = true;
 
-			var effectsFolder = Path.Combine(Path.GetDirectoryName(project.AbsolutePath), Constants.EffectsFolder);
-			var effectFiles = Directory.GetFiles(effectsFolder, "*.fx");
-
-			foreach (var effectFile in effectFiles)
+			var folder = Path.GetDirectoryName(project.AbsolutePath);
+			var effectsFolder = Path.Combine(folder, Constants.EffectsFolder);
+			if (Directory.Exists(effectsFolder))
 			{
-				var effectNode = effectsNode.AddSubNode(new Label
+				var files = Directory.GetFiles(effectsFolder, "*.fx");
+				foreach (var file in files)
 				{
-					Text = Path.GetFileName(effectFile),
-					Tag = effectFile
-				});
+					var node = effectsNode.AddSubNode(new Label
+					{
+						Text = Path.GetFileName(file),
+						Tag = file
+					});
+				}
+			}
+
+			var scenes = Path.Combine(folder, Constants.ScenesFolder);
+			if (Directory.Exists(scenes))
+			{
+				var files = Directory.GetFiles(effectsFolder, "*.scene");
+				foreach (var file in files)
+				{
+					var node = effectsNode.AddSubNode(new Label
+					{
+						Text = Path.GetFileName(file),
+						Tag = file
+					});
+				}
 			}
 		}
 

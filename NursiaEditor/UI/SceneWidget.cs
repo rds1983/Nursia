@@ -13,7 +13,6 @@ using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
 using Nursia.Standard;
 using NursiaEditor.Utility;
-using Nursia.Utility;
 
 namespace NursiaEditor.UI
 {

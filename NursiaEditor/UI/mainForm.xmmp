@@ -19,7 +19,11 @@
           <Panel Id="_panelSceneExplorer" />
           <Panel Id="_panelSolution" />
         </VerticalSplitPane>
-        <Panel Id="_panelScene">
+        <Panel>
+          <VerticalSplitPane>
+            <Panel Id="_panelScene" />
+            <TextBox Multiline="True" VerticalAlignment="Stretch" />
+          </VerticalSplitPane>
           <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Label Text="FPS: 60.0" Id="_labelFps" />
             <Label Text="Meshes: 15" Id="_labelMeshes" />

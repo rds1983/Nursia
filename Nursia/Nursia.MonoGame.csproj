@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\*.*" />
-    <EmbeddedResource Include="EffectsSource\MonoGameOGL\bin\*.*" />
+    <EmbeddedResource Include="Effects\MonoGameOGL\bin\*.*" />
   </ItemGroup>
 
   <ItemGroup>

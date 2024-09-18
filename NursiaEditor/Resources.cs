@@ -1,4 +1,5 @@
 ﻿using AssetManagementBase;
+using FontStashSharp;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia;
 using Nursia.Rendering;
@@ -10,6 +11,22 @@ namespace NursiaEditor
 		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(typeof(Resources).Assembly, "Resources");
 		private static Texture2D _iconDirectionalLight;
 		private static SceneNode _modelAxises;
+		private static FontSystem _fontSystem;
+
+		public static FontSystem DefaultFontSystem
+		{
+			get
+			{
+				if (_fontSystem == null)
+				{
+					_fontSystem = _assetManager.LoadFontSystem("Fonts/Inter-Regular.ttf");
+				}
+
+				return _fontSystem;
+			}
+		}
+
+		public static SpriteFontBase ErrorFont => DefaultFontSystem.GetFont(32);
 
 		public static Texture2D IconDirectionalLight
 		{

@@ -4,9 +4,9 @@
     <HorizontalMenu>
       <MenuItem Text="&amp;File">
         <MenuItem Text="&amp;New" Id="_menuItemNew" />
-        <MenuItem Text="&amp;Open" Id="_menuItemOpen" />
-        <MenuItem Text="&amp;Save" Id="_menuItemSave" />
-        <MenuItem Text="&amp;Save As" Id="_menuItemSaveAs" />
+        <MenuItem Text="&amp;Open Solution" Id="_menuItemOpenSolution" />
+        <MenuItem Text="&amp;Save Current Item" Id="_menuItemSaveCurrentItem" />
+        <MenuItem Text="&amp;Save Everything" Id="_menuItemSaveEverything" />
         <MenuItem Text="&amp;Quit" Id="_menuItemQuit" />
       </MenuItem>
       <MenuItem Text="&amp;Help">
@@ -17,7 +17,7 @@
       <HorizontalSplitPane Id="_topSplitPane">
         <VerticalSplitPane Id="_leftSplitPane">
           <Panel Id="_panelSceneExplorer" />
-          <Panel Id="_panelFileSystem" />
+          <Panel Id="_panelSolution" />
         </VerticalSplitPane>
         <Panel Id="_panelScene">
           <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">

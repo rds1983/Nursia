@@ -14,9 +14,9 @@ namespace Nursia
 	internal static class Resources
 	{
 #if FNA
-		private const string EffectsResourcePath = "EffectsSource.FNA.bin";
+		private const string EffectsResourcePath = "Effects.FNA.bin";
 #elif MONOGAME
-		private const string EffectsResourcePath = "EffectsSource.MonoGameOGL.bin";
+		private const string EffectsResourcePath = "Effects.MonoGameOGL.bin";
 #endif
 
 		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);

@@ -42,14 +42,18 @@ namespace Nursia.Rendering
 
 		public ForwardRenderer()
 		{
-			ShadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
-								ShadowMapSize, ShadowMapSize,
-								false, SurfaceFormat.Single,
-								DepthFormat.Depth24);
 		}
 
 		private void SetState()
 		{
+			if (ShadowMap == null)
+			{
+				ShadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
+									ShadowMapSize, ShadowMapSize,
+									false, SurfaceFormat.Single,
+									DepthFormat.Depth24);
+			}
+
 			var device = Nrs.GraphicsDevice;
 			_oldDepthStencilState = device.DepthStencilState;
 			_oldRasterizerState = device.RasterizerState;

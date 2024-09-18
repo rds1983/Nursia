@@ -238,6 +238,7 @@ namespace Nursia.Modelling
 			animationTransforms.Interpolation = sampler.Interpolation;
 		}
 
+
 		private IndexBuffer CreateIndexBuffer(MeshPrimitive primitive)
 		{
 			if (primitive.Indices == null)

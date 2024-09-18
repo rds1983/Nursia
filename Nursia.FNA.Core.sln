@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{DF25
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleScene.FNA.Core", "Samples\SimpleScene\SimpleScene.FNA.Core.csproj", "{A0D31287-8544-45C8-99E7-F7CDFF7087CC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelViewer.FNA.Core", "Samples\ModelViewer\ModelViewer.FNA.Core.csproj", "{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,14 @@ Global
 		{A0D31287-8544-45C8-99E7-F7CDFF7087CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0D31287-8544-45C8-99E7-F7CDFF7087CC}.Release|x64.ActiveCfg = Release|Any CPU
 		{A0D31287-8544-45C8-99E7-F7CDFF7087CC}.Release|x64.Build.0 = Release|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Debug|x64.Build.0 = Debug|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Release|x64.ActiveCfg = Release|Any CPU
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,6 +126,7 @@ Global
 		{297D4410-CCAE-41AF-9B4F-201632A43B4E} = {96227FF8-DD5C-4E08-830A-3C730D75961D}
 		{21DC6538-6B41-4087-B323-9506FC353F6A} = {96227FF8-DD5C-4E08-830A-3C730D75961D}
 		{A0D31287-8544-45C8-99E7-F7CDFF7087CC} = {DF255E87-4186-4E0B-92AA-BE29C5A835B8}
+		{86D9CABA-F86E-409C-908A-CF4F5ED2A01A} = {DF255E87-4186-4E0B-92AA-BE29C5A835B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35ACDF4E-2CE2-46B1-A19F-35DC131069A1}

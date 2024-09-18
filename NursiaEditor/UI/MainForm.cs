@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using AssetManagementBase;
+using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D.UI;
@@ -22,7 +23,7 @@ namespace NursiaEditor.UI
 		private readonly SceneWidget _sceneWidget;
 		private string _filePath;
 		private bool _explorerTouchDown = false;
-		private readonly TreeView _treeFileExplorer, _treeFileSystem;
+		private readonly TreeView _treeFileExplorer, _treeFileSolution;
 
 		public string FilePath
 		{
@@ -105,12 +106,13 @@ namespace NursiaEditor.UI
 		{
 			BuildUI();
 
-			_treeFileSystem = new TreeView
+			_treeFileSolution = new TreeView
 			{
 				HorizontalAlignment = HorizontalAlignment.Stretch,
 				VerticalAlignment = VerticalAlignment.Stretch,
 				ClipToBounds = true
 			};
+			_panelSolution.Widgets.Add(_treeFileSolution);
 
 			_treeFileExplorer = new TreeView
 			{
@@ -179,11 +181,11 @@ namespace NursiaEditor.UI
 
 			_menuItemNew.Selected += (s, a) => NewScene();
 
-			_menuItemOpen.Selected += (s, a) =>
+			_menuItemOpenSolution.Selected += (s, a) =>
 			{
 				FileDialog dialog = new FileDialog(FileDialogMode.OpenFile)
 				{
-					Filter = "*.scene"
+					Filter = "*.sln"
 				};
 
 				if (!string.IsNullOrEmpty(_filePath))
@@ -200,14 +202,14 @@ namespace NursiaEditor.UI
 					}
 
 					// "Ok" or Enter
-					Load(dialog.FilePath);
+					LoadSolution(dialog.FilePath);
 				};
 
 				dialog.ShowModal(Desktop);
 			};
 
-			_menuItemSave.Selected += (s, a) => Save(false);
-			_menuItemSaveAs.Selected += (s, a) => Save(true);
+/*			_menuItemSave.Selected += (s, a) => Save(false);
+			_menuItemSaveAs.Selected += (s, a) => Save(true);*/
 
 			_treeFileExplorer.TouchDown += (s, e) =>
 			{
@@ -511,7 +513,80 @@ namespace NursiaEditor.UI
 			StudioGame.Instance.Window.Title = title;
 		}
 
-		public void Load(string path)
+		private void RefreshProject(TreeViewNode projectNode)
+		{
+			projectNode.RemoveAllSubNodes();
+
+			var project = (ProjectInSolution)projectNode.Tag;
+
+			// Effects
+			var effectsNode = projectNode.AddSubNode(new Label
+			{
+				Text = "Effects"
+			});
+
+			effectsNode.IsExpanded = true;
+
+			var effectsFolder = Path.Combine(Path.GetDirectoryName(project.AbsolutePath), Constants.EffectsFolder);
+			var effectFiles = Directory.GetFiles(effectsFolder, "*.fx");
+
+			foreach (var effectFile in effectFiles)
+			{
+				var effectNode = effectsNode.AddSubNode(new Label
+				{
+					Text = Path.GetFileName(effectFile),
+					Tag = effectFile
+				});
+			}
+		}
+
+		public void LoadSolution(string path)
+		{
+			try
+			{
+				if (!string.IsNullOrEmpty(path))
+				{
+					var solutionFile = SolutionFile.Parse(path);
+
+					_treeFileSolution.RemoveAllSubNodes();
+					foreach (var project in solutionFile.ProjectsInOrder)
+					{
+						if (project.ProjectType != SolutionProjectType.KnownToBeMSBuildFormat)
+						{
+							continue;
+						}
+
+						var folder = Path.GetDirectoryName(project.AbsolutePath);
+						var markerPath = Path.Combine(folder, Constants.MarkerFile);
+						if (!File.Exists(markerPath))
+						{
+							continue;
+						}
+
+						var label = new Label
+						{
+							Text = project.ProjectName,
+						};
+
+						var projectNode = _treeFileSolution.AddSubNode(label);
+						projectNode.IsExpanded = true;
+						projectNode.Tag = project;
+
+						RefreshProject(projectNode);
+					}
+				}
+
+				_filePath = path;
+				UpdateTitle();
+			}
+			catch (Exception ex)
+			{
+				var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+				dialog.ShowModal(Desktop);
+			}
+		}
+
+		public void LoadScene(string path)
 		{
 			try
 			{

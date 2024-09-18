@@ -170,6 +170,17 @@ namespace Nursia.Rendering
 		{
 		}
 
+		public void SetLookAt(Vector3 position, Vector3 target)
+		{
+			Position = position;
+
+			var direction = target - _position;
+			direction.Normalize();
+
+			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Asin(direction.Y));
+			YawAngle = MathHelper.ToDegrees((float)Math.Atan2(direction.X, direction.Y));
+		}
+
 		private float ClampDegree(float deg)
 		{
 			var isNegative = deg < 0;

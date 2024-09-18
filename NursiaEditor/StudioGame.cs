@@ -74,9 +74,9 @@ namespace NursiaEditor
 			MyraEnvironment.Game = this;
 			Nrs.Game = this;
 
-			/*			Nrs.ExternalEffectsSource = new FolderWatcher(@"D:\Projects\Nursia\Nursia\EffectsSource")
+			/*			Nrs.ExternalEffects = new FolderWatcher(@"D:\Projects\Nursia\Nursia\Effects")
 						{
-							BinaryFolder = @"D:\Projects\Nursia\Nursia\EffectsSource\FNA\bin"
+							BinaryFolder = @"D:\Projects\Nursia\Nursia\Effects\FNA\bin"
 						};*/
 
 			_mainForm = new MainForm();
@@ -91,7 +91,7 @@ namespace NursiaEditor
 
 				if (!string.IsNullOrEmpty(_state.EditedFile))
 				{
-					_mainForm.Load(_state.EditedFile);
+					_mainForm.LoadSolution(_state.EditedFile);
 				}
 			}
 

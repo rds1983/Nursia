@@ -51,8 +51,6 @@ namespace Nursia
 
 		public static bool DepthBufferEnabled { get; set; } = true;
 
-		public static bool DrawBoundingBoxes { get; set; } = false;
-
 		public static IExternalEffectsSource ExternalEffectsSource { get; set; }
 
 		public static Action<string> InfoLogHandler = Console.WriteLine;

@@ -88,26 +88,6 @@ namespace Nursia.Modelling
 					}
 
 					context.BatchJob(node, mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
-
-					if (Nrs.DrawBoundingBoxes)
-					{
-						var device = Nrs.GraphicsDevice;
-						device.RasterizerState = RasterizerState.CullNone;
-						device.RasterizerState.FillMode = FillMode.WireFrame;
-						var colorEffect = Resources.ColorEffect();
-
-						var boundingBoxTransform = Matrix.CreateScale((mesh.BoundingBox.Max.X - mesh.BoundingBox.Min.X),
-							(mesh.BoundingBox.Max.Y - mesh.BoundingBox.Min.Y),
-							(mesh.BoundingBox.Max.Z - mesh.BoundingBox.Min.Z)) *
-							Matrix.CreateTranslation(mesh.BoundingBox.Min);
-
-						colorEffect.Parameters["_transform"].SetValue(boundingBoxTransform * m * context.ViewProjection);
-						colorEffect.Parameters["_color"].SetValue(Color.Green.ToVector4());
-
-						device.DrawIndexedPrimitives(colorEffect, PrimitiveMeshes.CubePositionFromZeroToOne);
-
-						//						device.RasterizerState = RasterizerState;
-					}
 				}
 			}
 

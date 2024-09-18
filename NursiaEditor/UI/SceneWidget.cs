@@ -210,6 +210,9 @@ namespace NursiaEditor.UI
 			bounds.X = p.X;
 			bounds.Y = p.Y;
 
+			// Save scissor as it would be destroyed on exception
+			var scissor = device.ScissorRectangle;
+
 			try
 			{
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
@@ -277,8 +280,15 @@ namespace NursiaEditor.UI
 			}
 			catch (Exception ex)
 			{
-				var msg = Dialog.CreateMessageBox("Error", ex.Message);
-				msg.ShowModal(Desktop);
+				Nrs.GraphicsDevice.ScissorRectangle = scissor;
+				var font = NursiaEditor.Resources.ErrorFont;
+				var sz = font.MeasureString(ex.Message);
+
+				bounds = ActualBounds;
+				var pos = new Vector2(bounds.X + (bounds.Width - sz.X) / 2,
+					bounds.Y + (bounds.Height - sz.Y) / 2);
+
+				context.DrawString(font, ex.Message, pos, Color.Red);
 			}
 			finally
 			{

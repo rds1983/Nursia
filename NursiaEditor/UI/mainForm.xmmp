@@ -20,9 +20,9 @@
           <Panel Id="_panelSolution" />
         </VerticalSplitPane>
         <Panel>
-          <VerticalSplitPane>
-            <Panel Id="_panelScene" />
-            <TextBox Multiline="True" VerticalAlignment="Stretch" />
+          <VerticalSplitPane Id="_splitPaneEditor">
+            <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" />
+            <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlEffects" />
           </VerticalSplitPane>
           <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Label Text="FPS: 60.0" Id="_labelFps" />

@@ -23,14 +23,6 @@ namespace NursiaEditor
 			get => _mainForm;
 		}
 
-		public Scene Scene
-		{
-			get => _mainForm.Scene;
-			set => _mainForm.Scene = value;
-		}
-
-		public ForwardRenderer Renderer => _mainForm.Renderer;
-
 		public StudioGame()
 		{
 			Instance = this;
@@ -112,11 +104,11 @@ namespace NursiaEditor
 
 			GraphicsDevice.Clear(Color.Black);
 
-			var cameraString = (Scene != null && Scene.Camera != null) ? Scene.Camera.ToString() : string.Empty;
+/*			var cameraString = (Scene != null && Scene.Camera != null) ? Scene.Camera.ToString() : string.Empty;
 
 			_mainForm._labelCamera.Text = "Camera: " + cameraString;
 			_mainForm._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-			_mainForm._labelMeshes.Text = "Meshes: " + Renderer.Statistics.MeshesDrawn;
+			_mainForm._labelMeshes.Text = "Meshes: " + Renderer.Statistics.MeshesDrawn;*/
 
 			_desktop.Render();
 

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using AssetManagementBase;
 using Microsoft.Build.Construction;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
-using Nursia.Modelling;
 using Nursia.Primitives;
 using Nursia.Rendering;
 using Nursia.Rendering.Lights;
@@ -20,7 +18,6 @@ namespace NursiaEditor.UI
 	public partial class MainForm
 	{
 		private bool _isDirty;
-		private readonly SceneWidget _sceneWidget;
 		private string _filePath;
 		private bool _explorerTouchDown = false;
 		private readonly TreeView _treeFileExplorer, _treeFileSolution;
@@ -37,7 +34,6 @@ namespace NursiaEditor.UI
 				}
 
 				_filePath = value;
-				AssetManager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(_filePath));
 				IsDirty = false;
 				UpdateTitle();
 			}
@@ -62,30 +58,12 @@ namespace NursiaEditor.UI
 			}
 		}
 
-		public Scene Scene
-		{
-			get => _sceneWidget.Scene;
-			set
-			{
-				_sceneWidget.Scene = value;
-				RefreshExplorer(value);
-				RefreshLibrary();
-			}
-		}
-
-		public AssetManager AssetManager
-		{
-			get => _propertyGrid.Settings.AssetManager;
-			set => _propertyGrid.Settings.AssetManager = value;
-		}
-
 		public object SelectedObject
 		{
 			get => _propertyGrid.Object;
 			set => _propertyGrid.Object = value;
 		}
 
-		public ForwardRenderer Renderer { get => _sceneWidget.Renderer; }
 		private readonly List<InstrumentButton> _allButtons = new List<InstrumentButton>();
 
 		public event EventHandler SelectedObjectChanged
@@ -169,15 +147,8 @@ namespace NursiaEditor.UI
 							}
 						};*/
 
-			_sceneWidget = new SceneWidget
-			{
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				VerticalAlignment = VerticalAlignment.Stretch
-			};
-			_panelScene.Widgets.Add(_sceneWidget);
-
-			_topSplitPane.SetSplitterPosition(0, 0.25f);
-			_topSplitPane.SetSplitterPosition(1, 0.7f);
+			_topSplitPane.SetSplitterPosition(0, 0.2f);
+			_topSplitPane.SetSplitterPosition(1, 0.6f);
 
 			_menuItemNew.Selected += (s, a) => NewScene();
 
@@ -208,8 +179,8 @@ namespace NursiaEditor.UI
 				dialog.ShowModal(Desktop);
 			};
 
-/*			_menuItemSave.Selected += (s, a) => Save(false);
-			_menuItemSaveAs.Selected += (s, a) => Save(true);*/
+			/*			_menuItemSave.Selected += (s, a) => Save(false);
+						_menuItemSaveAs.Selected += (s, a) => Save(true);*/
 
 			_treeFileExplorer.TouchDown += (s, e) =>
 			{
@@ -223,17 +194,19 @@ namespace NursiaEditor.UI
 
 			_treeFileExplorer.SelectionChanged += (s, a) =>
 			{
-				_propertyGrid.Object = _treeFileExplorer.SelectedRow.Tag;
+				_propertyGrid.Object = _treeFileExplorer.SelectedNode.Tag;
 			};
+
+			_treeFileSolution.TouchDoubleClick += (s, a) => OpenCurrentSolutionItem();
 
 			_propertyGrid.PropertyChanged += (s, a) =>
 			{
 				IsDirty = true;
 
-				switch(a.Data)
+				switch (a.Data)
 				{
 					case "Id":
-						UpdateTreeNodeId(_treeFileExplorer.SelectedRow);
+						UpdateTreeNodeId(_treeFileExplorer.SelectedNode);
 						break;
 
 					case "PrimitiveMeshType":
@@ -242,7 +215,126 @@ namespace NursiaEditor.UI
 				}
 			};
 
-			NewScene();
+			UpdateStackPanelEditor();
+		}
+
+		private bool SetTabByName(TabControl tabControl, string name)
+		{
+			for(var i = 0; i < tabControl.Items.Count; ++i)
+			{
+				var tabItem = tabControl.Items[i];
+				if (tabItem.Text == name)
+				{
+					tabControl.SelectedIndex = i;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private void UpdateStackPanelEditor()
+		{
+			if (_tabControlScenes.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_tabControlScenes))
+			{
+				_splitPaneEditor.Widgets.Remove(_tabControlScenes);
+			}
+			else if (_tabControlScenes.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_tabControlScenes))
+			{
+				_splitPaneEditor.Widgets.Insert(0, _tabControlScenes);
+			}
+
+			if (_tabControlEffects.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_tabControlEffects))
+			{
+				_splitPaneEditor.Widgets.Remove(_tabControlEffects);
+			}
+			else if (_tabControlEffects.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_tabControlEffects))
+			{
+				_splitPaneEditor.Widgets.Add(_tabControlEffects);
+			}
+		}
+
+		private void OpenCurrentSolutionItem()
+		{
+			try
+			{
+				var node = _treeFileSolution.SelectedNode;
+				if (node == null || node.Tag == null || !(node.Tag is string))
+				{
+					return;
+				}
+
+				var file = (string)node.Tag;
+				var tabName = Path.GetFileName(file);
+				if (file.EndsWith(".scene"))
+				{
+					if (SetTabByName(_tabControlScenes, tabName))
+					{
+						return;
+					}
+
+					// Load scene
+					Scene scene;
+					var folder = Path.GetDirectoryName(file);
+					var assetManager = AssetManager.CreateFileAssetManager(folder);
+
+					scene = assetManager.LoadScene(file);
+
+					var sceneWidget = new SceneWidget
+					{
+						HorizontalAlignment = HorizontalAlignment.Stretch,
+						VerticalAlignment = VerticalAlignment.Stretch,
+						Scene = scene,
+					};
+
+					var tabItem = new TabItem
+					{
+						Text = tabName,
+						Content = sceneWidget,
+					};
+					_tabControlScenes.Items.Add(tabItem);
+				}
+				else if (file.EndsWith(".fx"))
+				{
+					if (SetTabByName(_tabControlEffects, tabName))
+					{
+						return;
+					}
+
+					// Effect
+					var effect = File.ReadAllText(file);
+
+					var textEditor = new TextBox
+					{
+						Multiline = true,
+						Wrap = true,
+						Text = effect,
+						HorizontalAlignment = HorizontalAlignment.Stretch,
+						VerticalAlignment = VerticalAlignment.Stretch,
+					};
+
+					var scrollViewer = new ScrollViewer
+					{
+						Content = textEditor,
+					};
+
+					var tabItem = new TabItem
+					{
+						Text = tabName,
+						Content = scrollViewer
+					};
+					_tabControlEffects.Items.Add(tabItem);
+					_tabControlEffects.SelectedIndex = _tabControlEffects.Items.Count - 1;
+				}
+
+				UpdateStackPanelEditor();
+			}
+			catch (Exception ex)
+			{
+				var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+				dialog.ShowModal(Desktop);
+				return;
+			}
 		}
 
 		private void AddNewNode(SceneNode parent, SceneNode child)
@@ -398,7 +490,7 @@ namespace NursiaEditor.UI
 
 		private void OnAddGltfModel(SceneNode sceneNode)
 		{
-			var dialog = new FileDialog(FileDialogMode.OpenFile)
+/*			var dialog = new FileDialog(FileDialogMode.OpenFile)
 			{
 				Filter = "*.gltf|*.glb"
 			};
@@ -434,7 +526,7 @@ namespace NursiaEditor.UI
 				}
 			};
 
-			dialog.ShowModal(Desktop);
+			dialog.ShowModal(Desktop);*/
 		}
 
 		private void _treeFileExplorer_TouchUp(object sender, EventArgs e)
@@ -479,7 +571,7 @@ namespace NursiaEditor.UI
 
 		private void NewScene()
 		{
-			var scene = new Scene
+/*			var scene = new Scene
 			{
 				Id = "Root"
 			};
@@ -498,7 +590,7 @@ namespace NursiaEditor.UI
 			scene.Children.Add(light);
 
 			Scene = scene;
-			FilePath = string.Empty;
+			FilePath = string.Empty;*/
 		}
 
 		private void UpdateTitle()
@@ -519,15 +611,36 @@ namespace NursiaEditor.UI
 
 			var project = (ProjectInSolution)projectNode.Tag;
 
+			// Scenes
+			var scenesNode = projectNode.AddSubNode(new Label
+			{
+				Text = "Scenes"
+			});
+			scenesNode.IsExpanded = true;
+
+			var folder = Path.GetDirectoryName(project.AbsolutePath);
+			var scenesFolder = Path.Combine(folder, Constants.ScenesFolder);
+			if (Directory.Exists(scenesFolder))
+			{
+				var files = Directory.GetFiles(scenesFolder, "*.scene");
+				foreach (var file in files)
+				{
+					var node = scenesNode.AddSubNode(new Label
+					{
+						Text = Path.GetFileName(file),
+					});
+
+					node.Tag = file;
+				}
+			}
+
 			// Effects
 			var effectsNode = projectNode.AddSubNode(new Label
 			{
 				Text = "Effects"
 			});
-
 			effectsNode.IsExpanded = true;
 
-			var folder = Path.GetDirectoryName(project.AbsolutePath);
 			var effectsFolder = Path.Combine(folder, Constants.EffectsFolder);
 			if (Directory.Exists(effectsFolder))
 			{
@@ -537,22 +650,9 @@ namespace NursiaEditor.UI
 					var node = effectsNode.AddSubNode(new Label
 					{
 						Text = Path.GetFileName(file),
-						Tag = file
 					});
-				}
-			}
 
-			var scenes = Path.Combine(folder, Constants.ScenesFolder);
-			if (Directory.Exists(scenes))
-			{
-				var files = Directory.GetFiles(effectsFolder, "*.scene");
-				foreach (var file in files)
-				{
-					var node = effectsNode.AddSubNode(new Label
-					{
-						Text = Path.GetFileName(file),
-						Tag = file
-					});
+					node.Tag = file;
 				}
 			}
 		}
@@ -603,25 +703,7 @@ namespace NursiaEditor.UI
 			}
 		}
 
-		public void LoadScene(string path)
-		{
-			try
-			{
-				var folder = Path.GetDirectoryName(path);
-				AssetManager = AssetManager.CreateFileAssetManager(folder);
-
-				Scene = AssetManager.LoadScene(path);
-				FilePath = path;
-				IsDirty = false;
-			}
-			catch (Exception ex)
-			{
-				var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
-				dialog.ShowModal(Desktop);
-			}
-		}
-
-		private void ProcessSave(string filePath)
+		private void ProcessSave(Scene scene, string filePath)
 		{
 			if (string.IsNullOrEmpty(filePath))
 			{
@@ -630,9 +712,7 @@ namespace NursiaEditor.UI
 
 			try
 			{
-				Scene.SaveToFile(filePath);
-				FilePath = filePath;
-				IsDirty = false;
+				scene.SaveToFile(filePath);
 			}
 			catch (Exception ex)
 			{
@@ -641,7 +721,7 @@ namespace NursiaEditor.UI
 			}
 		}
 
-		private void Save(bool setFileName)
+/*		private void Save(bool setFileName)
 		{
 			if (string.IsNullOrEmpty(FilePath) || setFileName)
 			{
@@ -669,7 +749,7 @@ namespace NursiaEditor.UI
 			{
 				ProcessSave(FilePath);
 			}
-		}
+		}*/
 
 		private void UpdateTreeNodeId(TreeViewNode node)
 		{
@@ -699,9 +779,9 @@ namespace NursiaEditor.UI
 		{
 			_treeFileExplorer.RemoveAllSubNodes();
 
-			RecursiveAddToExplorer(_treeFileExplorer, Scene);
+//			RecursiveAddToExplorer(_treeFileExplorer, Scene);
 
-			_treeFileExplorer.SelectedRow = _treeFileExplorer.FindNode(n => n.Tag == selectedNode);
+			_treeFileExplorer.SelectedNode = _treeFileExplorer.FindNode(n => n.Tag == selectedNode);
 		}
 
 		public void RefreshLibrary()

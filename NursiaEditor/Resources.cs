@@ -8,7 +8,7 @@ namespace NursiaEditor
 {
 	internal static class Resources
 	{
-		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(typeof(Resources).Assembly, "Resources");
+		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(typeof(Resources).Assembly, "Assets");
 		private static Texture2D _iconDirectionalLight;
 		private static SceneNode _modelAxises;
 		private static FontSystem _fontSystem;

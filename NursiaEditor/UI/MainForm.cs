@@ -215,12 +215,17 @@ namespace NursiaEditor.UI
 				}
 			};
 
+			_tabControlScenes.SelectedIndexChanged += (s, a) => RefreshExplorer(null);
+
+			_tabControlScenes.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
+			_tabControlEffects.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
+
 			UpdateStackPanelEditor();
 		}
 
 		private bool SetTabByName(TabControl tabControl, string name)
 		{
-			for(var i = 0; i < tabControl.Items.Count; ++i)
+			for (var i = 0; i < tabControl.Items.Count; ++i)
 			{
 				var tabItem = tabControl.Items[i];
 				if (tabItem.Text == name)
@@ -290,9 +295,10 @@ namespace NursiaEditor.UI
 					var tabItem = new TabItem
 					{
 						Text = tabName,
-						Content = sceneWidget,
+						Content = sceneWidget
 					};
 					_tabControlScenes.Items.Add(tabItem);
+					_tabControlScenes.SelectedIndex = _tabControlScenes.Items.Count - 1;
 				}
 				else if (file.EndsWith(".fx"))
 				{
@@ -321,13 +327,11 @@ namespace NursiaEditor.UI
 					var tabItem = new TabItem
 					{
 						Text = tabName,
-						Content = scrollViewer
+						Content = scrollViewer,
 					};
 					_tabControlEffects.Items.Add(tabItem);
 					_tabControlEffects.SelectedIndex = _tabControlEffects.Items.Count - 1;
 				}
-
-				UpdateStackPanelEditor();
 			}
 			catch (Exception ex)
 			{
@@ -490,43 +494,43 @@ namespace NursiaEditor.UI
 
 		private void OnAddGltfModel(SceneNode sceneNode)
 		{
-/*			var dialog = new FileDialog(FileDialogMode.OpenFile)
-			{
-				Filter = "*.gltf|*.glb"
-			};
+			/*			var dialog = new FileDialog(FileDialogMode.OpenFile)
+						{
+							Filter = "*.gltf|*.glb"
+						};
 
-			if (!string.IsNullOrEmpty(_filePath))
-			{
-				dialog.Folder = Path.GetDirectoryName(_filePath);
-			}
+						if (!string.IsNullOrEmpty(_filePath))
+						{
+							dialog.Folder = Path.GetDirectoryName(_filePath);
+						}
 
-			dialog.Closed += (s, a) =>
-			{
-				if (!dialog.Result)
-				{
-					// "Cancel" or Escape
-					return;
-				}
+						dialog.Closed += (s, a) =>
+						{
+							if (!dialog.Result)
+							{
+								// "Cancel" or Escape
+								return;
+							}
 
-				// "Ok" or Enter
-				try
-				{
-					var node = new NursiaModel
-					{
-						ModelPath = dialog.FilePath
-					};
-					node.Load(AssetManager);
+							// "Ok" or Enter
+							try
+							{
+								var node = new NursiaModel
+								{
+									ModelPath = dialog.FilePath
+								};
+								node.Load(AssetManager);
 
-					AddNewNode(sceneNode, node);
-				}
-				catch (Exception ex)
-				{
-					var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
-					dialog.ShowModal(Desktop);
-				}
-			};
+								AddNewNode(sceneNode, node);
+							}
+							catch (Exception ex)
+							{
+								var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+								dialog.ShowModal(Desktop);
+							}
+						};
 
-			dialog.ShowModal(Desktop);*/
+						dialog.ShowModal(Desktop);*/
 		}
 
 		private void _treeFileExplorer_TouchUp(object sender, EventArgs e)
@@ -538,7 +542,7 @@ namespace NursiaEditor.UI
 
 			_explorerTouchDown = false;
 
-			var treeNode = _treeFileExplorer.SelectedRow;
+			var treeNode = _treeFileExplorer.SelectedNode;
 			if (treeNode == null || treeNode.Tag == null)
 			{
 				return;
@@ -571,26 +575,26 @@ namespace NursiaEditor.UI
 
 		private void NewScene()
 		{
-/*			var scene = new Scene
-			{
-				Id = "Root"
-			};
+			/*			var scene = new Scene
+						{
+							Id = "Root"
+						};
 
-			scene.Camera.Position = new Vector3(0, 15, 15);
-			scene.Camera.YawAngle = 180;
-			scene.Camera.PitchAngle = 30;
+						scene.Camera.Position = new Vector3(0, 15, 15);
+						scene.Camera.YawAngle = 180;
+						scene.Camera.PitchAngle = 30;
 
-			var light = new DirectLight
-			{
-				Id = "DirectLight",
-				Translation = new Vector3(-5, 5, 5),
-				Direction = new Vector3(1, -1, 1)
-			};
+						var light = new DirectLight
+						{
+							Id = "DirectLight",
+							Translation = new Vector3(-5, 5, 5),
+							Direction = new Vector3(1, -1, 1)
+						};
 
-			scene.Children.Add(light);
+						scene.Children.Add(light);
 
-			Scene = scene;
-			FilePath = string.Empty;*/
+						Scene = scene;
+						FilePath = string.Empty;*/
 		}
 
 		private void UpdateTitle()
@@ -721,35 +725,35 @@ namespace NursiaEditor.UI
 			}
 		}
 
-/*		private void Save(bool setFileName)
-		{
-			if (string.IsNullOrEmpty(FilePath) || setFileName)
-			{
-				var dlg = new FileDialog(FileDialogMode.SaveFile)
+		/*		private void Save(bool setFileName)
 				{
-					Filter = "*.scene"
-				};
-
-				if (!string.IsNullOrEmpty(FilePath))
-				{
-					dlg.FilePath = FilePath;
-				}
-
-				dlg.ShowModal(Desktop);
-
-				dlg.Closed += (s, a) =>
-				{
-					if (dlg.Result)
+					if (string.IsNullOrEmpty(FilePath) || setFileName)
 					{
-						ProcessSave(dlg.FilePath);
+						var dlg = new FileDialog(FileDialogMode.SaveFile)
+						{
+							Filter = "*.scene"
+						};
+
+						if (!string.IsNullOrEmpty(FilePath))
+						{
+							dlg.FilePath = FilePath;
+						}
+
+						dlg.ShowModal(Desktop);
+
+						dlg.Closed += (s, a) =>
+						{
+							if (dlg.Result)
+							{
+								ProcessSave(dlg.FilePath);
+							}
+						};
 					}
-				};
-			}
-			else
-			{
-				ProcessSave(FilePath);
-			}
-		}*/
+					else
+					{
+						ProcessSave(FilePath);
+					}
+				}*/
 
 		private void UpdateTreeNodeId(TreeViewNode node)
 		{
@@ -778,9 +782,15 @@ namespace NursiaEditor.UI
 		private void RefreshExplorer(SceneNode selectedNode)
 		{
 			_treeFileExplorer.RemoveAllSubNodes();
+			if (_tabControlScenes.SelectedIndex == null ||
+				_tabControlScenes.SelectedIndex < 0 ||
+				_tabControlScenes.SelectedIndex >= _tabControlScenes.Items.Count)
+			{
+				return;
+			}
 
-//			RecursiveAddToExplorer(_treeFileExplorer, Scene);
-
+			var sceneWidget = (SceneWidget)_tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Content;
+			RecursiveAddToExplorer(_treeFileExplorer, sceneWidget.Scene);
 			_treeFileExplorer.SelectedNode = _treeFileExplorer.FindNode(n => n.Tag == selectedNode);
 		}
 

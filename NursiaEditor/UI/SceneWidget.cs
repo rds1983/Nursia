@@ -27,6 +27,7 @@ namespace NursiaEditor.UI
 		private Nursia.Modelling.ModelMesh _waterMarker;
 		private ModelInstance _modelMarker;
 		private Vector3? _touchDownStart;
+		private readonly bool[] _keysDown = new bool[256];
 
 		public Scene Scene
 		{
@@ -118,6 +119,7 @@ namespace NursiaEditor.UI
 		public SceneWidget()
 		{
 			ClipToBounds = true;
+			AcceptsKeyboardFocus = true;
 		}
 
 		/*		private Vector3? CalculateMarkerPosition()
@@ -176,17 +178,39 @@ namespace NursiaEditor.UI
 					Scene.Marker.Radius = Instrument.Radius;
 				}*/
 
+		public override void OnKeyDown(Keys k)
+		{
+			base.OnKeyDown(k);
+
+			_keysDown[(int)k] = true;
+		}
+
+		public override void OnKeyUp(Keys k)
+		{
+			base.OnKeyUp(k);
+
+			_keysDown[(int)k] = false;
+		}
+
+		public override void OnLostKeyboardFocus()
+		{
+			base.OnLostKeyboardFocus();
+
+			for(var i = 0; i < _keysDown.Length; i++)
+			{
+				_keysDown[i] = false;
+			}
+		}
+
 		private void UpdateKeyboard()
 		{
-			var keyboardState = Keyboard.GetState();
-
 			// Manage camera input controller
-			_controller.SetControlKeyState(ControlKeys.Left, keyboardState.IsKeyDown(Keys.A));
-			_controller.SetControlKeyState(ControlKeys.Right, keyboardState.IsKeyDown(Keys.D));
-			_controller.SetControlKeyState(ControlKeys.Forward, keyboardState.IsKeyDown(Keys.W));
-			_controller.SetControlKeyState(ControlKeys.Backward, keyboardState.IsKeyDown(Keys.S));
-			_controller.SetControlKeyState(ControlKeys.Up, keyboardState.IsKeyDown(Keys.Up));
-			_controller.SetControlKeyState(ControlKeys.Down, keyboardState.IsKeyDown(Keys.Down));
+			_controller.SetControlKeyState(ControlKeys.Left, _keysDown[(int)Keys.A]);
+			_controller.SetControlKeyState(ControlKeys.Right, _keysDown[(int)Keys.D]);
+			_controller.SetControlKeyState(ControlKeys.Forward, _keysDown[(int)Keys.W]);
+			_controller.SetControlKeyState(ControlKeys.Backward, _keysDown[(int)Keys.S]);
+			_controller.SetControlKeyState(ControlKeys.Up, _keysDown[(int)Keys.Up]);
+			_controller.SetControlKeyState(ControlKeys.Down, _keysDown[(int)Keys.Down]);
 			_controller.Update();
 		}
 

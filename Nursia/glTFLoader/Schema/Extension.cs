@@ -13,6 +13,6 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Extension {
+    internal class Extension {
     }
 }

@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Texture {
+    internal class Texture {
         
         /// <summary>
         /// Backing field for Sampler.

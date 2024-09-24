@@ -1,8 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using glTFLoader.Schema;
+using Microsoft.Xna.Framework;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
-using static glTFLoader.Schema.AnimationSampler;
 
 namespace Nursia.Modelling
 {

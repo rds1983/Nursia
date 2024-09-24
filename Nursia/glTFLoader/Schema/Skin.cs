@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Skin {
+    internal class Skin {
         
         /// <summary>
         /// Backing field for InverseBindMatrices.

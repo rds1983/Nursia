@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace glTFLoader
 {
-    public static class Interface
+    internal static class Interface
     {
         const uint GLTFHEADER = 0x46546C67;
         const uint GLTFVERSION2 = 2;

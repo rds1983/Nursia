@@ -13,6 +13,7 @@ using static Nursia.Utilities.CameraInputController;
 using Nursia.Rendering.Lights;
 using Nursia.Standard;
 using NursiaEditor.Utility;
+using Microsoft.Build.Construction;
 
 namespace NursiaEditor.UI
 {
@@ -40,6 +41,8 @@ namespace NursiaEditor.UI
 				_controller = _scene == null ? null : new CameraInputController(_scene.Camera);
 			}
 		}
+
+		public ProjectInSolution Project { get; set; }
 
 		public ForwardRenderer Renderer { get => _renderer; }
 		public Instrument Instrument { get; } = new Instrument();
@@ -244,7 +247,7 @@ namespace NursiaEditor.UI
 				_renderer.Render(GridMesh, Scene.Camera);
 
 				// Selected object
-				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.Instance.MainForm.SelectedObject as SceneNode);
+				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.MainForm.SelectedObject as SceneNode);
 				if (selectionNode != null)
 				{
 					_renderer.Render(selectionNode, Scene.Camera);

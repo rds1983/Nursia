@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Material {
+    internal class Material {
         
         /// <summary>
         /// Backing field for Name.

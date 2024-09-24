@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class CameraOrthographic {
+    internal class CameraOrthographic {
         
         /// <summary>
         /// Backing field for Xmag.

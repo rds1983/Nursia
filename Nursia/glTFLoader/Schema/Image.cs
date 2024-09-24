@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Image {
+    internal class Image {
         
         /// <summary>
         /// Backing field for Uri.

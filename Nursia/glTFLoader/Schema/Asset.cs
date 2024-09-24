@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Asset {
+    internal class Asset {
         
         /// <summary>
         /// Backing field for Copyright.

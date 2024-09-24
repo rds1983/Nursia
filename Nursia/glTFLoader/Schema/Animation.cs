@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Animation {
+    internal class Animation {
         
         /// <summary>
         /// Backing field for Channels.

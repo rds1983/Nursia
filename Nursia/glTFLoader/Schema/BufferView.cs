@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class BufferView {
+    internal class BufferView {
         
         /// <summary>
         /// Backing field for Buffer.

@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Camera {
+    internal class Camera {
         
         /// <summary>
         /// Backing field for Orthographic.

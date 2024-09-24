@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class AnimationChannel {
+    internal class AnimationChannel {
         
         /// <summary>
         /// Backing field for Sampler.

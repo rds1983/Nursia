@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class GltfChildOfRootProperty {
+    internal class GltfChildOfRootProperty {
         
         /// <summary>
         /// Backing field for Name.

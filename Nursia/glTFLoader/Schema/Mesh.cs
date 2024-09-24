@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Mesh {
+    internal class Mesh {
         
         /// <summary>
         /// Backing field for Primitives.

@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Node {
+    internal class Node {
         
         /// <summary>
         /// Backing field for Camera.

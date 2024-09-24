@@ -11,9 +11,19 @@
 namespace glTFLoader.Schema {
     using System.Linq;
     using System.Runtime.Serialization;
-    
-    
-    public class AnimationSampler {
+
+	public enum InterpolationEnum
+	{
+
+		LINEAR,
+
+		STEP,
+
+		CUBICSPLINE,
+	}
+
+
+	internal class AnimationSampler {
         
         /// <summary>
         /// Backing field for Input.
@@ -127,15 +137,6 @@ namespace glTFLoader.Schema {
         public bool ShouldSerializeExtras() {
             return ((m_extras == null) 
                         == false);
-        }
-        
-        public enum InterpolationEnum {
-            
-            LINEAR,
-            
-            STEP,
-            
-            CUBICSPLINE,
         }
     }
 }

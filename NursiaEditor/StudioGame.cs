@@ -17,11 +17,7 @@ namespace NursiaEditor
 		private readonly State _state;
 
 		public static StudioGame Instance { get; private set; }
-
-		public MainForm MainForm
-		{
-			get => _mainForm;
-		}
+		public static MainForm MainForm => Instance._mainForm;
 
 		public StudioGame()
 		{
@@ -87,8 +83,8 @@ namespace NursiaEditor
 				}
 			}
 
-//			DebugSettings.DrawBoundingBoxes = true;
-//			DebugSettings.DrawLightViewFrustrum = true;
+			//			DebugSettings.DrawBoundingBoxes = true;
+			//			DebugSettings.DrawLightViewFrustrum = true;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -104,11 +100,11 @@ namespace NursiaEditor
 
 			GraphicsDevice.Clear(Color.Black);
 
-/*			var cameraString = (Scene != null && Scene.Camera != null) ? Scene.Camera.ToString() : string.Empty;
+			/*			var cameraString = (Scene != null && Scene.Camera != null) ? Scene.Camera.ToString() : string.Empty;
 
-			_mainForm._labelCamera.Text = "Camera: " + cameraString;
-			_mainForm._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-			_mainForm._labelMeshes.Text = "Meshes: " + Renderer.Statistics.MeshesDrawn;*/
+						_mainForm._labelCamera.Text = "Camera: " + cameraString;
+						_mainForm._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
+						_mainForm._labelMeshes.Text = "Meshes: " + Renderer.Statistics.MeshesDrawn;*/
 
 			_desktop.Render();
 

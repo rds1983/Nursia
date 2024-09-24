@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class Sampler {
+    internal class Sampler {
         
         /// <summary>
         /// Backing field for MagFilter.

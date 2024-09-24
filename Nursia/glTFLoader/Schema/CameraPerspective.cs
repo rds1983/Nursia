@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class CameraPerspective {
+    internal class CameraPerspective {
         
         /// <summary>
         /// Backing field for AspectRatio.

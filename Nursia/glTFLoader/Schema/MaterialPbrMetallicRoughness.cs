@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class MaterialPbrMetallicRoughness {
+    internal class MaterialPbrMetallicRoughness {
         
         /// <summary>
         /// Backing field for BaseColorFactor.

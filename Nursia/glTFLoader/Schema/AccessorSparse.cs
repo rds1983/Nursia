@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class AccessorSparse {
+    internal class AccessorSparse {
         
         /// <summary>
         /// Backing field for Count.

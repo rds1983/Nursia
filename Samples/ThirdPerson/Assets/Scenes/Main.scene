@@ -1,0 +1,50 @@
+{
+  "Camera": {
+    "Position": "-0.9304527, 4.955241, 3.999289",
+    "YawAngle": 203.00014,
+    "PitchAngle": 40.899395,
+    "ViewAngle": 90.0,
+    "NearPlaneDistance": 0.1,
+    "FarPlaneDistance": 1000.0
+  },
+  "Scale": "1, 1, 1",
+  "Children": [
+    {
+      "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
+      "Direction": "0, -1, -1",
+      "Color": "255, 255, 255, 255",
+      "Translation": "-5, 50, 6",
+      "Scale": "1, 1, 1",
+      "Children": [],
+      "Id": "DirectLight"
+    },
+    {
+      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+      "PrimitiveMesh": {
+        "$type": "Nursia.Primitives.Plane, Nursia",
+        "Size": "1, 1",
+        "Tessellation": "1, 1",
+        "NormalDirection": 1,
+        "UScale": 1.0,
+        "VScale": 1.0
+      },
+      "Material": {
+        "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "SpecularPower": 250.0,
+        "DiffuseColor": "37, 217, 94, 255"
+      },
+      "CastsShadow": false,
+      "Scale": "200, 1, 200",
+      "Children": [],
+      "Id": "plane"
+    },
+    {
+      "$type": "Nursia.Modelling.NursiaModel, Nursia",
+      "ModelPath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Models\\mixamo_base.glb",
+      "Scale": "2, 2, 2",
+      "Children": [],
+      "Id": "player"
+    }
+  ],
+  "Id": "Root"
+}

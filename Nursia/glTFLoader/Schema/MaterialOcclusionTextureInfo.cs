@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class MaterialOcclusionTextureInfo {
+    internal class MaterialOcclusionTextureInfo {
         
         /// <summary>
         /// Backing field for Index.

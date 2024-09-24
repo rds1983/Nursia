@@ -13,7 +13,7 @@ namespace glTFLoader.Schema {
     using System.Runtime.Serialization;
     
     
-    public class AccessorSparseIndices {
+    internal class AccessorSparseIndices {
         
         /// <summary>
         /// Backing field for BufferView.

@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "-0.9304527, 4.955241, 3.999289",
-    "YawAngle": 203.00014,
-    "PitchAngle": 40.899395,
+    "Position": "2.85051, 10.467911, 5.50117",
+    "YawAngle": 216.19994,
+    "PitchAngle": 36.699287,
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -13,7 +13,7 @@
       "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
       "Direction": "0, -1, -1",
       "Color": "255, 255, 255, 255",
-      "Translation": "-5, 50, 6",
+      "Translation": "-5, 25, 6",
       "Scale": "1, 1, 1",
       "Children": [],
       "Id": "DirectLight"
@@ -25,13 +25,14 @@
         "Size": "1, 1",
         "Tessellation": "1, 1",
         "NormalDirection": 1,
-        "UScale": 1.0,
-        "VScale": 1.0
+        "UScale": 50.0,
+        "VScale": 50.0
       },
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "TexturePath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Textures\\checker.dds",
         "SpecularPower": 250.0,
-        "DiffuseColor": "37, 217, 94, 255"
+        "DiffuseColor": "255, 255, 255, 255"
       },
       "CastsShadow": false,
       "Scale": "200, 1, 200",

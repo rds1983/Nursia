@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Nursia.Rendering;
 using System.ComponentModel;
@@ -30,6 +31,13 @@ namespace Nursia.Standard
 			}
 
 			context.BatchJob(this, Material, GlobalTransform, RenderMesh);
+		}
+
+		public override void Load(AssetManager assetManager)
+		{
+			base.Load(assetManager);
+
+			Material?.Load(assetManager);
 		}
 	}
 }

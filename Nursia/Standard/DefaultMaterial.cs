@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
@@ -73,7 +74,6 @@ namespace Nursia.Standard
 		private bool _receivesShadows = true;
 		private Texture2D _texture;
 
-		[Browsable(false)]
 		[JsonIgnore]
 		public Texture2D Texture
 		{
@@ -90,6 +90,10 @@ namespace Nursia.Standard
 				InvalidateDefault();
 			}
 		}
+
+		[Browsable(false)]
+		public string TexturePath { get; set; }
+
 
 		[DefaultValue(true)]
 		public bool ReceivesLight
@@ -194,6 +198,14 @@ namespace Nursia.Standard
 		private void InvalidateShadowMap()
 		{
 			_shadowMapBinding = null;
+		}
+
+		public void Load(AssetManager assetManager)
+		{
+			if (!string.IsNullOrEmpty(TexturePath))
+			{
+				Texture = assetManager.LoadTexture2D(Nrs.GraphicsDevice, TexturePath);
+			}
 		}
 	}
 }

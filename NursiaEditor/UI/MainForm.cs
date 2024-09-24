@@ -6,6 +6,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
+using Myra.Graphics2D.UI.Properties;
 using Nursia;
 using Nursia.Modelling;
 using Nursia.Primitives;
@@ -211,12 +212,101 @@ namespace NursiaEditor.UI
 				}
 			};
 
+			_propertyGrid.CustomWidgetProvider = CreateCustomEditor;
+
 			_tabControlScenes.SelectedIndexChanged += (s, a) => RefreshExplorer(null);
 
 			_tabControlScenes.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 			_tabControlEffects.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 
 			UpdateStackPanelEditor();
+		}
+
+		private Widget CreateCustomEditor(Record record, object obj)
+		{
+			if (obj is DefaultMaterial && record.Name == "Texture")
+			{
+				var material = (DefaultMaterial)obj;
+				var propertyType = record.Type;
+
+				var result = new HorizontalStackPanel
+				{
+					Spacing = 8
+				};
+
+				var path = new TextBox
+				{
+					Readonly = true,
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					Text = material.TexturePath
+				};
+
+				StackPanel.SetProportionType(path, ProportionType.Fill);
+				result.Widgets.Add(path);
+
+				var button = new Button
+				{
+					Tag = obj,
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					Content = new Label
+					{
+						Text = "Change...",
+						HorizontalAlignment = HorizontalAlignment.Center,
+					}
+				};
+				Grid.SetColumn(button, 1);
+
+				button.Click += (sender, args) =>
+				{
+					try
+					{
+						var project = CurrentProject;
+						var projectFolder = Path.GetDirectoryName(project.AbsolutePath);
+						var texturesFolder = Path.Combine(projectFolder, Constants.TexturesFolder);
+
+						var dialog = new ChooseAssetDialog(texturesFolder, new[] { "dds", "png", "jpg", "gif", "bmp", "tga" });
+
+						dialog.Closed += (s, a) =>
+						{
+							if (!dialog.Result)
+							{
+								// "Cancel" or Escape
+								return;
+							}
+
+							// "Ok" or Enter
+							try
+							{
+								var path = dialog.FilePath;
+								var assetManager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(path));
+
+								var texture = assetManager.LoadTexture2D(Nrs.GraphicsDevice, path);
+
+								material.Texture = texture;
+								material.TexturePath = path;
+							}
+							catch (Exception ex)
+							{
+								var dialog = Dialog.CreateMessageBox("Error", ex.ToString());
+								dialog.ShowModal(Desktop);
+							}
+						};
+
+						dialog.ShowModal(Desktop);
+					}
+					catch (Exception ex)
+					{
+						var dialog = Dialog.CreateMessageBox("Error", ex.Message);
+						dialog.ShowModal(Desktop);
+					}
+				};
+
+				result.Widgets.Add(button);
+
+				return result;
+			}
+
+			return null;
 		}
 
 		private bool SetTabByName(TabControl tabControl, string filePath)
@@ -505,7 +595,11 @@ namespace NursiaEditor.UI
 		{
 			try
 			{
-				var dialog = new AddNewModelDialog();
+				var project = CurrentProject;
+				var projectFolder = Path.GetDirectoryName(project.AbsolutePath);
+				var modelsFolder = Path.Combine(projectFolder, Constants.ModelsFolder);
+
+				var dialog = new ChooseAssetDialog(modelsFolder, new[] {"glb", "gltf"} );
 
 				dialog.Closed += (s, a) =>
 				{

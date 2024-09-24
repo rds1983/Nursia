@@ -66,7 +66,7 @@ namespace SimpleScene
 			_scene = assetManager.LoadScene("Scenes/Main.scene");
 
 			_model = _scene.QueryByType<NursiaModel>()[0];
-			_model.Model.CurrentAnimation = _model.Model.Animations.First().Value;
+			_model.Model.CurrentAnimation = _model.Model.Animations["running"];
 
 			_light = _scene.QueryByType<DirectLight>()[0];
 

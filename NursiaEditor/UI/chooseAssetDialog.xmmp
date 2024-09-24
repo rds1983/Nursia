@@ -1,5 +1,5 @@
 <Project>
-  <Project.ExportOptions Namespace="NursiaEditor.UI" Class="AddNewModelDialog" OutputPath="D:\Projects\Nursia\NursiaEditor\UI" />
+  <Project.ExportOptions Namespace="NursiaEditor.UI" Class="ChooseAssetDialog" OutputPath="D:\Projects\Nursia\NursiaEditor\UI" />
   <Dialog Title="Add New Model" Left="373" Top="270" Width="500">
     <Grid ColumnSpacing="8" RowSpacing="8">
       <Grid.DefaultRowProportion Type="Auto" />

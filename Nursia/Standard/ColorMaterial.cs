@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
@@ -36,5 +37,9 @@ namespace Nursia.Standard
 		[Browsable(false)]
 		[JsonIgnore]
 		public EffectBinding ShadowMapEffect => null;
+
+		public void Load(AssetManager assetManager)
+		{
+		}
 	}
 }

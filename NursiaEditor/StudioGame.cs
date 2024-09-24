@@ -25,6 +25,12 @@ namespace NursiaEditor
 
 			// Restore state
 			_state = State.Load();
+			if (_state != null)
+			{
+				NursiaEditorOptions.ShowGrid = _state.ShowGrid;
+				DebugSettings.DrawBoundingBoxes = _state.DrawBoundingBoxes;
+				DebugSettings.DrawLightViewFrustrum = _state.DrawLightViewFrustum;
+			}
 
 			_graphics = new GraphicsDeviceManager(this)
 			{
@@ -121,7 +127,10 @@ namespace NursiaEditor
 					GraphicsDevice.PresentationParameters.BackBufferHeight),
 				TopSplitterPosition = _mainForm._topSplitPane.GetSplitterPosition(0),
 				LeftSplitterPosition = _mainForm._leftSplitPane.GetSplitterPosition(0),
-				EditedFile = _mainForm.FilePath
+				EditedFile = _mainForm.FilePath,
+				ShowGrid = NursiaEditorOptions.ShowGrid,
+				DrawBoundingBoxes = DebugSettings.DrawBoundingBoxes,
+				DrawLightViewFrustum = DebugSettings.DrawLightViewFrustrum
 			};
 
 			state.Save();

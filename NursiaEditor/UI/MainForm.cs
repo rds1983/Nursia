@@ -219,6 +219,14 @@ namespace NursiaEditor.UI
 			_tabControlScenes.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 			_tabControlEffects.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 
+			_buttonGrid.IsToggled = NursiaEditorOptions.ShowGrid;
+			_buttonBoundingBoxes.IsToggled = DebugSettings.DrawBoundingBoxes;
+			_buttonLightViewFrustum.IsToggled = DebugSettings.DrawLightViewFrustrum;
+
+			_buttonGrid.IsToggledChanged += (s, a) => UpdateDebugOptions();
+			_buttonBoundingBoxes.IsToggledChanged += (s, a) => UpdateDebugOptions();
+			_buttonLightViewFrustum.IsToggledChanged += (s, a) => UpdateDebugOptions();
+
 			UpdateStackPanelEditor();
 		}
 
@@ -327,13 +335,13 @@ namespace NursiaEditor.UI
 
 		private void UpdateStackPanelEditor()
 		{
-			if (_tabControlScenes.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_tabControlScenes))
+			if (_tabControlScenes.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_panelScenes))
 			{
-				_splitPaneEditor.Widgets.Remove(_tabControlScenes);
+				_splitPaneEditor.Widgets.Remove(_panelScenes);
 			}
-			else if (_tabControlScenes.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_tabControlScenes))
+			else if (_tabControlScenes.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_panelScenes))
 			{
-				_splitPaneEditor.Widgets.Insert(0, _tabControlScenes);
+				_splitPaneEditor.Widgets.Insert(0, _panelScenes);
 			}
 
 			if (_tabControlEffects.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_tabControlEffects))
@@ -924,6 +932,13 @@ namespace NursiaEditor.UI
 			var tabInfo = (TabInfo)_tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Tag;
 			sceneWidget.Scene.SaveToFile(tabInfo.FilePath);
 			tabInfo.Dirty = false;
+		}
+
+		private void UpdateDebugOptions()
+		{
+			NursiaEditorOptions.ShowGrid = _buttonGrid.IsToggled;
+			DebugSettings.DrawBoundingBoxes = _buttonBoundingBoxes.IsToggled;
+			DebugSettings.DrawLightViewFrustrum = _buttonLightViewFrustum.IsToggled;
 		}
 	}
 }

@@ -244,7 +244,11 @@ namespace NursiaEditor.UI
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
 				_renderer.Render(Scene, Scene.Camera);
-				_renderer.Render(GridMesh, Scene.Camera);
+
+				if (NursiaEditorOptions.ShowGrid)
+				{
+					_renderer.Render(GridMesh, Scene.Camera);
+				}
 
 				// Selected object
 				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.MainForm.SelectedObject as SceneNode);

@@ -1,8 +1,8 @@
 {
   "Camera": {
-    "Position": "2.85051, 10.467911, 5.50117",
-    "YawAngle": 216.19994,
-    "PitchAngle": 36.699287,
+    "Position": "10.204636, 22.07394, 30.29958",
+    "YawAngle": 204.60034,
+    "PitchAngle": 30.599295,
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
@@ -45,6 +45,26 @@
       "Scale": "2, 2, 2",
       "Children": [],
       "Id": "player"
+    },
+    {
+      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
+      "PrimitiveMesh": {
+        "$type": "Nursia.Primitives.Capsule, Nursia",
+        "Length": 1.0,
+        "Radius": 0.5,
+        "Tessellation": 8,
+        "UScale": 1.0,
+        "VScale": 1.0
+      },
+      "Material": {
+        "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "SpecularPower": 250.0,
+        "DiffuseColor": "255, 255, 255, 255"
+      },
+      "Translation": "8, 2, 10",
+      "Scale": "2, 2, 2",
+      "Children": [],
+      "Id": "c"
     }
   ],
   "Id": "Root"

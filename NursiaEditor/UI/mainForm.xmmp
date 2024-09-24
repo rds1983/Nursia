@@ -21,7 +21,20 @@
         </VerticalSplitPane>
         <Panel>
           <VerticalSplitPane Id="_splitPaneEditor">
-            <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" />
+            <VerticalStackPanel Id="_panelScenes" >
+              <HorizontalStackPanel Spacing="8">
+                <ToggleButton Id="_buttonGrid">
+                  <Label Text="Grid" />
+                </ToggleButton>
+                <ToggleButton Id="_buttonBoundingBoxes">
+                  <Label Text="Bounding Boxes" />
+                </ToggleButton>
+                <ToggleButton Id="_buttonLightViewFrustum">
+                  <Label Text="Light View Frustum" />
+                </ToggleButton>
+              </HorizontalStackPanel>
+              <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" StackPanel.ProportionType="Fill" />
+            </VerticalStackPanel>
             <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlEffects" />
           </VerticalSplitPane>
           <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">

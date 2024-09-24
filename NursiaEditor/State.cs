@@ -24,6 +24,9 @@ namespace NursiaEditor
 		public float TopSplitterPosition { get; set; }
 		public float LeftSplitterPosition { get; set; }
 		public string EditedFile { get; set; }
+		public bool ShowGrid { get; set; }
+		public bool DrawBoundingBoxes { get; set; }
+		public bool DrawLightViewFrustum { get; set; }
 
 		public State()
 		{

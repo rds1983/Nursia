@@ -2,6 +2,7 @@
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -19,15 +20,15 @@ namespace Nursia
 		private const string EffectsResourcePath = "Effects.MonoGameOGL.bin";
 #endif
 
-		private static AssetManager _assetManagerEffects = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);
+		private static AssetManager _assetManagerEffectBindings = AssetManager.CreateResourceAssetManager(Assembly, EffectsResourcePath);
 		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(Assembly, "Resources");
 
-		private static Func<Effect> _colorEffect, _skyboxEffect;
-		private static Func<Effect>[] _defaultEffects = new Func<Effect>[32];
-		private static Func<Effect>[] _defaultShadowMapEffects = new Func<Effect>[8];
-		private static Func<Effect>[] _terrainEffects = new Func<Effect>[64];
-		private static Func<Effect>[] _waterEffects = new Func<Effect>[4];
-		private static Func<Effect>[] _billboardEffects = new Func<Effect>[2];
+		private static Func<EffectBinding> _colorEffectBinding, _skyboxEffectBinding;
+		private static Func<EffectBinding>[] _defaultEffectBindings = new Func<EffectBinding>[32];
+		private static Func<EffectBinding>[] _defaultShadowMapEffectBindings = new Func<EffectBinding>[8];
+		private static Func<EffectBinding>[] _terrainEffectBindings = new Func<EffectBinding>[64];
+		private static Func<EffectBinding>[] _waterEffectBindings = new Func<EffectBinding>[4];
+		private static Func<EffectBinding>[] _billboardEffectBindings = new Func<EffectBinding>[2];
 		private static Texture2D _white, _waterNormals1, _waterNormals2;
 		private static FontSystem _fontSystem;
 		private static SpriteBatch _spriteBatch;
@@ -67,31 +68,31 @@ namespace Nursia
 			}
 		}
 
-		public static Func<Effect> ColorEffect
+		public static Func<EffectBinding> ColorEffectBinding
 		{
 			get
 			{
-				if (_colorEffect != null)
+				if (_colorEffectBinding != null)
 				{
-					return _colorEffect;
+					return _colorEffectBinding;
 				}
 
-				_colorEffect = GetEffect("ColorEffect");
-				return _colorEffect;
+				_colorEffectBinding = GetEffectBinding("ColorEffect");
+				return _colorEffectBinding;
 			}
 		}
 
-		public static Func<Effect> SkyboxEffect
+		public static Func<EffectBinding> SkyboxEffectBinding
 		{
 			get
 			{
-				if (_skyboxEffect != null)
+				if (_skyboxEffectBinding != null)
 				{
-					return _skyboxEffect;
+					return _skyboxEffectBinding;
 				}
 
-				_skyboxEffect = GetEffect("SkyboxEffect");
-				return _skyboxEffect;
+				_skyboxEffectBinding = GetEffectBinding("SkyboxEffect");
+				return _skyboxEffectBinding;
 			}
 		}
 
@@ -137,7 +138,7 @@ namespace Nursia
 			}
 		}
 
-		public static Func<Effect> GetDefaultEffect(bool texture, bool skinning, bool clipPlane, bool lightning, bool shadows)
+		public static Func<EffectBinding> GetDefaultEffectBinding(bool texture, bool skinning, bool clipPlane, bool lightning, bool shadows)
 		{
 			var key = 0;
 
@@ -166,9 +167,9 @@ namespace Nursia
 				key |= 16;
 			}
 
-			if (_defaultEffects[key] != null)
+			if (_defaultEffectBindings[key] != null)
 			{
-				return _defaultEffects[key];
+				return _defaultEffectBindings[key];
 			}
 
 			var defines = new Dictionary<string, string>();
@@ -197,13 +198,13 @@ namespace Nursia
 				defines["SHADOWS"] = "1";
 			}
 
-			var result = GetEffect("DefaultEffect", defines);
-			_defaultEffects[key] = result;
+			var result = GetEffectBinding("DefaultEffect", defines);
+			_defaultEffectBindings[key] = result;
 
 			return result;
 		}
 
-		public static Func<Effect> GetDefaultShadowMapEffect(bool skinning, bool clipPlane)
+		public static Func<EffectBinding> GetShadowMapEffectBinding(bool skinning, bool clipPlane)
 		{
 			var key = 0;
 
@@ -217,9 +218,9 @@ namespace Nursia
 				key |= 2;
 			}
 
-			if (_defaultShadowMapEffects[key] != null)
+			if (_defaultShadowMapEffectBindings[key] != null)
 			{
-				return _defaultShadowMapEffects[key];
+				return _defaultShadowMapEffectBindings[key];
 			}
 
 			var defines = new Dictionary<string, string>();
@@ -233,13 +234,13 @@ namespace Nursia
 				defines["CLIP_PLANE"] = "1";
 			}
 
-			var result = GetEffect("DefaultEffect_ShadowMap", defines);
-			_defaultShadowMapEffects[key] = result;
+			var result = GetEffectBinding("ShadowMap", defines);
+			_defaultShadowMapEffectBindings[key] = result;
 
 			return result;
 		}
 
-		public static Func<Effect> GetTerrainEffect(int texturesCount, bool clipPlane, bool marker, bool lightning)
+		public static Func<EffectBinding> GetTerrainEffectBinding(int texturesCount, bool clipPlane, bool marker, bool lightning)
 		{
 			if (texturesCount < 0 || texturesCount > 4)
 			{
@@ -265,9 +266,9 @@ namespace Nursia
 			}
 
 
-			if (_terrainEffects[key] != null)
+			if (_terrainEffectBindings[key] != null)
 			{
-				return _terrainEffects[key];
+				return _terrainEffectBindings[key];
 			}
 
 			var defines = new Dictionary<string, string>();
@@ -291,13 +292,13 @@ namespace Nursia
 				defines["TEXTURES"] = texturesCount.ToString();
 			}
 
-			var result = GetEffect("TerrainEffect", defines);
-			_terrainEffects[key] = result;
+			var result = GetEffectBinding("TerrainEffect", defines);
+			_terrainEffectBindings[key] = result;
 
 			return result;
 		}
 
-		public static Func<Effect> GetWaterEffect(bool depthBuffer, bool cubeMapReflection)
+		public static Func<EffectBinding> GetWaterEffectBinding(bool depthBuffer, bool cubeMapReflection)
 		{
 			var key = 0;
 
@@ -311,9 +312,9 @@ namespace Nursia
 				key |= 2;
 			}
 
-			if (_waterEffects[key] != null)
+			if (_waterEffectBindings[key] != null)
 			{
-				return _waterEffects[key];
+				return _waterEffectBindings[key];
 			}
 
 			var defines = new Dictionary<string, string>();
@@ -331,13 +332,13 @@ namespace Nursia
 				defines["PLANAR_REFLECTION"] = "1";
 			}
 
-			var result = GetEffect("WaterEffect", defines);
-			_waterEffects[key] = result;
+			var result = GetEffectBinding("WaterEffect", defines);
+			_waterEffectBindings[key] = result;
 
 			return result;
 		}
 
-		public static Func<Effect> GetBillboardEffect(bool texture)
+		public static Func<EffectBinding> GetBillboardEffectBinding(bool texture)
 		{
 			var key = 0;
 
@@ -346,9 +347,9 @@ namespace Nursia
 				key |= 1;
 			}
 
-			if (_billboardEffects[key] != null)
+			if (_billboardEffectBindings[key] != null)
 			{
-				return _billboardEffects[key];
+				return _billboardEffectBindings[key];
 			}
 
 			var defines = new Dictionary<string, string>();
@@ -357,29 +358,17 @@ namespace Nursia
 				defines["TEXTURE"] = "1";
 			}
 
-			var result = GetEffect("BillboardEffect", defines);
-			_billboardEffects[key] = result;
+			var result = GetEffectBinding("BillboardEffect", defines);
+			_billboardEffectBindings[key] = result;
 
 			return result;
 		}
 
-		private static Func<Effect> GetEffect(string name, Dictionary<string, string> defines = null)
-		{
-			if (Nrs.ExternalEffectsSource == null)
-			{
-				name = Path.ChangeExtension(name, "efb");
-				var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, name, defines);
-				return () => result;
-			}
-
-			return Nrs.ExternalEffectsSource.Get(Nrs.GraphicsDevice, name, defines);
-		}
-
-		public static Effect GetEffect2(string name, Dictionary<string, string> defines = null)
+		private static Func<EffectBinding> GetEffectBinding(string name, Dictionary<string, string> defines = null)
 		{
 			name = Path.ChangeExtension(name, "efb");
-			var result = _assetManagerEffects.LoadEffect(Nrs.GraphicsDevice, name, defines);
-			return result;
+			var result = _assetManagerEffectBindings.LoadEffectBinding(name, defines);
+			return () => result;
 		}
 	}
 }

@@ -1,12 +1,12 @@
-﻿using AssetManagementBase;
-
-namespace Nursia.Rendering
+﻿namespace Nursia.Rendering
 {
 	public interface IMaterial
 	{
-		EffectBinding DefaultEffect { get; }
-		EffectBinding ShadowMapEffect { get; }
+		EffectBinding EffectBinding { get; }
+		NodeBlendMode BlendMode { get; }
+		bool CastsShadows { get; }
+		bool ReceivesShadows { get; }
 
-		void Load(AssetManager assetManager);
+		void SetParameters(Mesh mesh);
 	}
 }

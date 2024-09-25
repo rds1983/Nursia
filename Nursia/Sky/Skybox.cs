@@ -10,28 +10,6 @@ namespace Nursia.Sky
 {
 	public class Skybox : SceneNode, IMaterial
 	{
-		private class SkyboxEffectBinding : EffectBinding
-		{
-			private EffectParameter TextureParameter { get; set; }
-			private EffectParameter TransformParameter { get; set; }
-
-			public SkyboxEffectBinding() : base(Resources.SkyboxEffect())
-			{
-				TextureParameter = Effect.Parameters["_texture"];
-				TransformParameter = Effect.Parameters["_transform"];
-			}
-
-			protected internal override void SetMaterialParams(IMaterial material)
-			{
-				base.SetMaterialParams(material);
-
-				var skybox = (Skybox)material;
-
-				TextureParameter.SetValue(skybox.Texture);
-				TransformParameter.SetValue(skybox.Transform);
-			}
-		}
-
 		private readonly Mesh _mesh;
 
 		[Browsable(false)]
@@ -49,12 +27,24 @@ namespace Nursia.Sky
 		[Browsable(false)]
 		public string TexturePath { get; set; }
 
-		public EffectBinding DefaultEffect => new SkyboxEffectBinding();
+		public EffectBinding EffectBinding => Resources.SkyboxEffectBinding();
 
-		public EffectBinding ShadowMapEffect => null;
+		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
+
+		public bool CastsShadows => false;
+
+		public bool ReceivesShadows => false;
+
+		private EffectParameter TextureParameter { get; set; }
+		private EffectParameter TransformParameter { get; set; }
+
 
 		public Skybox()
 		{
+			var effect = EffectBinding.Effect;
+			TextureParameter = effect.Parameters["_texture"];
+			TransformParameter = effect.Parameters["_transform"];
+
 			_mesh = PrimitiveMeshes.CubePositionFromMinusOneToOne;
 		}
 
@@ -67,7 +57,7 @@ namespace Nursia.Sky
 			view.Translation = Vector3.Zero;
 			Transform = GlobalTransform * view * context.Projection;
 
-			context.BatchJob(this, this, GlobalTransform, Mesh);
+			context.BatchJob(this, GlobalTransform, Mesh);
 		}
 
 		public override void Load(AssetManager assetManager)
@@ -77,9 +67,10 @@ namespace Nursia.Sky
 			Texture = assetManager.LoadTextureCube(Nrs.GraphicsDevice, TexturePath);
 		}
 
-		public void SetMaterialParameters(EffectBinding effectBinding)
+		public void SetParameters(Mesh mesh)
 		{
-			throw new System.NotImplementedException();
+			TextureParameter.SetValue(Texture);
+			TransformParameter.SetValue(Transform);
 		}
 	}
 }

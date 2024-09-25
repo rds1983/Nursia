@@ -271,7 +271,6 @@ namespace NursiaEditor.UI
 							{
 								Translation = n.Translation,
 								Texture = icon,
-								BlendMode = NodeBlendMode.Transparent,
 							};
 
 							asLight.Tag = node;

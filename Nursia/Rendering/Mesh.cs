@@ -18,6 +18,9 @@ namespace Nursia.Rendering
 		public int VertexCount => VertexBuffer.VertexCount;
 		public BoundingBox BoundingBox { get; }
 		public bool HasNormals { get; }
+		public Matrix[] BonesTransforms { get; set; }
+
+		public bool HasBones => BonesTransforms != null && BonesTransforms.Length > 0;
 
 		public Mesh(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, IEnumerable<Vector3> positions, PrimitiveType primitiveType = PrimitiveType.TriangleList)
 		{

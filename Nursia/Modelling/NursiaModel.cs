@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace Nursia.Modelling
 {
-	public class NursiaModel : SceneNode, ICastsShadow
+	public class NursiaModel : SceneNode
 	{
 		[Browsable(false)]
 		[JsonIgnore]
@@ -13,10 +13,6 @@ namespace Nursia.Modelling
 
 		[Browsable(false)]
 		public string ModelPath { get; set; }
-
-		[DefaultValue(true)]
-		[Category("Behavior")]
-		public bool CastsShadow { get; set; } = true;
 
 		protected internal override void Render(RenderContext context)
 		{

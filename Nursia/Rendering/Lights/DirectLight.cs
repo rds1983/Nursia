@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Utilities;
 using System.ComponentModel;
@@ -43,13 +42,7 @@ namespace Nursia.Rendering.Lights
 			var bb = new BoundingBox();
 			foreach (var job in context.Jobs)
 			{
-				if (job.Mesh == null)
-				{
-					continue;
-				}
-
-				var castsShadow = job.SceneNode as ICastsShadow;
-				if(castsShadow == null || !castsShadow.CastsShadow)
+				if (job.Mesh == null || job.Material == null || !job.Material.CastsShadows)
 				{
 					continue;
 				}

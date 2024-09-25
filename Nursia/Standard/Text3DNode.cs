@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Utilities;
-using System.IO;
 
 namespace Nursia.Standard
 {

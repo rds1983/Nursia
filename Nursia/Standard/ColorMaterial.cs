@@ -1,45 +1,34 @@
-﻿using AssetManagementBase;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
 using Nursia.Rendering;
 using Nursia.Utilities;
-using System.ComponentModel;
 
 namespace Nursia.Standard
 {
 	public class ColorMaterial : IMaterial
 	{
-		private class ColorEffectBinding : EffectBinding
-		{
-			private EffectParameter ColorParameter { get; set; }
-
-			public ColorEffectBinding() : base(Resources.ColorEffect())
-			{
-				ColorParameter = Effect.FindParameterByName("_color");
-			}
-
-			protected internal override void SetMaterialParams(IMaterial material)
-			{
-				base.SetMaterialParams(material);
-
-				var colorMaterial = (ColorMaterial)material;
-				ColorParameter.SetValue(colorMaterial.Color.ToVector4());
-			}
-		}
+		private EffectBinding _effectBinding = Resources.ColorEffectBinding();
 
 		public Color Color { get; set; }
 
-		[Browsable(false)]
-		[JsonIgnore]
-		public EffectBinding DefaultEffect { get; } = new ColorEffectBinding();
+		public EffectBinding EffectBinding => _effectBinding;
 
-		[Browsable(false)]
-		[JsonIgnore]
-		public EffectBinding ShadowMapEffect => null;
+		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
 
-		public void Load(AssetManager assetManager)
+		public bool CastsShadows => false;
+
+		public bool ReceivesShadows => false;
+
+		private EffectParameter ColorParameter { get; set; }
+
+		public ColorMaterial()
 		{
+			ColorParameter = _effectBinding.Effect.FindParameterByName("_color");
+		}
+
+		public void SetParameters(Mesh mesh)
+		{
+			ColorParameter.SetValue(Color.ToVector4());
 		}
 	}
 }

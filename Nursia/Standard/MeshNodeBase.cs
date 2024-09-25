@@ -2,11 +2,12 @@
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Nursia.Rendering;
+using Nursia.Serialization;
 using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public abstract class MeshNodeBase : SceneNode, ICastsShadow
+	public abstract class MeshNodeBase : SceneNode
 	{
 		protected abstract Mesh RenderMesh { get; }
 
@@ -30,14 +31,18 @@ namespace Nursia.Standard
 				return;
 			}
 
-			context.BatchJob(this, Material, GlobalTransform, RenderMesh);
+			context.BatchJob(Material, GlobalTransform, RenderMesh);
 		}
 
 		public override void Load(AssetManager assetManager)
 		{
 			base.Load(assetManager);
 
-			Material?.Load(assetManager);
+			var hasExternalAssets = Material as IHasExternalAssets;
+			if (hasExternalAssets != null)
+			{
+				hasExternalAssets.Load(assetManager);
+			}
 		}
 	}
 }

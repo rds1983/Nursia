@@ -74,8 +74,6 @@ namespace Nursia.Rendering
 			}
 		}
 
-		public NodeBlendMode BlendMode { get; set; }
-
 		[Browsable(false)]
 		[JsonIgnore]
 		public Matrix LocalTransform

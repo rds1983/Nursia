@@ -127,38 +127,41 @@ namespace Nursia.Rendering
 
 			foreach (var job in _context.Jobs)
 			{
-				if (job.Mesh == null)
+				if (job.Mesh == null || job.Material == null)
 				{
 					continue;
 				}
 
+				IMaterial material = job.Material;
 				EffectBinding effectBinding = null;
 				switch (passType)
 				{
 					case RenderPassType.ShadowMap:
 						{
-							var asCastsShadow = job.SceneNode as ICastsShadow;
-							if (asCastsShadow == null || !asCastsShadow.CastsShadow)
+							if (!job.Material.CastsShadows)
 							{
 								continue;
 							}
 
-							effectBinding = job.Material.ShadowMapEffect;
+							effectBinding = Resources.GetShadowMapEffectBinding(job.Mesh.HasBones, false)();
+							material = null;
 						}
 						break;
 					case RenderPassType.Opaque:
-						if (job.SceneNode.BlendMode != NodeBlendMode.Opaque)
+						if (job.Material.BlendMode != NodeBlendMode.Opaque)
 						{
 							continue;
 						}
-						effectBinding = job.Material.DefaultEffect;
+
+						effectBinding = job.Material.EffectBinding;
 						break;
 					case RenderPassType.Transparent:
-						if (job.SceneNode.BlendMode != NodeBlendMode.Transparent)
+						if (job.Material.BlendMode != NodeBlendMode.Transparent)
 						{
 							continue;
 						}
-						effectBinding = job.Material.DefaultEffect;
+
+						effectBinding = job.Material.EffectBinding;
 						break;
 				}
 
@@ -185,6 +188,7 @@ namespace Nursia.Rendering
 				{
 					effectBinding.LightViewProj?.SetValue(_lightViewProj.Value);
 				}
+
 				effectBinding.View?.SetValue(camera.View);
 				effectBinding.CameraPosition?.SetValue(camera.Position);
 				effectBinding.LightType?.SetValue(_effectLightType);
@@ -198,7 +202,16 @@ namespace Nursia.Rendering
 					effectBinding.ShadowMap?.SetValue(ShadowMap);
 				}
 
-				effectBinding.SetMaterialParams(job.Material);
+				if (job.Mesh.HasBones)
+				{
+					effectBinding.Bones?.SetValue(job.Mesh.BonesTransforms);
+				}
+
+				if (material != null)
+				{
+					material.SetParameters(job.Mesh);
+				}
+
 				device.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
 
 				++_context.Statistics.MeshesDrawn;

@@ -20,7 +20,7 @@ namespace NursiaEditor.Utility
 		{
 			base.Render(context);
 
-			context.BatchJob(this, Material, Transform, Mesh);
+			context.BatchJob(Material, Transform, Mesh);
 		}
 	}
 }

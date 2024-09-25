@@ -80,14 +80,10 @@ namespace Nursia.Modelling
 
 					if (HasSkin)
 					{
-						var asSkinnedMaterial = mesh.Material as ISkinnedMaterial;
-						if (asSkinnedMaterial != null)
-						{
-							asSkinnedMaterial.BonesTransforms = bonesTransforms;
-						}
+						mesh.Mesh.BonesTransforms = bonesTransforms;
 					}
 
-					context.BatchJob(node, mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
+					context.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
 				}
 			}
 

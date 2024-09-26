@@ -26,7 +26,7 @@ namespace Nursia.Standard
 			ColorParameter = _effectBinding.Effect.FindParameterByName("_color");
 		}
 
-		public void SetParameters(Mesh mesh)
+		public void SetParameters()
 		{
 			ColorParameter.SetValue(Color.ToVector4());
 		}

@@ -2,6 +2,7 @@
 using Nursia.Rendering.Lights;
 using Nursia.Utilities;
 using System.Collections.Generic;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Nursia.Rendering
 {
@@ -13,6 +14,22 @@ namespace Nursia.Rendering
 
 	public class RenderBatch
 	{
+		private class DefaultComparer : IComparer<RenderJob>
+		{
+			public static readonly DefaultComparer Instance = new DefaultComparer();
+			public int Compare(RenderJob x, RenderJob y)
+			{
+				if (x.EffectBatchId < y.EffectBatchId)
+					return -1;
+				if (x.EffectBatchId > y.EffectBatchId)
+					return +1;
+
+				return 0;
+			}
+		}
+
+		private bool _jobsSorted = false;
+
 		public RenderBatchPass Pass { get; private set; }
 		public Camera Camera { get; private set; }
 		public Matrix View { get; private set; }
@@ -23,8 +40,21 @@ namespace Nursia.Rendering
 		public List<DirectLight> DirectLights { get; } = new List<DirectLight>();
 		public List<PointLight> PointLights { get; } = new List<PointLight>();
 
+		private List<RenderJob> UnsortedJobs = new List<RenderJob>();
 
-		internal List<RenderJob> Jobs { get; } = new List<RenderJob>();
+		internal List<RenderJob> Jobs
+		{
+			get
+			{
+				if (!_jobsSorted)
+				{
+					UnsortedJobs.Sort(DefaultComparer.Instance);
+					_jobsSorted = true;
+				}
+
+				return UnsortedJobs;
+			}
+		}
 
 		internal void PrepareRender(RenderBatchPass pass, Camera camera)
 		{
@@ -41,9 +71,15 @@ namespace Nursia.Rendering
 
 		public void BatchJob(IMaterial material, Matrix transform, Mesh mesh)
 		{
-			if (Pass == RenderBatchPass.ShadowMap && !material.CastsShadows)
+			if (Pass == RenderBatchPass.ShadowMap)
 			{
-				return;
+				if (!material.CastsShadows)
+				{
+					return;
+				}
+
+				// Switch to shadow map material during shadow map pass
+				material = mesh.HasBones ? ShadowMapMaterial.DefaultSkinning : ShadowMapMaterial.Default;
 			}
 
 			var boundingBox = mesh.BoundingBox.Transform(ref transform);
@@ -53,10 +89,10 @@ namespace Nursia.Rendering
 				return;
 			}
 
-
 			var job = new RenderJob(material, transform, mesh);
-
 			Jobs.Add(job);
+
+			_jobsSorted = false;
 		}
 	}
 }

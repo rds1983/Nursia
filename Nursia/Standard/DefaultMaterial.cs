@@ -140,7 +140,7 @@ namespace Nursia.Standard
 			}
 		}
 
-		public void SetParameters(Mesh mesh)
+		public void SetParameters()
 		{
 			SpecularFactorParameter?.SetValue(SpecularFactor);
 			SpecularPowerParameter?.SetValue(SpecularPower);

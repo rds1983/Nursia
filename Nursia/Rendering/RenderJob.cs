@@ -5,6 +5,7 @@ namespace Nursia.Rendering
 {
 	internal class RenderJob
 	{
+		public int EffectBatchId => Material.EffectBinding.BatchId;
 		public IMaterial Material { get; }
 		public Matrix Transform { get; }
 		public Mesh Mesh { get; }

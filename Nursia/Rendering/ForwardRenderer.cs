@@ -123,25 +123,18 @@ namespace Nursia.Rendering
 		private void RenderPass(Camera camera, RenderPassType passType)
 		{
 			var device = Nrs.GraphicsDevice;
+
+			EffectBinding lastBinding = null;
 			foreach (var job in _batch.Jobs)
 			{
-				IMaterial material = job.Material;
-				EffectBinding effectBinding = null;
 				switch (passType)
 				{
-					case RenderPassType.ShadowMap:
-						{
-							effectBinding = Resources.GetShadowMapEffectBinding(job.Mesh.HasBones, false)();
-							material = null;
-						}
-						break;
 					case RenderPassType.Opaque:
 						if (job.Material.BlendMode != NodeBlendMode.Opaque)
 						{
 							continue;
 						}
 
-						effectBinding = job.Material.EffectBinding;
 						break;
 					case RenderPassType.Transparent:
 						if (job.Material.BlendMode != NodeBlendMode.Transparent)
@@ -149,13 +142,28 @@ namespace Nursia.Rendering
 							continue;
 						}
 
-						effectBinding = job.Material.EffectBinding;
 						break;
 				}
 
-				if (effectBinding == null)
+				var effectBinding = job.Material.EffectBinding;
+				if (lastBinding == null || effectBinding.BatchId != lastBinding.BatchId)
 				{
-					continue;
+					// Effect level params
+					effectBinding.LightViewProj?.SetValue(_lightViewProj);
+					effectBinding.View?.SetValue(camera.View);
+					effectBinding.CameraPosition?.SetValue(camera.Position);
+					effectBinding.LightType?.SetValue(_effectLightType);
+					effectBinding.LightPosition?.SetValue(_effectLightPosition);
+					effectBinding.LightDirection?.SetValue(_effectLightDirection);
+					effectBinding.LightColor?.SetValue(_effectLightColor);
+					effectBinding.LightCount?.SetValue(_lightCount);
+
+					if (passType != RenderPassType.ShadowMap)
+					{
+						effectBinding.ShadowMap?.SetValue(ShadowMap);
+					}
+
+					lastBinding = effectBinding;
 				}
 
 				effectBinding.World?.SetValue(job.Transform);
@@ -172,30 +180,12 @@ namespace Nursia.Rendering
 					effectBinding.WorldInverseTranspose.SetValue(worldInverseTranspose);
 				}
 
-				effectBinding.LightViewProj?.SetValue(_lightViewProj);
-
-				effectBinding.View?.SetValue(camera.View);
-				effectBinding.CameraPosition?.SetValue(camera.Position);
-				effectBinding.LightType?.SetValue(_effectLightType);
-				effectBinding.LightPosition?.SetValue(_effectLightPosition);
-				effectBinding.LightDirection?.SetValue(_effectLightDirection);
-				effectBinding.LightColor?.SetValue(_effectLightColor);
-				effectBinding.LightCount?.SetValue(_lightCount);
-
-				if (passType != RenderPassType.ShadowMap)
-				{
-					effectBinding.ShadowMap?.SetValue(ShadowMap);
-				}
-
 				if (job.Mesh.HasBones)
 				{
 					effectBinding.Bones?.SetValue(job.Mesh.BonesTransforms);
 				}
 
-				if (material != null)
-				{
-					material.SetParameters(job.Mesh);
-				}
+				job.Material.SetParameters();
 
 				device.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
 			}

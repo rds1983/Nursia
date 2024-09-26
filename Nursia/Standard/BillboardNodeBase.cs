@@ -82,7 +82,7 @@ namespace Nursia.Standard
 			_effectBinding = null;
 		}
 
-		public void SetParameters(Mesh mesh)
+		public void SetParameters()
 		{
 			WidthParameter.SetValue(Width);
 			HeightParameter.SetValue(Height);

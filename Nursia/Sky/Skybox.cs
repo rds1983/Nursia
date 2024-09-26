@@ -67,7 +67,7 @@ namespace Nursia.Sky
 			Texture = assetManager.LoadTextureCube(Nrs.GraphicsDevice, TexturePath);
 		}
 
-		public void SetParameters(Mesh mesh)
+		public void SetParameters()
 		{
 			TextureParameter.SetValue(Texture);
 			TransformParameter.SetValue(Transform);

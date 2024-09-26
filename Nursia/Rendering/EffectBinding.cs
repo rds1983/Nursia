@@ -6,6 +6,9 @@ namespace Nursia.Rendering
 {
 	public class EffectBinding
 	{
+		private static int _lastBatchId = 0;
+
+		public int BatchId { get; }
 		public Effect Effect { get; }
 
 		public EffectParameter LightViewProj { get; }
@@ -24,6 +27,8 @@ namespace Nursia.Rendering
 
 		public EffectBinding(Effect effect)
 		{
+			BatchId = _lastBatchId;
+			++_lastBatchId;
 			Effect = effect ?? throw new ArgumentNullException(nameof(effect));
 			LightViewProj = Effect.FindParameterByName("_lightViewProj");
 			WorldViewProj = Effect.FindParameterByName("_worldViewProj");

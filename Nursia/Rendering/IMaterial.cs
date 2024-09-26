@@ -7,6 +7,6 @@
 		bool CastsShadows { get; }
 		bool ReceivesShadows { get; }
 
-		void SetParameters(Mesh mesh);
+		void SetParameters();
 	}
 }

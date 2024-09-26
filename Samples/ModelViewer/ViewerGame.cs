@@ -354,7 +354,7 @@ namespace ModelViewer
 
 			_mainPanel._labelCamera.Text = "Camera: " + _scene.Camera.ToString();
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer.Statistics.MeshesDrawn;
+			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
 
 			_desktop.Render();
 

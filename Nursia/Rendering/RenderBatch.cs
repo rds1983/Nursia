@@ -64,9 +64,7 @@ namespace Nursia.Rendering
 			ViewProjection = View * Projection;
 			Frustum = new BoundingFrustum(ViewProjection);
 
-			Jobs.Clear();
-			DirectLights.Clear();
-			PointLights.Clear();
+			Clear();
 		}
 
 		public void BatchJob(IMaterial material, Matrix transform, Mesh mesh)
@@ -93,6 +91,13 @@ namespace Nursia.Rendering
 			Jobs.Add(job);
 
 			_jobsSorted = false;
+		}
+
+		internal void Clear()
+		{
+			Jobs.Clear();
+			DirectLights.Clear();
+			PointLights.Clear();
 		}
 	}
 }

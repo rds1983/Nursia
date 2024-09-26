@@ -122,7 +122,8 @@ namespace SimpleScene
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_renderer.Render(_scene, _scene.Camera);
+			_renderer.AddNode(_scene);
+			_renderer.Render(_scene.Camera);
 
 			_fpsCounter.Draw(gameTime);
 

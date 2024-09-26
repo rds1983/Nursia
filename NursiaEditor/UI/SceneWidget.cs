@@ -45,6 +45,7 @@ namespace NursiaEditor.UI
 		public ProjectInSolution Project { get; set; }
 
 		public ForwardRenderer Renderer { get => _renderer; }
+		public RenderStatistics RenderStatistics;
 		public Instrument Instrument { get; } = new Instrument();
 
 		private MeshNode GridMesh
@@ -243,18 +244,18 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
-				_renderer.Render(Scene, Scene.Camera);
+				_renderer.AddNode(Scene);
 
 				if (NursiaEditorOptions.ShowGrid)
 				{
-					_renderer.Render(GridMesh, Scene.Camera);
+					_renderer.AddNode(GridMesh);
 				}
 
 				// Selected object
 				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.MainForm.SelectedObject as SceneNode);
 				if (selectionNode != null)
 				{
-					_renderer.Render(selectionNode, Scene.Camera);
+					_renderer.AddNode(selectionNode);
 				}
 
 				// Draw lights' icons'
@@ -277,9 +278,13 @@ namespace NursiaEditor.UI
 						}
 
 						node = (BillboardNode)asLight.Tag;
-						_renderer.Render(node, Scene.Camera);
+						_renderer.AddNode(node);
 					}
 				});
+
+				_renderer.Render(Scene.Camera);
+
+				RenderStatistics = _renderer.Statistics;
 
 				device.Viewport = new Viewport(bounds.Right - 160, bounds.Y, 160, 160);
 
@@ -289,7 +294,9 @@ namespace NursiaEditor.UI
 				// Make the gizmo placed always in front of the camera
 				c.Position = Vector3.Zero;
 				m.Translation = c.Direction * 2;
-				_renderer.Render(m, c);
+
+				_renderer.AddNode(m);
+				_renderer.Render(c);
 
 				//				UpdateMarker();
 				/*				_renderer.Begin();

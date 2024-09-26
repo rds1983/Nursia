@@ -107,12 +107,6 @@ namespace NursiaEditor
 
 			GraphicsDevice.Clear(Color.Black);
 
-			/*			var cameraString = (Scene != null && Scene.Camera != null) ? Scene.Camera.ToString() : string.Empty;
-
-						_mainForm._labelCamera.Text = "Camera: " + cameraString;
-						_mainForm._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-						_mainForm._labelMeshes.Text = "Meshes: " + Renderer.Statistics.MeshesDrawn;*/
-
 			_desktop.Render();
 
 			_fpsCounter.Draw(gameTime);

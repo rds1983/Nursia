@@ -4,6 +4,7 @@ using System.IO;
 using AssetManagementBase;
 using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Input;
+using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Myra.Graphics2D.UI.Properties;
@@ -609,7 +610,7 @@ namespace NursiaEditor.UI
 				var projectFolder = Path.GetDirectoryName(project.AbsolutePath);
 				var modelsFolder = Path.Combine(projectFolder, Constants.ModelsFolder);
 
-				var dialog = new ChooseAssetDialog(modelsFolder, new[] {"glb", "gltf"} );
+				var dialog = new ChooseAssetDialog(modelsFolder, new[] { "glb", "gltf" });
 
 				dialog.Closed += (s, a) =>
 				{
@@ -942,6 +943,24 @@ namespace NursiaEditor.UI
 			DebugSettings.DrawBoundingBoxes = _buttonBoundingBoxes.IsToggled;
 			DebugSettings.DrawLightViewFrustrum = _buttonLightViewFrustum.IsToggled;
 			NursiaEditorOptions.DrawShadowMap = _buttonShadowMap.IsToggled;
+		}
+
+		public override void InternalRender(RenderContext context)
+		{
+			base.InternalRender(context);
+
+			if (_panelStatistics.Visible == false || CurrentSceneWidget == null)
+			{
+				return;
+			}
+
+			var stats = CurrentSceneWidget.RenderStatistics;
+
+			_labelEffectsSwitches.Text = stats.EffectsSwitches.ToString();
+			_labelDrawCalls.Text = stats.DrawCalls.ToString();
+			_labelVerticesDrawn.Text = stats.VerticesDrawn.ToString();
+			_labelPrimitivesDrawn.Text = stats.PrimitivesDrawn.ToString();
+			_labelMeshesDrawn.Text = stats.MeshesDrawn.ToString();
 		}
 	}
 }

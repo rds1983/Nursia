@@ -36,15 +36,29 @@
                   <Label Text="Shadow Map" />
                 </ToggleButton>
               </HorizontalStackPanel>
-              <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" StackPanel.ProportionType="Fill" />
+              <Panel StackPanel.ProportionType="Fill">
+                <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" />
+                <Grid ColumnSpacing="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Left="-4" Id="_panelStatistics">
+                  <Grid.DefaultRowProportion Type="Auto" />
+                  <Grid.ColumnsProportions>
+                    <Proportion Type="Auto" />
+                    <Proportion Type="Fill" />
+                  </Grid.ColumnsProportions>
+                  <Label Text="Effects Switches:" />
+                  <Label Text="Draw Calls:" Grid.Row="1" />
+                  <Label Text="Vertices Drawn:" Grid.Row="2" />
+                  <Label Text="Primitives Drawn:" Grid.Row="3" />
+                  <Label Text="Meshes Drawn:" Grid.Row="4" />
+                  <Label Text="10" Id="_labelEffectsSwitches" Grid.Column="1" />
+                  <Label Text="10" Id="_labelDrawCalls" Grid.Column="1" Grid.Row="1" />
+                  <Label Text="10" Id="_labelVerticesDrawn" Grid.Column="1" Grid.Row="2" />
+                  <Label Text="10" Id="_labelPrimitivesDrawn" Grid.Column="1" Grid.Row="3" />
+                  <Label Text="10" Id="_labelMeshesDrawn" Grid.Column="1" Grid.Row="4" />
+                </Grid>
+              </Panel>
             </VerticalStackPanel>
             <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlEffects" />
           </VerticalSplitPane>
-          <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Label Text="FPS: 60.0" Id="_labelFps" />
-            <Label Text="Meshes: 15" Id="_labelMeshes" />
-            <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
-          </VerticalStackPanel>
         </Panel>
         <PropertyGrid Id="_propertyGrid" />
       </HorizontalSplitPane>

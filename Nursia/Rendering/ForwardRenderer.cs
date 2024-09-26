@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Nursia.Utilities;
 using Nursia.Rendering.Lights;
 using System;
-using glTFLoader.Schema;
+using System.Collections.Generic;
 
 namespace Nursia.Rendering
 {
@@ -18,12 +18,20 @@ namespace Nursia.Rendering
 			Transparent
 		}
 
+		private static Func<SceneNode, bool> ShadowCastingLightPredicate = n =>
+		{
+			var asLight = n as BaseLight;
+			return asLight != null && asLight.RenderCastsShadow;
+		};
+
+		private RenderStatistics _statistics;
 		private int[] _effectLightType = new int[Constants.MaxLights];
 		private Vector3[] _effectLightPosition = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
 		private int _lightCount = 0;
 		private Matrix _lightViewProj;
+		private readonly List<SceneNode> _nodes = new List<SceneNode>();
 
 		private DepthStencilState _oldDepthStencilState;
 		private RasterizerState _oldRasterizerState;
@@ -38,10 +46,18 @@ namespace Nursia.Rendering
 		public BaseLight ShadowCastingLight { get; private set; }
 
 		public RenderTarget2D ShadowMap { get; private set; }
+		public RenderStatistics Statistics => _statistics;
 
 
 		public ForwardRenderer()
 		{
+		}
+
+		public void ClearNodes() => _nodes.Clear();
+
+		public void AddNode(SceneNode node)
+		{
+			_nodes.Add(node);
 		}
 
 		private void SetState()
@@ -77,16 +93,6 @@ namespace Nursia.Rendering
 			device.BlendState = _oldBlendState;
 			_oldBlendState = null;
 			device.PresentationParameters.RenderTargetUsage = _oldRenderTargetUsage;
-		}
-
-		private void BatchNode(RenderBatch batch, SceneNode node)
-		{
-			node.Render(batch);
-
-			foreach (var child in node.Children)
-			{
-				BatchNode(batch, child);
-			}
 		}
 
 		private void SetLights()
@@ -164,6 +170,8 @@ namespace Nursia.Rendering
 					}
 
 					lastBinding = effectBinding;
+
+					++_statistics.EffectsSwitches;
 				}
 
 				effectBinding.World?.SetValue(job.Transform);
@@ -187,11 +195,48 @@ namespace Nursia.Rendering
 
 				job.Material.SetParameters();
 
-				device.DrawIndexedPrimitives(effectBinding.Effect, job.Mesh);
+				var mesh = job.Mesh;
+				device.SetVertexBuffer(mesh.VertexBuffer);
+				device.Indices = mesh.IndexBuffer;
+
+				foreach (var pass in effectBinding.Effect.CurrentTechnique.Passes)
+				{
+					pass.Apply();
+					device.DrawIndexedPrimitives(mesh.PrimitiveType, 0,
+						0,
+						mesh.VertexCount,
+						0,
+						mesh.PrimitiveCount);
+
+					_statistics.VerticesDrawn += mesh.VertexCount;
+					_statistics.PrimitivesDrawn += mesh.PrimitiveCount;
+					++_statistics.DrawCalls;
+				}
+				++_statistics.MeshesDrawn;
 			}
 		}
 
-		private void ShadowMapRun(SceneNode node, Camera camera)
+		private void BatchNode(SceneNode node)
+		{
+			node.Render(_batch);
+
+			foreach (var child in node.Children)
+			{
+				BatchNode(child);
+			}
+		}
+
+		private void BatchNodes(RenderBatchPass pass, Camera camera)
+		{
+			_batch.PrepareRender(pass, camera);
+
+			foreach (var node in _nodes)
+			{
+				BatchNode(node);
+			}
+		}
+
+		private void ShadowMapRun(Camera camera)
 		{
 			if (ShadowCastingLight == null)
 			{
@@ -207,9 +252,9 @@ namespace Nursia.Rendering
 				var lightCamera = ShadowCastingLight.GetLightCamera(camera.Position);
 
 				// Batch render jobs
-				_batch.PrepareRender(RenderBatchPass.ShadowMap, lightCamera);
-				BatchNode(_batch, node);
+				BatchNodes(RenderBatchPass.ShadowMap, lightCamera);
 
+				// Set light view proj
 				_lightViewProj = _batch.ViewProjection;
 
 				// Render the shadow map
@@ -231,20 +276,12 @@ namespace Nursia.Rendering
 			}
 		}
 
-		public void Render(SceneNode node, Camera camera)
+		private void InternalRender(Camera camera)
 		{
-			if (node == null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
-			if (camera == null)
-			{
-				throw new ArgumentNullException(nameof(camera));
-			}
+			_statistics.Reset();
 
 			var device = Nrs.GraphicsDevice;
-			if (device.Viewport.Width == 0 || device.Viewport.Height == 0)
+			if (device.Viewport.Width == 0 || device.Viewport.Height == 0 || _nodes.Count == 0)
 			{
 				// Can't render
 				return;
@@ -254,20 +291,21 @@ namespace Nursia.Rendering
 			SetState();
 
 			// Firstly determine whether we have a shadow casting light
-			ShadowCastingLight = (BaseLight)node.QueryFirst(n =>
+			foreach (var node in _nodes)
 			{
-				var asLight = n as BaseLight;
-				return asLight != null && asLight.RenderCastsShadow;
-			});
+				ShadowCastingLight = (BaseLight)node.QueryFirst(ShadowCastingLightPredicate);
+				if (ShadowCastingLight != null)
+				{
+					break;
+				}
+			}
+
 
 			// Shadow map run
-			ShadowMapRun(node, camera);
+			ShadowMapRun(camera);
 
-			// Main run
-			_batch.PrepareRender(RenderBatchPass.Main, camera);
-
-			// Batch Render Jobs
-			BatchNode(_batch, node);
+			// Batch main
+			BatchNodes(RenderBatchPass.Main, camera);
 
 			// Set light parameters
 			SetLights();
@@ -301,6 +339,24 @@ namespace Nursia.Rendering
 			}
 
 			DebugShapeRenderer.Draw(camera.View, _batch.Projection);
+		}
+
+		public void Render(Camera camera)
+		{
+			if (camera == null)
+			{
+				throw new ArgumentNullException(nameof(camera));
+			}
+
+			try
+			{
+				InternalRender(camera);
+			}
+			finally
+			{
+				_nodes.Clear();
+				_batch.Clear();
+			}
 		}
 	}
 }

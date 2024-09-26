@@ -6,14 +6,14 @@ namespace Nursia.Rendering.Lights
 	{
 		public override bool RenderCastsShadow => false;
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
-			context.PointLights.Add(this);
+			batch.PointLights.Add(this);
 		}
 
-		public override Matrix? CreateLightViewProjectionMatrix(RenderContext context)
+		public override Camera GetLightCamera(Vector3 viewerPos)
 		{
 			throw new System.NotImplementedException();
 		}

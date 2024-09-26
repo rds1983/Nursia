@@ -48,16 +48,16 @@ namespace Nursia.Sky
 			_mesh = PrimitiveMeshes.CubePositionFromMinusOneToOne;
 		}
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
 			// Calculate special world-view-project matrix with zero translation
-			var view = context.Camera.View;
+			var view = batch.View;
 			view.Translation = Vector3.Zero;
-			Transform = GlobalTransform * view * context.Projection;
+			Transform = GlobalTransform * view * batch.Projection;
 
-			context.BatchJob(this, GlobalTransform, Mesh);
+			batch.BatchJob(this, GlobalTransform, Mesh);
 		}
 
 		public override void Load(AssetManager assetManager)

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Nursia.Primitives;
 using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
@@ -52,7 +50,7 @@ namespace Nursia.Modelling
 			return _boneTransforms;
 		}
 
-		internal void Render(NursiaModel node, RenderContext context, ref Matrix rootTransform)
+		internal void Render(NursiaModel node, RenderBatch batch, ref Matrix rootTransform)
 		{
 			if (Meshes.Count > 0)
 			{
@@ -73,23 +71,18 @@ namespace Nursia.Modelling
 				{
 					var m = mesh.Transform * AbsoluteTransform * rootTransform;
 					var boundingBox = mesh.BoundingBox.Transform(ref m);
-					if (context.Frustum.Contains(boundingBox) == ContainmentType.Disjoint)
-					{
-						//						continue;
-					}
-
 					if (HasSkin)
 					{
 						mesh.Mesh.BonesTransforms = bonesTransforms;
 					}
 
-					context.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
+					batch.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
 				}
 			}
 
 			foreach (var child in Children)
 			{
-				child.Render(node, context, ref rootTransform);
+				child.Render(node, batch, ref rootTransform);
 			}
 		}
 	}

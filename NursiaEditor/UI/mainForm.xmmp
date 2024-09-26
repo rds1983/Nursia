@@ -21,7 +21,7 @@
         </VerticalSplitPane>
         <Panel>
           <VerticalSplitPane Id="_splitPaneEditor">
-            <VerticalStackPanel Id="_panelScenes" >
+            <VerticalStackPanel Id="_panelScenes">
               <HorizontalStackPanel Spacing="8">
                 <ToggleButton Id="_buttonGrid">
                   <Label Text="Grid" />
@@ -31,6 +31,9 @@
                 </ToggleButton>
                 <ToggleButton Id="_buttonLightViewFrustum">
                   <Label Text="Light View Frustum" />
+                </ToggleButton>
+                <ToggleButton Id="_buttonShadowMap">
+                  <Label Text="Shadow Map" />
                 </ToggleButton>
               </HorizontalStackPanel>
               <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" StackPanel.ProportionType="Fill" />

@@ -70,11 +70,11 @@ namespace Nursia.Standard
 		private EffectParameter ColorParameter { get; set; }
 		private EffectParameter TextureParameter { get; set; }
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
-			context.BatchJob(this, GlobalTransform, Mesh);
+			batch.BatchJob(this, GlobalTransform, Mesh);
 		}
 
 		protected void InvalidateDefault()

@@ -11,7 +11,7 @@ namespace Nursia.Rendering
 	public class Scene : SceneNode
 	{
 		[Browsable(false)]
-		public Camera Camera { get; } = new Camera();
+		public Camera Camera { get; } = new PerspectiveCamera();
 
 		public void SaveToFile(string path)
 		{

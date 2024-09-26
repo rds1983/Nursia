@@ -22,16 +22,16 @@ namespace Nursia.Standard
 		[JsonIgnore]
 		public BoundingBox BoundingBox => RenderMesh.BoundingBox;
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
 			if (Material == null || RenderMesh == null)
 			{
 				return;
 			}
 
-			context.BatchJob(Material, GlobalTransform, RenderMesh);
+			batch.BatchJob(Material, GlobalTransform, RenderMesh);
 		}
 
 		public override void Load(AssetManager assetManager)

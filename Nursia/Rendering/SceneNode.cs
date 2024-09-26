@@ -175,7 +175,7 @@ namespace Nursia.Rendering
 			n.Parent = null;
 		}
 
-		protected internal virtual void Render(RenderContext context)
+		protected internal virtual void Render(RenderBatch batch)
 		{
 		}
 
@@ -209,6 +209,25 @@ namespace Nursia.Rendering
 			InternalQuery(predicate, result);
 
 			return result;
+		}
+
+		public SceneNode QueryFirst(Func<SceneNode, bool> predicate)
+		{
+			if (predicate(this))
+			{
+				return this;
+			}
+
+			foreach (var child in Children)
+			{
+				var result = child.QueryFirst(predicate);
+				if (result != null)
+				{
+					return result;
+				}
+			}
+
+			return null;
 		}
 
 		private void InternalQueryByType<T>(List<T> result) where T : SceneNode

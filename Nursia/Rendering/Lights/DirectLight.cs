@@ -1,16 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
-using Nursia.Utilities;
 using System.ComponentModel;
 
 namespace Nursia.Rendering.Lights
 {
 	public class DirectLight : BaseLight
 	{
-		private Vector3[] _corners = new Vector3[8];
-
 		private Vector3 _direction;
 		private Vector3 _normalizedDirection;
+		private readonly OrthographicCamera _camera = new OrthographicCamera();
 
 		public override bool RenderCastsShadow => CastsShadow;
 
@@ -36,31 +34,8 @@ namespace Nursia.Rendering.Lights
 			Direction = new Vector3(1, 0, 0);
 		}
 
-		public override Matrix? CreateLightViewProjectionMatrix(RenderContext context)
+		public override Camera GetLightCamera(Vector3 viewerPos)
 		{
-			// Determine visible objects' bounding box
-			var bb = new BoundingBox();
-			foreach (var job in context.Jobs)
-			{
-				if (job.Mesh == null || job.Material == null || !job.Material.CastsShadows)
-				{
-					continue;
-				}
-
-				var t = job.Transform;
-				var lb = job.Mesh.BoundingBox.Transform(ref t);
-
-				bb = BoundingBox.CreateMerged(bb, lb);
-			}
-
-			if (bb.IsEmpty())
-			{
-				return null;
-			}
-
-			// Get the corners of the box
-			bb.GetCorners(_corners);
-
 			var lightDir = -NormalizedDirection;
 
 			// Matrix with that will rotate in points the direction of the light
@@ -68,14 +43,9 @@ namespace Nursia.Rendering.Lights
 													   -lightDir,
 													   Vector3.Up);
 
-			// Transform the positions of the corners into the direction of the light
-			for (int i = 0; i < _corners.Length; i++)
-			{
-				_corners[i] = Vector3.Transform(_corners[i], lightRotation);
-			}
-
-			// Find the smallest box around the points
-			BoundingBox lightBox = BoundingBox.CreateFromPoints(_corners);
+			// Light Box is around the camera position
+			var radiusVec = new Vector3(Constants.ShadowsViewSize, Constants.ShadowsViewSize, Constants.ShadowsViewSize);
+			BoundingBox lightBox = new BoundingBox(viewerPos - radiusVec, viewerPos + radiusVec);
 
 			Vector3 boxSize = lightBox.Max - lightBox.Min;
 			Vector3 halfBoxSize = boxSize * 0.5f;
@@ -90,17 +60,13 @@ namespace Nursia.Rendering.Lights
 			lightPosition = Vector3.Transform(lightPosition,
 											  Matrix.Invert(lightRotation));
 
-			// Create the view matrix for the light
-			Matrix lightView = Matrix.CreateLookAt(lightPosition,
-												   lightPosition - lightDir,
-												   Vector3.Up);
+			_camera.SetLookAt(lightPosition, lightPosition - lightDir);
+			_camera.Width = boxSize.X;
+			_camera.Height = boxSize.Y;
+			_camera.NearPlaneDistance = -boxSize.Z;
+			_camera.FarPlaneDistance = boxSize.Z;
 
-			// Create the projection matrix for the light
-			// The projection is orthographic since we are using a directional light
-			Matrix lightProjection = Matrix.CreateOrthographic(boxSize.X, boxSize.Y,
-															   -boxSize.Z, boxSize.Z);
-
-			return lightView * lightProjection;
+			return _camera;
 		}
 
 		private void UpdateNormalizedDirection()
@@ -117,11 +83,11 @@ namespace Nursia.Rendering.Lights
 			}
 		}
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
-			context.DirectLights.Add(this);
+			batch.DirectLights.Add(this);
 		}
 	}
 }

@@ -1,20 +1,24 @@
 ﻿using Microsoft.Xna.Framework;
 using Nursia.Rendering.Lights;
+using Nursia.Utilities;
 using System.Collections.Generic;
 
 namespace Nursia.Rendering
 {
-	public class RenderContext
+	public enum RenderBatchPass
 	{
-		private Camera _camera;
+		ShadowMap,
+		Main
+	}
 
-		public Camera Camera => _camera;
-
+	public class RenderBatch
+	{
+		public RenderBatchPass Pass { get; private set; }
+		public Camera Camera { get; private set; }
+		public Matrix View { get; private set; }
 		public Matrix Projection { get; private set; }
 		public Matrix ViewProjection { get; private set; }
 		public BoundingFrustum Frustum { get; private set; }
-
-		public RenderStatistics Statistics { get; } = new RenderStatistics();
 
 		public List<DirectLight> DirectLights { get; } = new List<DirectLight>();
 		public List<PointLight> PointLights { get; } = new List<PointLight>();
@@ -22,30 +26,34 @@ namespace Nursia.Rendering
 
 		internal List<RenderJob> Jobs { get; } = new List<RenderJob>();
 
-		internal bool PrepareRender(Camera camera)
+		internal void PrepareRender(RenderBatchPass pass, Camera camera)
 		{
-			_camera = camera;
-			var device = Nrs.GraphicsDevice;
-			if (device.Viewport.Width == 0 || device.Viewport.Height == 0)
-			{
-				return false;
-			}
-
-			// Calculate matrices
+			Pass = pass;
+			View = camera.View;
 			Projection = camera.CalculateProjection();
-			ViewProjection = _camera.View * Projection;
+			ViewProjection = View * Projection;
 			Frustum = new BoundingFrustum(ViewProjection);
 
-			Statistics.Reset();
 			Jobs.Clear();
 			DirectLights.Clear();
 			PointLights.Clear();
-
-			return true;
 		}
 
 		public void BatchJob(IMaterial material, Matrix transform, Mesh mesh)
 		{
+			if (Pass == RenderBatchPass.ShadowMap && !material.CastsShadows)
+			{
+				return;
+			}
+
+			var boundingBox = mesh.BoundingBox.Transform(ref transform);
+			if (Frustum.Contains(boundingBox) == ContainmentType.Disjoint)
+			{
+				// Cull invisible meshes
+				return;
+			}
+
+
 			var job = new RenderJob(material, transform, mesh);
 
 			Jobs.Add(job);

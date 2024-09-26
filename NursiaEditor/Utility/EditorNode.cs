@@ -16,11 +16,11 @@ namespace NursiaEditor.Utility
 			Material = material ?? throw new ArgumentNullException(nameof(material));
 		}
 
-		protected override void Render(RenderContext context)
+		protected override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
-			context.BatchJob(Material, Transform, Mesh);
+			batch.BatchJob(Material, Transform, Mesh);
 		}
 	}
 }

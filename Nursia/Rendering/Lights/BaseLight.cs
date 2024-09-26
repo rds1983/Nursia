@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System.ComponentModel;
 
@@ -16,6 +15,6 @@ namespace Nursia.Rendering.Lights
 		
 		public Color Color { get; set; } = Color.White;
 
-		public abstract Matrix? CreateLightViewProjectionMatrix(RenderContext context);
+		public abstract Camera GetLightCamera(Vector3 viewerPos);
 	}
 }

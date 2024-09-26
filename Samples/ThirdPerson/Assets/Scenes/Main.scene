@@ -1,9 +1,10 @@
 {
   "Camera": {
-    "Position": "4.2548275, 30.966988, 15.262285",
-    "YawAngle": 194.50034,
-    "PitchAngle": 47.099224,
+    "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
     "ViewAngle": 90.0,
+    "Position": "2.89539, 20.801931, 20.64876",
+    "YawAngle": 172.60036,
+    "PitchAngle": 44.599224,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
   },

@@ -30,6 +30,7 @@ namespace NursiaEditor
 				NursiaEditorOptions.ShowGrid = _state.ShowGrid;
 				DebugSettings.DrawBoundingBoxes = _state.DrawBoundingBoxes;
 				DebugSettings.DrawLightViewFrustrum = _state.DrawLightViewFrustum;
+				NursiaEditorOptions.DrawShadowMap = _state.DrawShadowMap;
 			}
 
 			_graphics = new GraphicsDeviceManager(this)
@@ -130,7 +131,8 @@ namespace NursiaEditor
 				EditedFile = _mainForm.FilePath,
 				ShowGrid = NursiaEditorOptions.ShowGrid,
 				DrawBoundingBoxes = DebugSettings.DrawBoundingBoxes,
-				DrawLightViewFrustum = DebugSettings.DrawLightViewFrustrum
+				DrawLightViewFrustum = DebugSettings.DrawLightViewFrustrum,
+				DrawShadowMap = NursiaEditorOptions.DrawShadowMap,
 			};
 
 			state.Save();

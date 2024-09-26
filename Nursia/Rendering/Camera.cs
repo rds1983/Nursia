@@ -5,11 +5,10 @@ using System;
 
 namespace Nursia.Rendering
 {
-	public class Camera
+	public abstract class Camera
 	{
 		private Vector3 _position;
 		private float _yawAngle, _pitchAngle, _rollAngle;
-		private float _viewAngle = 90.0f;
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private float _nearPlaneDistance = 0.1f;
@@ -76,19 +75,6 @@ namespace Nursia.Rendering
 					_rollAngle = value;
 					Invalidate();
 				}
-			}
-		}
-
-		public float ViewAngle
-		{
-			get
-			{
-				return _viewAngle;
-			}
-
-			set
-			{
-				_viewAngle = value;
 			}
 		}
 
@@ -228,30 +214,13 @@ namespace Nursia.Rendering
 			_dirty = false;
 		}
 
-		public Matrix CalculateProjection(float aspectRatio) =>
-			Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(ViewAngle),
-				aspectRatio, NearPlaneDistance, FarPlaneDistance);
-
-		public Matrix CalculateProjection() => CalculateProjection(Nrs.GraphicsDevice.Viewport.AspectRatio);
-
 		public override string ToString()
 		{
 			Update();
 			return _string;
 		}
 
-		public Camera Clone()
-		{
-			return new Camera
-			{
-				Position = Position,
-				YawAngle = YawAngle,
-				PitchAngle = PitchAngle,
-				RollAngle = RollAngle,
-				ViewAngle = ViewAngle,
-				NearPlaneDistance = NearPlaneDistance,
-				FarPlaneDistance = FarPlaneDistance
-			};
-		}
+		public abstract Matrix CalculateProjection();
+		public abstract Camera Clone();
 	}
 }

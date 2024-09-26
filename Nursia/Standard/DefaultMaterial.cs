@@ -3,12 +3,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
+using Nursia.Serialization;
 using Nursia.Utilities;
 using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public class DefaultMaterial : ItemWithId, IMaterial
+	public class DefaultMaterial : ItemWithId, IMaterial, IHasExternalAssets
 	{
 		private EffectBinding _effectBinding;
 		private bool _receivesLight = true;

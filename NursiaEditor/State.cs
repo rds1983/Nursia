@@ -27,6 +27,7 @@ namespace NursiaEditor
 		public bool ShowGrid { get; set; }
 		public bool DrawBoundingBoxes { get; set; }
 		public bool DrawLightViewFrustum { get; set; }
+		public bool DrawShadowMap { get; set; }
 
 		public State()
 		{

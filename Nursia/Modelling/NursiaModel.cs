@@ -14,9 +14,9 @@ namespace Nursia.Modelling
 		[Browsable(false)]
 		public string ModelPath { get; set; }
 
-		protected internal override void Render(RenderContext context)
+		protected internal override void Render(RenderBatch batch)
 		{
-			base.Render(context);
+			base.Render(batch);
 
 			if (Model == null)
 			{
@@ -28,7 +28,7 @@ namespace Nursia.Modelling
 			var transform = GlobalTransform;
 			foreach (var node in Model.RootNodes)
 			{
-				node.Render(this, context, ref transform);
+				node.Render(this, batch, ref transform);
 			}
 		}
 

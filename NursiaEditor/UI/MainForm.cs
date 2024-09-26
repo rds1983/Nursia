@@ -222,10 +222,12 @@ namespace NursiaEditor.UI
 			_buttonGrid.IsToggled = NursiaEditorOptions.ShowGrid;
 			_buttonBoundingBoxes.IsToggled = DebugSettings.DrawBoundingBoxes;
 			_buttonLightViewFrustum.IsToggled = DebugSettings.DrawLightViewFrustrum;
+			_buttonShadowMap.IsToggled = NursiaEditorOptions.DrawShadowMap;
 
 			_buttonGrid.IsToggledChanged += (s, a) => UpdateDebugOptions();
 			_buttonBoundingBoxes.IsToggledChanged += (s, a) => UpdateDebugOptions();
 			_buttonLightViewFrustum.IsToggledChanged += (s, a) => UpdateDebugOptions();
+			_buttonShadowMap.IsToggledChanged += (s, a) => UpdateDebugOptions();
 
 			UpdateStackPanelEditor();
 		}
@@ -939,6 +941,7 @@ namespace NursiaEditor.UI
 			NursiaEditorOptions.ShowGrid = _buttonGrid.IsToggled;
 			DebugSettings.DrawBoundingBoxes = _buttonBoundingBoxes.IsToggled;
 			DebugSettings.DrawLightViewFrustrum = _buttonLightViewFrustum.IsToggled;
+			NursiaEditorOptions.DrawShadowMap = _buttonShadowMap.IsToggled;
 		}
 	}
 }

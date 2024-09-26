@@ -76,7 +76,7 @@ float4 PS(VSOutput input): COLOR
 	clip(input.ClipDistances.x); 
 #endif
 
-	return float4(input.Depth, 0.0f, 0.0f, 0.0f);
+	return float4(input.Depth, 0, 0, 0);
 }
 
 TECHNIQUE(Default, VS, PS);

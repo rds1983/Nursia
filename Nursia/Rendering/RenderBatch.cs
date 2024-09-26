@@ -2,7 +2,6 @@
 using Nursia.Rendering.Lights;
 using Nursia.Utilities;
 using System.Collections.Generic;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Nursia.Rendering
 {

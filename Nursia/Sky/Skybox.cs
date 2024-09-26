@@ -27,7 +27,7 @@ namespace Nursia.Sky
 		[Browsable(false)]
 		public string TexturePath { get; set; }
 
-		public EffectBinding EffectBinding => Resources.SkyboxEffectBinding();
+		public EffectBinding EffectBinding => DefaultEffects.SkyboxEffectBinding;
 
 		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
 

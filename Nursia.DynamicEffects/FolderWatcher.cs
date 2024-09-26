@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Nursia
 {
-	public class FolderWatcher : IExternalEffectsSource
+	public class FolderWatcher
 	{
 		private class EffectWrapper
 		{

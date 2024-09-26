@@ -30,7 +30,7 @@ namespace Nursia.Standard
 				}
 
 				_texture = value;
-				InvalidateDefault();
+				Invalidate();
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace Nursia.Standard
 				}
 
 				_receivesLight = value;
-				InvalidateDefault();
+				Invalidate();
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace Nursia.Standard
 				}
 
 				_receivesShadows = value;
-				InvalidateDefault();
+				Invalidate();
 			}
 		}
 
@@ -89,7 +89,7 @@ namespace Nursia.Standard
 				}
 
 				_skinning = value;
-				InvalidateDefault();
+				Invalidate();
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace Nursia.Standard
 			{
 				if (_effectBinding == null)
 				{
-					_effectBinding = Resources.GetDefaultEffectBinding(Texture != null, _skinning, false, _receivesLight, _receivesShadows)();
+					_effectBinding = DefaultEffects.GetDefaultEffectBinding(Texture != null, _skinning, false, _receivesLight, _receivesShadows);
 
 					var effect = _effectBinding.Effect;
 					SpecularFactorParameter = effect.FindParameterByName("_specularFactor");
@@ -127,7 +127,7 @@ namespace Nursia.Standard
 
 		public NodeBlendMode BlendMode { get; set; } = NodeBlendMode.Opaque;
 
-		private void InvalidateDefault()
+		private void Invalidate()
 		{
 			_effectBinding = null;
 		}

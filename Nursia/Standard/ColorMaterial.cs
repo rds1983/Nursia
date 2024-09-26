@@ -7,11 +7,9 @@ namespace Nursia.Standard
 {
 	public class ColorMaterial : IMaterial
 	{
-		private EffectBinding _effectBinding = Resources.ColorEffectBinding();
-
 		public Color Color { get; set; }
 
-		public EffectBinding EffectBinding => _effectBinding;
+		public EffectBinding EffectBinding => DefaultEffects.ColorEffectBinding;
 
 		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
 
@@ -23,7 +21,7 @@ namespace Nursia.Standard
 
 		public ColorMaterial()
 		{
-			ColorParameter = _effectBinding.Effect.FindParameterByName("_color");
+			ColorParameter = EffectBinding.Effect.FindParameterByName("_color");
 		}
 
 		public void SetParameters()

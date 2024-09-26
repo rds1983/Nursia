@@ -15,7 +15,7 @@
 
 		private ShadowMapMaterial(bool skinning)
 		{
-			EffectBinding = Resources.GetShadowMapEffectBinding(skinning, false)();
+			EffectBinding = DefaultEffects.GetShadowMapEffectBinding(skinning, false);
 		}
 
 		public void SetParameters()

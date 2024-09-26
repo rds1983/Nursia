@@ -36,7 +36,7 @@ namespace Nursia.Standard
 			{
 				if (_effectBinding == null)
 				{
-					_effectBinding = Resources.GetBillboardEffectBinding(RenderTexture != null)();
+					_effectBinding = DefaultEffects.GetBillboardEffectBinding(RenderTexture != null);
 
 					var effect = _effectBinding.Effect;
 					WidthParameter = effect.Parameters["_width"];

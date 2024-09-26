@@ -10,6 +10,8 @@ namespace Nursia
 	{
 		private static Game _game;
 
+		public static IEffectsRegistry EffectsRegistry = new StaticEffectsRegistry();
+
 		public static Game Game
 		{
 			get
@@ -50,8 +52,6 @@ namespace Nursia
 		public static float TotalGameTimeInSeconds { get; set; }
 
 		public static bool DepthBufferEnabled { get; set; } = true;
-
-		public static IExternalEffectsSource ExternalEffectsSource { get; set; }
 
 		public static Action<string> InfoLogHandler = Console.WriteLine;
 		public static Action<string> WarnLogHandler = Console.WriteLine;

@@ -5,11 +5,21 @@ using Nursia.Utilities;
 
 namespace Nursia.Standard
 {
-	public class ColorMaterial : IMaterial
+	public class ColorEffectBinding : EffectBinding
+	{
+		public EffectParameter ColorParameter { get; private set; }
+
+		protected override void BindParameters()
+		{
+			base.BindParameters();
+
+			ColorParameter = Effect.FindParameterByName("_color");
+		}
+	}
+
+	public class ColorMaterial : BaseMaterial<ColorEffectBinding>, IMaterial
 	{
 		public Color Color { get; set; }
-
-		public EffectBinding EffectBinding => DefaultEffects.ColorEffectBinding;
 
 		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
 
@@ -17,16 +27,12 @@ namespace Nursia.Standard
 
 		public bool ReceivesShadows => false;
 
-		private EffectParameter ColorParameter { get; set; }
-
-		public ColorMaterial()
-		{
-			ColorParameter = EffectBinding.Effect.FindParameterByName("_color");
-		}
-
 		public void SetParameters()
 		{
-			ColorParameter.SetValue(Color.ToVector4());
+			InternalBinding.ColorParameter.SetValue(Color.ToVector4());
 		}
+
+		protected override ColorEffectBinding CreateBinding() =>
+			EffectsRegistry.GetStockEffectBinding<ColorEffectBinding>("ColorEffect");
 	}
 }

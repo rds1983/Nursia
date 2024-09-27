@@ -5,17 +5,37 @@ using Newtonsoft.Json;
 using Nursia.Rendering;
 using Nursia.Serialization;
 using Nursia.Utilities;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Nursia.Standard
 {
-	public class DefaultMaterial : ItemWithId, IMaterial, IHasExternalAssets
+	public class DefaultEffectBinding : EffectBinding
 	{
-		private EffectBinding _effectBinding;
+		public EffectParameter SpecularFactorParameter { get; private set; }
+		public EffectParameter SpecularPowerParameter { get; private set; }
+		public EffectParameter DiffuseColorParameter { get; private set; }
+		public EffectParameter TextureParameter { get; private set; }
+
+		protected override void BindParameters()
+		{
+			base.BindParameters();
+
+			SpecularFactorParameter = Effect.FindParameterByName("_specularFactor");
+			SpecularPowerParameter = Effect.FindParameterByName("_specularPower");
+			DiffuseColorParameter = Effect.FindParameterByName("_diffuseColor");
+			TextureParameter = Effect.FindParameterByName("_texture");
+		}
+	}
+
+	public class DefaultMaterial : BaseMaterial<DefaultEffectBinding>, IMaterial, IHasExternalAssets
+	{
 		private bool _receivesLight = true;
 		private bool _receivesShadows = true;
 		private bool _skinning = false;
 		private Texture2D _texture;
+
+		public string Id { get; set; }
 
 		[JsonIgnore]
 		public Texture2D Texture
@@ -99,38 +119,7 @@ namespace Nursia.Standard
 
 		public Color DiffuseColor { get; set; } = Color.White;
 
-		[Browsable(false)]
-		[JsonIgnore]
-		public EffectBinding EffectBinding
-		{
-			get
-			{
-				if (_effectBinding == null)
-				{
-					_effectBinding = DefaultEffects.GetDefaultEffectBinding(Texture != null, _skinning, false, _receivesLight, _receivesShadows);
-
-					var effect = _effectBinding.Effect;
-					SpecularFactorParameter = effect.FindParameterByName("_specularFactor");
-					SpecularPowerParameter = effect.FindParameterByName("_specularPower");
-					DiffuseColorParameter = effect.FindParameterByName("_diffuseColor");
-					TextureParameter = effect.FindParameterByName("_texture");
-				}
-
-				return _effectBinding;
-			}
-		}
-
-		private EffectParameter SpecularFactorParameter { get; set; }
-		private EffectParameter SpecularPowerParameter { get; set; }
-		private EffectParameter DiffuseColorParameter { get; set; }
-		private EffectParameter TextureParameter { get; set; }
-
 		public NodeBlendMode BlendMode { get; set; } = NodeBlendMode.Opaque;
-
-		private void Invalidate()
-		{
-			_effectBinding = null;
-		}
 
 		public void Load(AssetManager assetManager)
 		{
@@ -142,11 +131,38 @@ namespace Nursia.Standard
 
 		public void SetParameters()
 		{
-			SpecularFactorParameter?.SetValue(SpecularFactor);
-			SpecularPowerParameter?.SetValue(SpecularPower);
+			var binding = InternalBinding;
+			binding.SpecularFactorParameter?.SetValue(SpecularFactor);
+			binding.SpecularPowerParameter?.SetValue(SpecularPower);
 
-			DiffuseColorParameter.SetValue(DiffuseColor.ToVector4());
-			TextureParameter?.SetValue(Texture);
+			binding.DiffuseColorParameter.SetValue(DiffuseColor.ToVector4());
+			binding.TextureParameter?.SetValue(Texture);
+		}
+
+		protected override DefaultEffectBinding CreateBinding()
+		{
+			var defines = new Dictionary<string, string>();
+			if (ReceivesLight)
+			{
+				defines["LIGHTNING"] = "1";
+			}
+
+			if (Skinning)
+			{
+				defines["SKINNING"] = "1";
+			}
+
+			if (Texture != null)
+			{
+				defines["TEXTURE"] = "1";
+			}
+
+			if (ReceivesShadows)
+			{
+				defines["SHADOWS"] = "1";
+			}
+
+			return EffectsRegistry.GetStockEffectBinding<DefaultEffectBinding>("DefaultEffect", defines);
 		}
 	}
 }

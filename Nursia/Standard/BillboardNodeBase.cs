@@ -2,15 +2,34 @@
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Rendering;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Plane = Nursia.Primitives.Plane;
 
 namespace Nursia.Standard
 {
+	public class BillboardEffectBinding : EffectBinding
+	{
+		public EffectParameter Width { get; set; }
+		public EffectParameter Height { get; set; }
+		public EffectParameter Color { get; set; }
+		public EffectParameter Texture { get; set; }
+
+		protected override void BindParameters()
+		{
+			base.BindParameters();
+
+			Width = Effect.Parameters["_width"];
+			Height = Effect.Parameters["_height"];
+			Color = Effect.Parameters["_color"];
+			Texture = Effect.Parameters["_texture"];
+		}
+	}
+
 	public abstract class BillboardNodeBase : SceneNode, IMaterial
 	{
 		private static Mesh _mesh;
-		private EffectBinding _effectBinding;
+		private BillboardEffectBinding _effectBinding;
 
 		public Color Color { get; set; } = Color.White;
 
@@ -36,14 +55,18 @@ namespace Nursia.Standard
 			{
 				if (_effectBinding == null)
 				{
-					_effectBinding = DefaultEffects.GetBillboardEffectBinding(RenderTexture != null);
-
-					var effect = _effectBinding.Effect;
-					WidthParameter = effect.Parameters["_width"];
-					HeightParameter = effect.Parameters["_height"];
-					ColorParameter = effect.Parameters["_color"];
-					TextureParameter = effect.Parameters["_texture"];
-
+					if (RenderTexture == null)
+					{
+						_effectBinding = EffectsRegistry.GetStockEffectBinding<BillboardEffectBinding>("BillboardEffect");
+					}
+					else
+					{
+						_effectBinding = EffectsRegistry.GetStockEffectBinding<BillboardEffectBinding>("BillboardEffect",
+							new Dictionary<string, string>
+							{
+								["TEXTURE"] = "1"
+							});
+					}
 				}
 
 				return _effectBinding;
@@ -65,11 +88,6 @@ namespace Nursia.Standard
 		protected internal float Height { get; set; } = 1.0f;
 		protected internal abstract Texture2D RenderTexture { get; }
 
-		private EffectParameter WidthParameter { get; set; }
-		private EffectParameter HeightParameter { get; set; }
-		private EffectParameter ColorParameter { get; set; }
-		private EffectParameter TextureParameter { get; set; }
-
 		protected internal override void Render(RenderBatch batch)
 		{
 			base.Render(batch);
@@ -77,17 +95,17 @@ namespace Nursia.Standard
 			batch.BatchJob(this, GlobalTransform, Mesh);
 		}
 
-		protected void InvalidateDefault()
+		protected void InvalidateBinding()
 		{
 			_effectBinding = null;
 		}
 
 		public void SetParameters()
 		{
-			WidthParameter.SetValue(Width);
-			HeightParameter.SetValue(Height);
-			ColorParameter.SetValue(Color.ToVector4());
-			TextureParameter?.SetValue(RenderTexture);
+			_effectBinding.Width.SetValue(Width);
+			_effectBinding.Height.SetValue(Height);
+			_effectBinding.Color.SetValue(Color.ToVector4());
+			_effectBinding.Texture?.SetValue(RenderTexture);
 		}
 	}
 }

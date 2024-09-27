@@ -22,7 +22,7 @@ namespace Nursia.Standard
 				}
 
 				_texture = value;
-				InvalidateDefault();
+				InvalidateBinding();
 			}
 		}
 

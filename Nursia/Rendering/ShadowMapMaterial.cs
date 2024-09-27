@@ -1,4 +1,6 @@
-﻿namespace Nursia.Rendering
+﻿using System.Collections.Generic;
+
+namespace Nursia.Rendering
 {
 	internal class ShadowMapMaterial : IMaterial
 	{
@@ -15,7 +17,18 @@
 
 		private ShadowMapMaterial(bool skinning)
 		{
-			EffectBinding = DefaultEffects.GetShadowMapEffectBinding(skinning, false);
+			if (!skinning)
+			{
+				EffectBinding = EffectsRegistry.GetStockEffectBinding<EffectBinding>("ShadowMap");
+			}
+			else
+			{
+				EffectBinding = EffectsRegistry.GetStockEffectBinding<EffectBinding>("ShadowMap",
+					new Dictionary<string, string>
+					{
+						["SKINNING"] = "1"
+					});
+			}
 		}
 
 		public void SetParameters()

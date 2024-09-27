@@ -4,12 +4,29 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Nursia.Primitives;
 using Nursia.Rendering;
+using Nursia.Standard;
 using System.ComponentModel;
 
 namespace Nursia.Sky
 {
+	public class SkyboxEffectBinding: EffectBinding
+	{
+		public EffectParameter TextureParameter { get; private set; }
+		public EffectParameter TransformParameter { get; private set; }
+
+		protected override void BindParameters()
+		{
+			base.BindParameters();
+
+			TextureParameter = Effect.Parameters["_texture"];
+			TransformParameter = Effect.Parameters["_transform"];
+		}
+	}
+
 	public class Skybox : SceneNode, IMaterial
 	{
+		private static readonly SkyboxEffectBinding _binding =
+			EffectsRegistry.GetStockEffectBinding<SkyboxEffectBinding>("SkyboxEffect");
 		private readonly Mesh _mesh;
 
 		[Browsable(false)]
@@ -27,7 +44,7 @@ namespace Nursia.Sky
 		[Browsable(false)]
 		public string TexturePath { get; set; }
 
-		public EffectBinding EffectBinding => DefaultEffects.SkyboxEffectBinding;
+		public EffectBinding EffectBinding => _binding;
 
 		public NodeBlendMode BlendMode => NodeBlendMode.Opaque;
 
@@ -35,15 +52,9 @@ namespace Nursia.Sky
 
 		public bool ReceivesShadows => false;
 
-		private EffectParameter TextureParameter { get; set; }
-		private EffectParameter TransformParameter { get; set; }
-
-
 		public Skybox()
 		{
 			var effect = EffectBinding.Effect;
-			TextureParameter = effect.Parameters["_texture"];
-			TransformParameter = effect.Parameters["_transform"];
 
 			_mesh = PrimitiveMeshes.CubePositionFromMinusOneToOne;
 		}
@@ -69,8 +80,8 @@ namespace Nursia.Sky
 
 		public void SetParameters()
 		{
-			TextureParameter.SetValue(Texture);
-			TransformParameter.SetValue(Transform);
+			_binding.TextureParameter.SetValue(Texture);
+			_binding.TransformParameter.SetValue(Transform);
 		}
 	}
 }

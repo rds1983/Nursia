@@ -7,29 +7,53 @@ namespace Nursia.Rendering
 	public class EffectBinding
 	{
 		private static int _lastBatchId = 0;
+		private Effect _effect;
 
 		public int BatchId { get; }
-		public Effect Effect { get; }
 
-		public EffectParameter LightViewProj { get; }
-		public EffectParameter WorldViewProj { get; }
-		public EffectParameter View { get; }
-		public EffectParameter World { get; }
-		public EffectParameter WorldInverseTranspose { get; }
-		public EffectParameter CameraPosition { get; }
-		public EffectParameter LightType { get; }
-		public EffectParameter LightPosition { get; }
-		public EffectParameter LightDirection { get; }
-		public EffectParameter LightColor { get; }
-		public EffectParameter LightCount { get; }
-		public EffectParameter ShadowMap { get; }
-		public EffectParameter Bones { get; }
+		public Effect Effect
+		{
+			get => _effect;
 
-		public EffectBinding(Effect effect)
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+
+				if (value == _effect)
+				{
+					return;
+				}
+
+				_effect = value;
+				BindParameters();
+			}
+		}
+
+		public EffectParameter LightViewProj { get; private set; }
+		public EffectParameter WorldViewProj { get; private set; }
+		public EffectParameter View { get; private set; }
+		public EffectParameter World { get; private set; }
+		public EffectParameter WorldInverseTranspose { get; private set; }
+		public EffectParameter CameraPosition { get; private set; }
+		public EffectParameter LightType { get; private set; }
+		public EffectParameter LightPosition { get; private set; }
+		public EffectParameter LightDirection { get; private set; }
+		public EffectParameter LightColor { get; private set; }
+		public EffectParameter LightCount { get; private set; }
+		public EffectParameter ShadowMap { get; private set; }
+		public EffectParameter Bones { get; private set; }
+
+		public EffectBinding()
 		{
 			BatchId = _lastBatchId;
 			++_lastBatchId;
-			Effect = effect ?? throw new ArgumentNullException(nameof(effect));
+		}
+
+		protected virtual void BindParameters()
+		{
 			LightViewProj = Effect.FindParameterByName("_lightViewProj");
 			WorldViewProj = Effect.FindParameterByName("_worldViewProj");
 			World = Effect.FindParameterByName("_world");

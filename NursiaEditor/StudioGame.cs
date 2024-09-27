@@ -98,9 +98,6 @@ namespace NursiaEditor
 			base.Update(gameTime);
 
 			_fpsCounter.Update(gameTime);
-
-			var dynamicEffectsRegistry = Nrs.EffectsRegistry as DynamicEffectsRegistry;
-			dynamicEffectsRegistry?.Update();
 		}
 
 		protected override void Draw(GameTime gameTime)

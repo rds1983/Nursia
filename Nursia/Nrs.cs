@@ -10,7 +10,7 @@ namespace Nursia
 	{
 		private static Game _game;
 
-		public static IEffectsRegistry EffectsRegistry = new StaticEffectsRegistry();
+		public static IEffectsSource EffectsSource = new StaticEffectsSource();
 
 		public static Game Game
 		{

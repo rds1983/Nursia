@@ -218,7 +218,6 @@ namespace NursiaEditor.UI
 			_tabControlScenes.SelectedIndexChanged += (s, a) => RefreshExplorer(null);
 
 			_tabControlScenes.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
-			_tabControlEffects.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 
 			_buttonGrid.IsToggled = NursiaEditorOptions.ShowGrid;
 			_buttonBoundingBoxes.IsToggled = DebugSettings.DrawBoundingBoxes;
@@ -338,23 +337,7 @@ namespace NursiaEditor.UI
 
 		private void UpdateStackPanelEditor()
 		{
-			if (_tabControlScenes.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_panelScenes))
-			{
-				_splitPaneEditor.Widgets.Remove(_panelScenes);
-			}
-			else if (_tabControlScenes.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_panelScenes))
-			{
-				_splitPaneEditor.Widgets.Insert(0, _panelScenes);
-			}
-
-			if (_tabControlEffects.Items.Count == 0 && _splitPaneEditor.Widgets.Contains(_tabControlEffects))
-			{
-				_splitPaneEditor.Widgets.Remove(_tabControlEffects);
-			}
-			else if (_tabControlEffects.Items.Count > 0 && !_splitPaneEditor.Widgets.Contains(_tabControlEffects))
-			{
-				_splitPaneEditor.Widgets.Add(_tabControlEffects);
-			}
+			_panelScenes.Visible = _tabControlScenes.Items.Count > 0;
 		}
 
 		private void OpenCurrentSolutionItem()
@@ -403,43 +386,6 @@ namespace NursiaEditor.UI
 
 					_tabControlScenes.Items.Add(tabItem);
 					_tabControlScenes.SelectedIndex = _tabControlScenes.Items.Count - 1;
-				}
-				else if (file.EndsWith(".fx"))
-				{
-					if (SetTabByName(_tabControlEffects, file))
-					{
-						return;
-					}
-
-					// Effect
-					var effect = File.ReadAllText(file);
-
-					var textEditor = new TextBox
-					{
-						Multiline = true,
-						Wrap = true,
-						Text = effect,
-						HorizontalAlignment = HorizontalAlignment.Stretch,
-						VerticalAlignment = VerticalAlignment.Stretch,
-					};
-
-					var scrollViewer = new ScrollViewer
-					{
-						Content = textEditor,
-					};
-
-					var tabInfo = new TabInfo(file);
-
-					var tabItem = new TabItem
-					{
-						Text = tabInfo.Title,
-						Content = textEditor,
-						Tag = tabInfo
-					};
-
-					tabInfo.TitleChanged += (s, a) => tabItem.Text = tabInfo.Title;
-					_tabControlEffects.Items.Add(tabItem);
-					_tabControlEffects.SelectedIndex = _tabControlEffects.Items.Count - 1;
 				}
 			}
 			catch (Exception ex)
@@ -743,28 +689,6 @@ namespace NursiaEditor.UI
 				foreach (var file in files)
 				{
 					var node = scenesNode.AddSubNode(new Label
-					{
-						Text = Path.GetFileName(file),
-					});
-
-					node.Tag = file;
-				}
-			}
-
-			// Effects
-			var effectsNode = projectNode.AddSubNode(new Label
-			{
-				Text = "Effects"
-			});
-			effectsNode.IsExpanded = true;
-
-			var effectsFolder = Path.Combine(folder, Constants.EffectsFolder);
-			if (Directory.Exists(effectsFolder))
-			{
-				var files = Directory.GetFiles(effectsFolder, "*.fx");
-				foreach (var file in files)
-				{
-					var node = effectsNode.AddSubNode(new Label
 					{
 						Text = Path.GetFileName(file),
 					});

@@ -53,9 +53,9 @@ namespace Nursia
 
 		public static bool DepthBufferEnabled { get; set; } = true;
 
-		public static Action<string> InfoLogHandler = Console.WriteLine;
-		public static Action<string> WarnLogHandler = Console.WriteLine;
-		public static Action<string> ErrorLogHandler = Console.WriteLine;
+		public static Action<string> LogInfo = Console.WriteLine;
+		public static Action<string> LogWarning = Console.WriteLine;
+		public static Action<string> LogError = Console.WriteLine;
 
 		public static string Version
 		{
@@ -66,58 +66,6 @@ namespace Nursia
 
 				return name.Version.ToString();
 			}
-		}
-
-		private static string FormatMessage(string message, params object[] args)
-		{
-			string str;
-			try
-			{
-				if (args != null && args.Length > 0)
-				{
-					str = string.Format(message, args);
-				}
-				else
-				{
-					str = message;
-				}
-			}
-			catch (FormatException)
-			{
-				str = message;
-			}
-
-			return str;
-		}
-
-		public static void LogInfo(string message, params object[] args)
-		{
-			if (InfoLogHandler == null)
-			{
-				return;
-			}
-
-			InfoLogHandler(FormatMessage(message, args));
-		}
-
-		public static void LogWarn(string message, params object[] args)
-		{
-			if (WarnLogHandler == null)
-			{
-				return;
-			}
-
-			WarnLogHandler(FormatMessage(message, args));
-		}
-
-		public static void LogError(string message, params object[] args)
-		{
-			if (ErrorLogHandler == null)
-			{
-				return;
-			}
-
-			ErrorLogHandler(FormatMessage(message, args));
 		}
 
 		private static void GameOnDisposed(object sender, EventArgs eventArgs)

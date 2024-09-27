@@ -287,9 +287,6 @@ namespace Nursia.Rendering
 				return;
 			}
 
-			// Set state
-			SetState();
-
 			// Firstly determine whether we have a shadow casting light
 			foreach (var node in _nodes)
 			{
@@ -319,9 +316,6 @@ namespace Nursia.Rendering
 			device.DepthStencilState = DepthStencilState.DepthRead;
 			RenderPass(camera, RenderPassType.Transparent);
 
-			// Restore state
-			RestoreState();
-
 			if (DebugSettings.DrawBoundingBoxes)
 			{
 				foreach (var job in _batch.Jobs)
@@ -348,12 +342,17 @@ namespace Nursia.Rendering
 				throw new ArgumentNullException(nameof(camera));
 			}
 
+			// Set state
+			SetState();
+
 			try
 			{
 				InternalRender(camera);
 			}
 			finally
 			{
+				// Restore state
+				RestoreState();
 				_nodes.Clear();
 				_batch.Clear();
 			}

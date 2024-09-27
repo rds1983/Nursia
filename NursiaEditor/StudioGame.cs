@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D.UI;
-using Nursia.Rendering;
 using Nursia;
 using NursiaEditor.UI;
 
@@ -99,6 +98,9 @@ namespace NursiaEditor
 			base.Update(gameTime);
 
 			_fpsCounter.Update(gameTime);
+
+			var dynamicEffectsRegistry = Nrs.EffectsRegistry as DynamicEffectsRegistry;
+			dynamicEffectsRegistry?.Update();
 		}
 
 		protected override void Draw(GameTime gameTime)

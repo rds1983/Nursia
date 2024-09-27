@@ -22,10 +22,12 @@ namespace Nursia
 		public EffectBinding GetEffectBinding(Assembly assembly, string name, Dictionary<string, string> defines)
 		{
 			AssetManager assetManager;
-			if (!_assetsManagers.TryGetValue(assembly.FullName, out assetManager))
+
+			var key = assembly.GetName().Name;
+			if (!_assetsManagers.TryGetValue(key, out assetManager))
 			{
 				assetManager = AssetManager.CreateResourceAssetManager(assembly, EffectsResourcePath);
-				_assetsManagers[assembly.FullName] = assetManager;
+				_assetsManagers[key] = assetManager;
 			}
 
 			name = Path.ChangeExtension(name, "efb");

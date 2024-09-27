@@ -782,6 +782,8 @@ namespace NursiaEditor.UI
 				{
 					var solutionFile = SolutionFile.Parse(path);
 
+					Nrs.EffectsRegistry = new DynamicEffectsRegistry(Path.GetDirectoryName(path));
+
 					_treeFileSolution.RemoveAllSubNodes();
 					foreach (var project in solutionFile.ProjectsInOrder)
 					{

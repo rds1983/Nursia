@@ -58,16 +58,15 @@ namespace Nursia
 			return result.ToArray();
 		}
 
-		public static CompilationResult Compile(string inputFile, Dictionary<string, string> defines, Action<string> reporter)
+		public static CompilationResult Compile(string inputFile, Dictionary<string, string> defines)
 		{
-			var folder = Path.GetDirectoryName(inputFile);
 			var sb = new StringBuilder();
 			sb.Clear();
 			sb.Append($"Compiling {inputFile}");
 
 			if (defines != null && defines.Count > 0)
 			{
-				sb.Append("with defines: ");
+				sb.Append(" with defines: ");
 				var i = 0;
 				foreach (var pair in defines)
 				{
@@ -81,19 +80,20 @@ namespace Nursia
 				}
 			}
 
-			reporter(sb.ToString());
+			Nrs.LogInfo(sb.ToString());
 			var data = File.ReadAllText(inputFile);
+			var folder = Path.GetDirectoryName(inputFile);
 			var compiled = ShaderBytecode.Compile(data, "fx_2_0", ShaderFlags.OptimizationLevel3,
 				EffectFlags.None, ToMacroses(defines), new IncludeFX(folder));
 
 			if (!string.IsNullOrEmpty(compiled.Message))
 			{
-				reporter(compiled.Message);
+				Nrs.LogInfo(compiled.Message);
 			}
 			return new CompilationResult(compiled.Bytecode, defines);
 		}
 
-		public static CompilationResult[] Compile(string inputFile, Action<string> reporter)
+		public static CompilationResult[] Compile(string inputFile)
 		{
 			var xmlFile = Path.ChangeExtension(inputFile, "xml");
 			List<Dictionary<string, string>> variants;
@@ -113,7 +113,7 @@ namespace Nursia
 			var result = new List<CompilationResult>();
 			foreach (var defines in variants)
 			{
-				var compilationResult = Compile(inputFile, defines, reporter);
+				var compilationResult = Compile(inputFile, defines);
 				result.Add(compilationResult);
 			}
 

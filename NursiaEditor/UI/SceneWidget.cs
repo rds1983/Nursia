@@ -14,6 +14,7 @@ using Nursia.Rendering.Lights;
 using Nursia.Standard;
 using NursiaEditor.Utility;
 using Microsoft.Build.Construction;
+using Myra.Graphics2D;
 
 namespace NursiaEditor.UI
 {
@@ -218,7 +219,7 @@ namespace NursiaEditor.UI
 			_controller.Update();
 		}
 
-		public override void InternalRender(Myra.Graphics2D.RenderContext context)
+		public override void InternalRender(RenderContext context)
 		{
 			base.InternalRender(context);
 
@@ -318,13 +319,16 @@ namespace NursiaEditor.UI
 			{
 				Nrs.GraphicsDevice.ScissorRectangle = scissor;
 				var font = NursiaEditor.Resources.ErrorFont;
-				var sz = font.MeasureString(ex.Message);
+				var message = ex.ToString();
+				var sz = font.MeasureString(message);
 
 				bounds = ActualBounds;
 				var pos = new Vector2(bounds.X + (bounds.Width - sz.X) / 2,
 					bounds.Y + (bounds.Height - sz.Y) / 2);
 
-				context.DrawString(font, ex.Message, pos, Color.Red);
+				pos.X = (int)pos.X;
+				pos.Y = (int)pos.Y;
+				context.DrawString(font, message, pos, Color.Red);
 			}
 			finally
 			{

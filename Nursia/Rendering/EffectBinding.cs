@@ -13,7 +13,22 @@ namespace Nursia.Rendering
 
 		public Effect Effect
 		{
-			get => _effect;
+			get
+			{
+				if (_effect != null)
+				{
+					if (!Nrs.EffectsSource.IsEffectValid(_effect))
+					{
+						var oldEffect = _effect;
+						_effect = Nrs.EffectsSource.UpdateEffect(_effect);
+						BindParameters();
+
+						oldEffect.Dispose();
+					}
+				}
+
+				return _effect;
+			}
 
 			set
 			{

@@ -33,5 +33,17 @@ namespace Nursia
 			name = Path.ChangeExtension(name, "efb");
 			return assetManager.LoadEffect(Nrs.GraphicsDevice, name, defines);
 		}
+
+		/// <summary>
+		/// Static Effects Source doesnt update effects
+		/// </summary>
+		/// <param name="effect"></param>
+		/// <returns></returns>
+		public bool IsEffectValid(Effect effect) => true;
+
+		public Effect UpdateEffect(Effect effect)
+		{
+			throw new System.NotImplementedException();
+		}
 	}
 }

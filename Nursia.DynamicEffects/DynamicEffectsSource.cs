@@ -5,9 +5,7 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
-using Nursia.Rendering;
 using System.Reflection;
-using SharpDX.Multimedia;
 
 namespace Nursia
 {
@@ -22,16 +20,21 @@ namespace Nursia
 		private class EffectSource
 		{
 			public string FilePath { get; }
-			public DateTime LastWrite { get; set; }
 			public List<EffectSource> Dependencies { get; } = new List<EffectSource>();
 
 			public EffectSource(string filePath)
 			{
 				FilePath = filePath;
-				LastWrite = File.GetLastWriteTime(filePath);
 			}
 
 			public override string ToString() => Path.GetFileName(FilePath);
+		}
+
+		private class CompiledEffectInfo
+		{
+			public EffectSource Source;
+			public Dictionary<string, string> Defines;
+			public readonly Dictionary<string, DateTime> LastWrite = new Dictionary<string, DateTime>();
 		}
 
 		private readonly string _folder;
@@ -78,6 +81,8 @@ namespace Nursia
 				throw new Exception($"Could not find '{file}'");
 			}
 
+			file = file.Replace("\\", "/");
+
 			EffectSource source;
 			if (_sources.TryGetValue(file, out source))
 			{
@@ -105,6 +110,16 @@ namespace Nursia
 			return source;
 		}
 
+		private static void FillLastWrite(EffectSource source, Dictionary<string, DateTime> lastWrite)
+		{
+			lastWrite[source.FilePath] = File.GetLastWriteTime(source.FilePath);
+
+			foreach (var dep in source.Dependencies)
+			{
+				FillLastWrite(dep, lastWrite);
+			}
+		}
+
 		public Effect GetEffect(Assembly assembly, string name, Dictionary<string, string> defines)
 		{
 			try
@@ -112,7 +127,7 @@ namespace Nursia
 				// Build effect source file name
 				var assemblyName = assembly.GetName().Name;
 				var sourceFilePath = Path.Combine(_folder, $"{assemblyName}/Effects/{name}.fx");
-				AddSourceFile(sourceFilePath);
+				var source = AddSourceFile(sourceFilePath);
 
 				// Check if precompiled version of the effect exists
 				var binaryName = BuildCompiledEffectName(name, defines);
@@ -136,14 +151,20 @@ namespace Nursia
 				}
 				else
 				{
-					var fullPath = Path.Combine(_folder, $"{assembly.GetName().Name}/Effects/{name}.fx");
-
-					fullPath = Path.ChangeExtension(fullPath, "fx");
-					var compilationResult = ShaderCompiler.Compile(fullPath, defines);
+					var compilationResult = ShaderCompiler.Compile(sourceFilePath, defines);
 					effectData = compilationResult.Data;
 				}
 
 				var effect = new Effect(Nrs.GraphicsDevice, effectData);
+
+				var effectInfo = new CompiledEffectInfo
+				{
+					Source = source,
+					Defines = defines
+				};
+
+				FillLastWrite(source, effectInfo.LastWrite);
+				effect.Tag = effectInfo;
 
 				return effect;
 			}
@@ -152,6 +173,37 @@ namespace Nursia
 				Nrs.LogError(ex.Message);
 				throw;
 			}
+		}
+
+		public bool IsEffectValid(Effect effect)
+		{
+			var effectInfo = (CompiledEffectInfo)effect.Tag;
+			var lastWrite = effectInfo.LastWrite;
+			foreach (var pair in lastWrite)
+			{
+				var newLastWrite = File.GetLastWriteTime(pair.Key);
+				if (pair.Value != newLastWrite)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		public Effect UpdateEffect(Effect effect)
+		{
+			var effectInfo = (CompiledEffectInfo)effect.Tag;
+			var compilationResult = ShaderCompiler.Compile(effectInfo.Source.FilePath, effectInfo.Defines);
+			var effectData = compilationResult.Data;
+
+			var newEffect = new Effect(Nrs.GraphicsDevice, effectData);
+
+			effectInfo.LastWrite.Clear();
+			FillLastWrite(effectInfo.Source, effectInfo.LastWrite);
+			newEffect.Tag = effectInfo;
+
+			return newEffect;
 		}
 	}
 }

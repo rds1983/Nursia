@@ -76,6 +76,8 @@ namespace Nursia
 
 			_storedEffects[key] = result;
 
+			Nrs.LogInfo($"Effect '{key}' was assigned id {binding.BatchId}");
+
 			return binding;
 		}
 

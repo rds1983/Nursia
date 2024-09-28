@@ -23,7 +23,10 @@ namespace Nursia.Rendering
 						_effect = Nrs.EffectsSource.UpdateEffect(_effect);
 						BindParameters();
 
-						oldEffect.Dispose();
+						if (_effect != oldEffect)
+						{
+							oldEffect.Dispose();
+						}
 					}
 				}
 

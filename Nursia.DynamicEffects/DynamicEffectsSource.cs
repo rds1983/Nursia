@@ -21,6 +21,7 @@ namespace Nursia
 		{
 			public string FilePath { get; }
 			public List<EffectSource> Dependencies { get; } = new List<EffectSource>();
+			public string Name => Path.GetFileNameWithoutExtension(FilePath);
 
 			public EffectSource(string filePath)
 			{
@@ -194,16 +195,39 @@ namespace Nursia
 		public Effect UpdateEffect(Effect effect)
 		{
 			var effectInfo = (CompiledEffectInfo)effect.Tag;
-			var compilationResult = ShaderCompiler.Compile(effectInfo.Source.FilePath, effectInfo.Defines);
-			var effectData = compilationResult.Data;
 
-			var newEffect = new Effect(Nrs.GraphicsDevice, effectData);
+			try
+			{
+				var compilationResult = ShaderCompiler.Compile(effectInfo.Source.FilePath, effectInfo.Defines);
+				var effectData = compilationResult.Data;
 
-			effectInfo.LastWrite.Clear();
-			FillLastWrite(effectInfo.Source, effectInfo.LastWrite);
-			newEffect.Tag = effectInfo;
+				var folder = Path.GetDirectoryName(effectInfo.Source.FilePath);
+				var binaryName = BuildCompiledEffectName(effectInfo.Source.Name, effectInfo.Defines);
+				var binaryPath = Path.Combine(folder, $"{EffectsResourcePath}/{binaryName}");
 
-			return newEffect;
+				Nrs.LogInfo($"Writing '{binaryPath}'");
+				File.WriteAllBytes(binaryPath, effectData);
+
+				var newEffect = new Effect(Nrs.GraphicsDevice, effectData)
+				{
+					Tag = effectInfo
+				};
+
+				effect = newEffect;
+
+			}
+			catch(Exception ex)
+			{
+				Nrs.LogError(ex.ToString());
+			}
+			finally
+			{
+				effectInfo.LastWrite.Clear();
+				FillLastWrite(effectInfo.Source, effectInfo.LastWrite);
+			}
+
+
+			return effect;
 		}
 	}
 }

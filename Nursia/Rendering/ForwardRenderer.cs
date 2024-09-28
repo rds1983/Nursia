@@ -30,6 +30,7 @@ namespace Nursia.Rendering
 		private Vector3[] _effectLightDirection = new Vector3[Constants.MaxLights];
 		private Vector3[] _effectLightColor = new Vector3[Constants.MaxLights];
 		private int _lightCount = 0;
+		private Camera _lightCamera;
 		private Matrix _lightViewProj;
 		private readonly List<SceneNode> _nodes = new List<SceneNode>();
 
@@ -236,6 +237,8 @@ namespace Nursia.Rendering
 			}
 		}
 
+		private Camera clone;
+
 		private void ShadowMapRun(Camera camera)
 		{
 			if (ShadowCastingLight == null)
@@ -249,10 +252,18 @@ namespace Nursia.Rendering
 			try
 			{
 				// Light camera
-				var lightCamera = ShadowCastingLight.GetLightCamera(camera.Position);
+				clone = camera.Clone();
+
+/*				var pos = new Vector3(-8.182744f, 26.391083f, 52.822113f);
+				clone.SetLookAt(
+					pos, 
+					pos + new Vector3(0.07009132f, -0.40672514f, -0.9108578f));*/
+				clone.FarPlaneDistance = Math.Min(Constants.ShadowsViewSize, clone.FarPlaneDistance);
+
+				_lightCamera = ShadowCastingLight.GetLightCamera(clone);
 
 				// Batch render jobs
-				BatchNodes(RenderBatchPass.ShadowMap, lightCamera);
+				BatchNodes(RenderBatchPass.ShadowMap, _lightCamera);
 
 				// Set light view proj
 				_lightViewProj = _batch.ViewProjection;
@@ -265,14 +276,18 @@ namespace Nursia.Rendering
 				// furthest the object could be away
 				device.Clear(Color.White);
 
+				// Switch face culling in order to get rid of so called "peter panning"
+				device.RasterizerState = RasterizerState.CullClockwise;
+
 				// Shadow map pass
-				RenderPass(lightCamera, RenderPassType.ShadowMap);
+				RenderPass(_lightCamera, RenderPassType.ShadowMap);
 			}
 			finally
 			{
 				// Set render target back to the back buffer
 				device.SetRenderTarget(null);
 				device.Viewport = oldViewport;
+				device.RasterizerState = RasterizerState.CullCounterClockwise;
 			}
 		}
 
@@ -330,6 +345,15 @@ namespace Nursia.Rendering
 			{
 				var frustum = new BoundingFrustum(_lightViewProj);
 				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Green);
+
+				var p1 = _lightCamera.Position;
+				var p2 = p1 + _lightCamera.Direction * 20.0f;
+
+				DebugShapeRenderer.AddLine(p1, p2, Color.YellowGreen);
+
+				var cameraProj = clone.CalculateProjection();
+				frustum = new BoundingFrustum(clone.View * cameraProj);
+				DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Magenta);
 			}
 
 			DebugShapeRenderer.Draw(camera.View, _batch.Projection);

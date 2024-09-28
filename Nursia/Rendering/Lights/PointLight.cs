@@ -13,7 +13,7 @@ namespace Nursia.Rendering.Lights
 			batch.PointLights.Add(this);
 		}
 
-		public override Camera GetLightCamera(Vector3 viewerPos)
+		public override Camera GetLightCamera(Camera camera)
 		{
 			throw new System.NotImplementedException();
 		}

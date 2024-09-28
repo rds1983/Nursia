@@ -156,8 +156,8 @@ float4 PS(VSOutput input): COLOR
 	// Finish the projection
 	float3 lightingPosition = input.LightPosition.xyz / input.LightPosition.w;
 
-	float4 shadowFactor = CalculateShadowFactor(lightingPosition);
-	color *= shadowFactor;
+	float shadowFactor = CalculateShadowFactor(lightingPosition);
+	color *= (1 - shadowFactor * 0.5);
 #endif
 
 	return color;

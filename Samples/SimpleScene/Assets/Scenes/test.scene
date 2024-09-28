@@ -1,9 +1,10 @@
 {
   "Camera": {
-    "Position": "0.526914, 60.42708, 70.96211",
-    "YawAngle": 184.70027,
-    "PitchAngle": 43.699333,
+    "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
     "ViewAngle": 90.0,
+    "Position": "-3.8109946, 44.556065, 75.03419",
+    "YawAngle": 176.19977,
+    "PitchAngle": 34.199226,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
   },
@@ -37,6 +38,7 @@
       },
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
+        "CastsShadows": false,
         "SpecularPower": 250.0,
         "DiffuseColor": "255, 255, 255, 255"
       },

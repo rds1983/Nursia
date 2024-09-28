@@ -1,10 +1,10 @@
 {
   "Camera": {
     "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
-    "ViewAngle": 90.0,
-    "Position": "7.5620475, 37.462715, 20.802984",
-    "YawAngle": 182.4007,
-    "PitchAngle": 63.299217,
+    "ViewAngle": 60.0,
+    "Position": "5.0912247, 38.5304, 47.601944",
+    "YawAngle": 190.3005,
+    "PitchAngle": 36.29921,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0
   },
@@ -32,6 +32,7 @@
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "TexturePath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Textures\\checker.dds",
+        "CastsShadows": false,
         "SpecularPower": 250.0,
         "DiffuseColor": "255, 255, 255, 255"
       },

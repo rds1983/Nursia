@@ -2,15 +2,13 @@ float4x4 _lightViewProj;
 float _shadowDepthBias = 0.001f;
 DECLARE_TEXTURE_POINT_CLAMP(_shadowMap);
 
-float4 CalculateShadowFactor(float3 lightingPosition)
+float CalculateShadowFactor(float3 lightingPosition)
 {
-	if (lightingPosition.x < -1.0f || lightingPosition.x > 1.0f ||
-		lightingPosition.y < -1.0f || lightingPosition.y > 1.0f ||
-		lightingPosition.z < -1.0f || lightingPosition.z > 1.0f)
+	if (lightingPosition.z > 1)
 	{
-		return float4(1, 1, 1, 1);
+		// Outside of shadow map
+		return 0;
 	}
-
 	// Find the position in the shadow map for this pixel
 	float2 ShadowTexCoord = 0.5 * lightingPosition.xy + float2( 0.5, 0.5 );
 	ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
@@ -27,8 +25,8 @@ float4 CalculateShadowFactor(float3 lightingPosition)
 	if (shadowdepth < ourdepth)
 	{
 		// Shadow the pixel by lowering the intensity
-		return float4(0.5, 0.5, 0.5, 1);
+		return 1;
 	};
 	
-	return float4(1, 1, 1, 1);
+	return 0;
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using System;
 using System.ComponentModel;
 
 namespace Nursia.Rendering.Lights
@@ -34,18 +35,27 @@ namespace Nursia.Rendering.Lights
 			Direction = new Vector3(1, 0, 0);
 		}
 
-		public override Camera GetLightCamera(Vector3 viewerPos)
+		public override Camera GetLightCamera(Camera camera)
 		{
-			var lightDir = -NormalizedDirection;
-
 			// Matrix with that will rotate in points the direction of the light
 			Matrix lightRotation = Matrix.CreateLookAt(Vector3.Zero,
-													   -lightDir,
+													   NormalizedDirection,
 													   Vector3.Up);
 
-			// Light Box is around the camera position
-			var radiusVec = new Vector3(Constants.ShadowsViewSize, Constants.ShadowsViewSize, Constants.ShadowsViewSize);
-			BoundingBox lightBox = new BoundingBox(viewerPos - radiusVec, viewerPos + radiusVec);
+			// Get the corners of the frustum
+			// Limit the camera far plance
+			var cameraProjection = camera.CalculateProjection();
+			var cameraFrustum = new BoundingFrustum(camera.View * cameraProjection);
+			Vector3[] frustumCorners = cameraFrustum.GetCorners();
+
+			// Transform the positions of the corners into the direction of the light
+			for (int i = 0; i < frustumCorners.Length; i++)
+			{
+				frustumCorners[i] = Vector3.Transform(frustumCorners[i], lightRotation);
+			}
+
+			// Find the smallest box around the points
+			BoundingBox lightBox = BoundingBox.CreateFromPoints(frustumCorners);
 
 			Vector3 boxSize = lightBox.Max - lightBox.Min;
 			Vector3 halfBoxSize = boxSize * 0.5f;
@@ -53,14 +63,18 @@ namespace Nursia.Rendering.Lights
 			// The position of the light should be in the center of the back
 			// pannel of the box. 
 			Vector3 lightPosition = lightBox.Min + halfBoxSize;
-			lightPosition.Z = lightBox.Min.Z;
+			// lightPosition.Z = lightBox.Min.Z;
 
 			// We need the position back in world coordinates so we transform 
 			// the light position by the inverse of the lights rotation
 			lightPosition = Vector3.Transform(lightPosition,
 											  Matrix.Invert(lightRotation));
 
-			_camera.SetLookAt(lightPosition, lightPosition - lightDir);
+			// Create the view matrix for the light
+			_camera.SetLookAt(lightPosition, lightPosition + NormalizedDirection);
+
+			// Create the projection matrix for the light
+			// The projection is orthographic since we are using a directional light
 			_camera.Width = boxSize.X;
 			_camera.Height = boxSize.Y;
 			_camera.NearPlaneDistance = -boxSize.Z;

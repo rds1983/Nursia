@@ -48,17 +48,21 @@
 #define _ps(r)  : register(ps, r)
 #define _cb(r)
 
-#define DECLARE_TEXTURE_LINEAR_WRAP(Name) \
-	texture2D Name; \
-	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Wrap; AddressV = Wrap; };
-	
 #define DECLARE_TEXTURE_LINEAR_CLAMP(Name) \
 	texture2D Name; \
 	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Clamp; AddressV = Clamp; };
-	
+
+#define DECLARE_TEXTURE_LINEAR_WRAP(Name) \
+	texture2D Name; \
+	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = Wrap; AddressV = Wrap; };
+
 #define DECLARE_TEXTURE_POINT_CLAMP(Name) \
 	texture2D Name; \
 	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = POINT; MinFilter = POINT; MagFilter = POINT; AddressU = Clamp; AddressV = Clamp; };
+
+#define DECLARE_TEXTURE_POINT_WRAP(Name) \
+	texture2D Name; \
+	sampler Name##Sampler = sampler_state { Texture = (Name); MipFilter = POINT; MinFilter = POINT; MagFilter = POINT; AddressU = Wrap; AddressV = Wrap; };
 
 #define DECLARE_CUBEMAP_LINEAR_CLAMP(Name) \
 	textureCUBE Name; \

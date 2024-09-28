@@ -15,6 +15,6 @@ namespace Nursia.Rendering.Lights
 		
 		public Color Color { get; set; } = Color.White;
 
-		public abstract Camera GetLightCamera(Vector3 viewerPos);
+		public abstract Camera GetLightCamera(Camera camera);
 	}
 }

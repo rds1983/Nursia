@@ -9,24 +9,30 @@ float CalculateShadowFactor(float3 lightingPosition)
 		// Outside of shadow map
 		return 0;
 	}
+
 	// Find the position in the shadow map for this pixel
 	float2 ShadowTexCoord = 0.5 * lightingPosition.xy + float2( 0.5, 0.5 );
 	ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
 
-	// Get the current depth stored in the shadow map
-	float shadowdepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord).r; 
-
 	// Calculate the current pixel depth
 	// The bias is used to prevent folating point errors that occur when
 	// the pixel of the occluder is being drawn
-	float ourdepth = lightingPosition.z - _shadowDepthBias;
+	float currentDepth = lightingPosition.z - _shadowDepthBias;
+	float shadow = 0.0;
+	float2 texelSize = float2(1.0 / 2048.0, 1.0 / 2048.0);
 
-	// Check to see if this pixel is in front or behind the value in the shadow map
-	if (shadowdepth < ourdepth)
+	[unroll]
+	for(int x = -1; x <= 1; ++x)
 	{
-		// Shadow the pixel by lowering the intensity
-		return 1;
-	};
-	
-	return 0;
+		[unroll]
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = SAMPLE_TEXTURE(_shadowMap, ShadowTexCoord + float2(x, y) * texelSize).r; 
+			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+
+	shadow /= 9.0;
+
+	return shadow;
 }

@@ -55,11 +55,11 @@ namespace Nursia.Rendering
 			}
 		}
 
-		internal void PrepareRender(RenderBatchPass pass, Camera camera)
+		internal void PrepareRender(RenderBatchPass pass, Matrix view, Matrix proj)
 		{
 			Pass = pass;
-			View = camera.View;
-			Projection = camera.CalculateProjection();
+			View = view;
+			Projection = proj;
 			ViewProjection = View * Projection;
 			Frustum = new BoundingFrustum(ViewProjection);
 

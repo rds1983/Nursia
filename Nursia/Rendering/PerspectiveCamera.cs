@@ -6,9 +6,10 @@ namespace Nursia.Rendering
 	{
 		public float ViewAngle { get; set; } = 90.0f;
 
-		public override Matrix CalculateProjection() =>
+		public override Matrix CalculateProjection(float near, float far) =>
 			Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(ViewAngle),
-				Nrs.GraphicsDevice.Viewport.AspectRatio, NearPlaneDistance, FarPlaneDistance);
+				Nrs.GraphicsDevice.Viewport.AspectRatio,
+				near, far);
 
 		public override Camera Clone()
 		{

@@ -341,7 +341,7 @@ namespace ModelViewer
 				_animationMoment = DateTime.Now;
 			}
 
-			_renderer.Render(_scene, _scene.Camera);
+			_renderer.Render(_scene.Camera);
 		}
 
 		protected override void Draw(GameTime gameTime)
@@ -354,7 +354,7 @@ namespace ModelViewer
 
 			_mainPanel._labelCamera.Text = "Camera: " + _scene.Camera.ToString();
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
+//			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
 
 			_desktop.Render();
 

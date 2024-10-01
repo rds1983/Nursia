@@ -335,9 +335,9 @@ namespace NursiaEditor.UI
 				device.Viewport = oldViewport;
 			}
 
-			if (NursiaEditorOptions.DrawShadowMap && _renderer.ShadowMap != null)
+			if (NursiaEditorOptions.DrawShadowMap)
 			{
-				context.Draw(_renderer.ShadowMap, new Rectangle(0, 0, 256, 256), Color.White);
+				context.Draw(_renderer.ShadowMap, new Rectangle(0, 0, 1024, 256), Color.White);
 			}
 		}
 

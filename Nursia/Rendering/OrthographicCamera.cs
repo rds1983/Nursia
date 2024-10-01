@@ -7,9 +7,9 @@ namespace Nursia.Rendering
 		public float Width { get; set; }
 		public float Height { get; set; }
 
-		public override Matrix CalculateProjection()
+		public override Matrix CalculateProjection(float near, float far)
 		{
-			return Matrix.CreateOrthographic(Width, Height, NearPlaneDistance, FarPlaneDistance);
+			return Matrix.CreateOrthographic(Width, Height, near, far);
 		}
 
 		public override Camera Clone()

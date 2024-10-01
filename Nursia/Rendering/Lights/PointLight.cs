@@ -13,7 +13,7 @@ namespace Nursia.Rendering.Lights
 			batch.PointLights.Add(this);
 		}
 
-		public override Camera GetLightCamera(Camera camera)
+		public override void GetLightViewProj(Matrix viewProj, out Matrix view, out Matrix proj)
 		{
 			throw new System.NotImplementedException();
 		}

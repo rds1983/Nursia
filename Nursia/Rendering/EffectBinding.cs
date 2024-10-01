@@ -52,8 +52,9 @@ namespace Nursia.Rendering
 
 		public EffectParameter LightViewProj { get; private set; }
 		public EffectParameter WorldViewProj { get; private set; }
-		public EffectParameter View { get; private set; }
 		public EffectParameter World { get; private set; }
+		public EffectParameter View { get; private set; }
+		public EffectParameter Projection { get; private set; }
 		public EffectParameter WorldInverseTranspose { get; private set; }
 		public EffectParameter CameraPosition { get; private set; }
 		public EffectParameter LightType { get; private set; }
@@ -62,6 +63,12 @@ namespace Nursia.Rendering
 		public EffectParameter LightColor { get; private set; }
 		public EffectParameter LightCount { get; private set; }
 		public EffectParameter ShadowMap { get; private set; }
+		public EffectParameter ShadowMap1 { get; private set; }
+		public EffectParameter ShadowMap2 { get; private set; }
+		public EffectParameter ShadowMap3 { get; private set; }
+		public EffectParameter ShadowMap4 { get; private set; }
+		public EffectParameter ShadowMapCascadesDistances { get; private set; }
+		public EffectParameter LightViewProjs { get; private set; }
 		public EffectParameter Bones { get; private set; }
 
 		public EffectBinding()
@@ -76,6 +83,7 @@ namespace Nursia.Rendering
 			WorldViewProj = Effect.FindParameterByName("_worldViewProj");
 			World = Effect.FindParameterByName("_world");
 			View = Effect.FindParameterByName("_view");
+			Projection = Effect.FindParameterByName("_projection");
 			WorldInverseTranspose = Effect.FindParameterByName("_worldInverseTranspose");
 			CameraPosition = Effect.FindParameterByName("_cameraPosition");
 
@@ -84,8 +92,15 @@ namespace Nursia.Rendering
 			LightDirection = Effect.FindParameterByName("_lightDirection");
 			LightColor = Effect.FindParameterByName("_lightColor");
 			LightCount = Effect.FindParameterByName("_lightCount");
-			ShadowMap = Effect.FindParameterByName("_shadowMap");
 			Bones = Effect.FindParameterByName("_bones");
+
+			ShadowMap = Effect.FindParameterByName("_shadowMap");
+			ShadowMap1 = Effect.FindParameterByName("_shadowMap1");
+			ShadowMap2 = Effect.FindParameterByName("_shadowMap2");
+			ShadowMap3 = Effect.FindParameterByName("_shadowMap3");
+			ShadowMap4 = Effect.FindParameterByName("_shadowMap4");
+			ShadowMapCascadesDistances = Effect.FindParameterByName("_cascadesDistances");
+			LightViewProjs = Effect.FindParameterByName("_lightViewProjs");
 		}
 	}
 }

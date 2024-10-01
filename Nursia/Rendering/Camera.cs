@@ -220,7 +220,8 @@ namespace Nursia.Rendering
 			return _string;
 		}
 
-		public abstract Matrix CalculateProjection();
+		public abstract Matrix CalculateProjection(float near, float far);
+		public Matrix CalculateProjection() => CalculateProjection(NearPlaneDistance, FarPlaneDistance);
 		public abstract Camera Clone();
 	}
 }

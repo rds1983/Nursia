@@ -20,8 +20,7 @@ MATRIX_CONSTANTS
 float4x3 _bones[MAX_BONES];
 #endif
 
-float4x4 _lightViewProj;
-float4x4 _world;
+float4x4 _worldViewProj;
 
 END_CONSTANTS
 
@@ -38,12 +37,11 @@ struct VSInput
 struct VSOutput
 {
 	float4 Position: POSITION0;
+	float4 PositionCopy: TEXCOORD0;
 
 #ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD0;
+	float4 ClipDistances: TEXCOORD1;
 #endif
-
-	float Depth: TEXCOORD1;
 };
 
 VSOutput VS(VSInput input)
@@ -59,8 +57,8 @@ VSOutput VS(VSInput input)
 	input.Position.xyz = mul(input.Position, skinning);
 #endif
 
-	output.Position = mul(float4(input.Position.xyz, 1), mul(_world, _lightViewProj));
-	output.Depth = output.Position.z / output.Position.w;
+	output.Position = mul(input.Position, _worldViewProj);
+	output.PositionCopy = output.Position;
 
 #ifdef CLIP_PLANE
 	output.ClipDistances.yzw = 0;
@@ -76,7 +74,8 @@ float4 PS(VSOutput input): COLOR
 	clip(input.ClipDistances.x); 
 #endif
 
-	return float4(input.Depth, 0, 0, 0);
+	float depth = input.PositionCopy.z / input.PositionCopy.w;
+	return float4(depth, 0, 0, 0);
 }
 
 TECHNIQUE(Default, VS, PS);

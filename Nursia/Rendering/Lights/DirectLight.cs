@@ -9,7 +9,6 @@ namespace Nursia.Rendering.Lights
 	{
 		private Vector3 _direction;
 		private Vector3 _normalizedDirection;
-		private readonly OrthographicCamera _camera = new OrthographicCamera();
 
 		public override bool RenderCastsShadow => CastsShadow;
 
@@ -35,7 +34,7 @@ namespace Nursia.Rendering.Lights
 			Direction = new Vector3(1, 0, 0);
 		}
 
-		public override Camera GetLightCamera(Camera camera)
+		public override void GetLightViewProj(Matrix viewProj, out Matrix view, out Matrix proj)
 		{
 			// Matrix with that will rotate in points the direction of the light
 			Matrix lightRotation = Matrix.CreateLookAt(Vector3.Zero,
@@ -44,8 +43,7 @@ namespace Nursia.Rendering.Lights
 
 			// Get the corners of the frustum
 			// Limit the camera far plance
-			var cameraProjection = camera.CalculateProjection();
-			var cameraFrustum = new BoundingFrustum(camera.View * cameraProjection);
+			var cameraFrustum = new BoundingFrustum(viewProj);
 			Vector3[] frustumCorners = cameraFrustum.GetCorners();
 
 			// Transform the positions of the corners into the direction of the light
@@ -60,8 +58,7 @@ namespace Nursia.Rendering.Lights
 			Vector3 boxSize = lightBox.Max - lightBox.Min;
 			Vector3 halfBoxSize = boxSize * 0.5f;
 
-			// The position of the light should be in the center of the back
-			// pannel of the box. 
+			// The position of the light should be in the center of the box. 
 			Vector3 lightPosition = lightBox.Min + halfBoxSize;
 			// lightPosition.Z = lightBox.Min.Z;
 
@@ -71,16 +68,13 @@ namespace Nursia.Rendering.Lights
 											  Matrix.Invert(lightRotation));
 
 			// Create the view matrix for the light
-			_camera.SetLookAt(lightPosition, lightPosition + NormalizedDirection);
+			view = Matrix.CreateLookAt(lightPosition,
+				lightPosition + NormalizedDirection,
+				Vector3.Up);
 
 			// Create the projection matrix for the light
 			// The projection is orthographic since we are using a directional light
-			_camera.Width = boxSize.X;
-			_camera.Height = boxSize.Y;
-			_camera.NearPlaneDistance = -boxSize.Z;
-			_camera.FarPlaneDistance = boxSize.Z;
-
-			return _camera;
+			proj = Matrix.CreateOrthographic(boxSize.X, boxSize.Y, -boxSize.Z, boxSize.Z);
 		}
 
 		private void UpdateNormalizedDirection()

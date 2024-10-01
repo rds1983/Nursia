@@ -4,6 +4,8 @@
 	{
 		public const int MaximumBones = 96;
 		public const int MaxLights = 32;
-		public const float ShadowsViewSize = 100.0f;
+		public const int ShadowMapCascadesCount = 4;
+		public const float ShadowMapCascadeSplitLambda = 0.5f;
+		public const int ShadowMapSize = 1024;
 	}
 }

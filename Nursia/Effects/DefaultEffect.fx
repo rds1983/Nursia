@@ -44,6 +44,10 @@ float4x3 _bones[MAX_BONES];
 float4x4 _worldViewProj;
 float4x4 _world;
 
+#ifdef SHADOWS
+float4x4 _view;
+#endif
+
 struct VSInput
 {
 	float4 Position : POSITION0;
@@ -77,20 +81,18 @@ struct VSOutput
 #endif
 
 #ifdef SHADOWS
-	float4 LightPosition: TEXCOORD4;
+	float3 WorldPosition: TEXCOORD4;
+	float3 WorldViewPosition: TEXCOORD5;
 #endif
 
 #ifdef CLIP_PLANE
-	float4 ClipDistances: TEXCOORD5;
+	float4 ClipDistances: TEXCOORD6;
 #endif
 };
 
 VSOutput VS(VSInput input)
 {
-    VSOutput output = (VSOutput)0;
-    
-	float3 worldPosition = mul(input.Position, _world).xyz;
-	output.ToCamera = _cameraPosition - worldPosition;
+	VSOutput output = (VSOutput)0;
 
 #ifdef SKINNING
 	float4x3 skinning = 0;
@@ -101,18 +103,19 @@ VSOutput VS(VSInput input)
 	input.Position.xyz = mul(input.Position, skinning);
 	
 #ifdef LIGHTNING
-    input.Normal = mul(input.Normal, (float3x3)skinning);    
+	input.Normal = mul(input.Normal, (float3x3)skinning);    
+	output.SourcePosition = input.Position;
 #endif
 #endif
+
+	float3 worldPosition = mul(input.Position, _world).xyz;
+	output.ToCamera = _cameraPosition - worldPosition;
 
 	output.Position = mul(input.Position, _worldViewProj);
 
-#ifdef LIGHTNING
-	output.SourcePosition = input.Position;
-#endif
-
 #ifdef SHADOWS
-	output.LightPosition = mul(float4(worldPosition, 1), _lightViewProj);
+	output.WorldPosition = worldPosition;
+	output.WorldViewPosition = mul(float4(worldPosition, 1), _view).xyz;
 #endif
 
 #ifdef TEXTURE
@@ -153,11 +156,25 @@ float4 PS(VSOutput input): COLOR
 #endif
 
 #ifdef SHADOWS
-	// Finish the projection
-	float3 lightingPosition = input.LightPosition.xyz / input.LightPosition.w;
+	float distance = abs(input.WorldViewPosition.z);
+	int cascadeIndex = DetermineCascadeIndex(distance);
 
-	float shadowFactor = CalculateShadowFactor(lightingPosition);
+	float shadowFactor = CalculateShadowFactor(cascadeIndex, input.WorldPosition);
 	color *= (1 - shadowFactor * 0.5);
+
+/*	if (cascadeIndex < 1)
+	{
+		color = float4(1, 0, 0, 1);
+	} else if (cascadeIndex < 2)
+	{
+		color = float4(0, 1, 0, 1);
+	} else if (cascadeIndex < 3)
+	{
+		color = float4(0, 0, 1, 1);
+	} else
+	{
+		color = float4(1, 0, 1, 1);
+	}*/
 #endif
 
 	return color;

@@ -337,7 +337,7 @@ namespace NursiaEditor.UI
 
 			if (NursiaEditorOptions.DrawShadowMap)
 			{
-				context.Draw(_renderer.ShadowMap, new Rectangle(0, 0, 1024, 256), Color.White);
+				context.Draw(_renderer.ShadowMap, new Rectangle(0, 0, 512, 512), Color.White);
 			}
 		}
 

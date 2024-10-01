@@ -74,7 +74,7 @@ namespace Nursia.Rendering.Lights
 
 			// Create the projection matrix for the light
 			// The projection is orthographic since we are using a directional light
-			proj = Matrix.CreateOrthographic(boxSize.X, boxSize.Y, -boxSize.Z, boxSize.Z);
+			proj = Matrix.CreateOrthographic(boxSize.X, boxSize.Y, -boxSize.Z * 4, boxSize.Z * 4);
 		}
 
 		private void UpdateNormalizedDirection()

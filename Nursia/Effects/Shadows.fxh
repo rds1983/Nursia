@@ -1,3 +1,4 @@
+#define CASCADES_PER_ROW 2
 #define CASCADES_COUNT 4
 
 float4x4 _lightViewProj;
@@ -23,6 +24,13 @@ int DetermineCascadeIndex(float distance)
 	return cascadeIndex;
 }
 
+float SampleShadowMap(float2 shadowTexCoord, float2 pixelDelta, float currentDepth)
+{
+	float shadowDepth = SAMPLE_TEXTURE(_shadowMap, shadowTexCoord + pixelDelta * _shadowMapPixelSize).r;
+	
+	return shadowDepth < currentDepth ? 1.0 : 0.0;
+}
+
 float CalculateShadowFactor(int cascadeIndex, float3 worldPos)
 {
 	// Determine pos in the light-view space
@@ -38,28 +46,26 @@ float CalculateShadowFactor(int cascadeIndex, float3 worldPos)
 	shadowTexCoord.y = 1.0f - shadowTexCoord.y;
 
 	// Apply cascadeIndex to x
-	float cascadeSize = 1.0 / CASCADES_COUNT;
-	shadowTexCoord.x = cascadeIndex * cascadeSize + shadowTexCoord.x / CASCADES_COUNT;
+	float cascadeSize = 1.0 / CASCADES_PER_ROW;
+	int cascadeRow = cascadeIndex / CASCADES_PER_ROW;
+	int cascadeCol = cascadeIndex % CASCADES_PER_ROW;
+	shadowTexCoord.x = cascadeCol * cascadeSize + shadowTexCoord.x / CASCADES_PER_ROW;
+	shadowTexCoord.y = cascadeRow * cascadeSize + shadowTexCoord.y / CASCADES_PER_ROW;
 
 	// Calculate the current pixel depth
 	// The bias is used to prevent folating point errors that occur when
 	// the pixel of the occluder is being drawn
-	float currentDepth = lightingPosition.z - _shadowDepthBias;
+	float currentDepth = lightingPosition.z;
 	float shadow = 0.0;
-	float2 texelSize = float2(1.0 / 2048.0, 1.0 / 2048.0);
 
-	[unroll]
-	for(int x = -1; x <= 1; ++x)
-	{
-		[unroll]
-		for(int y = -1; y <= 1; ++y)
-		{
-			float pcfDepth = SAMPLE_TEXTURE(_shadowMap, shadowTexCoord + float2(x, y) * _shadowMapPixelSize).r; 
-			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
-		}    
-	}
+	// Simple 2x2 pcf
+	shadow += SampleShadowMap(shadowTexCoord, float2(-1, -1), currentDepth);
+	shadow += SampleShadowMap(shadowTexCoord, float2(1, -1), currentDepth);
+	shadow += SampleShadowMap(shadowTexCoord, float2(-1, 1), currentDepth);
+	shadow += SampleShadowMap(shadowTexCoord, float2(1, 1), currentDepth);
+	shadow /= 4.0;
 
-	shadow /= 9.0;
+	// shadow = SAMPLE_TEXTURE(_shadowMap, shadowTexCoord).r < currentDepth ? 1.0 : 0.0; 
 
 	return shadow;
 }

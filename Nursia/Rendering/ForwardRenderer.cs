@@ -55,9 +55,9 @@ namespace Nursia.Rendering
 				if (_shadowMap == null)
 				{
 					_shadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
-						Constants.ShadowMapSize * Constants.ShadowMapCascadesCount, Constants.ShadowMapSize,
-						false, SurfaceFormat.Single,
-						DepthFormat.Depth24);
+						Constants.ShadowMapCascadeSize * Constants.ShadowMapCascadesPerRow, 
+						Constants.ShadowMapCascadeSize * Constants.ShadowMapCascadesPerRow,
+						false, SurfaceFormat.Single, DepthFormat.Depth24);
 				}
 
 				return _shadowMap;
@@ -181,7 +181,7 @@ namespace Nursia.Rendering
 
 						var shadowMapSize = new Vector2(ShadowMap.Width, ShadowMap.Height);
 						effectBinding.ShadowMapSize?.SetValue(shadowMapSize);
-						effectBinding.ShadowMapPixelSize?.SetValue(new Vector2(0.5f / shadowMapSize.X, 0.5f / shadowMapSize.Y));
+						effectBinding.ShadowMapPixelSize?.SetValue(new Vector2(1f / shadowMapSize.X, 1f / shadowMapSize.Y));
 					}
 
 					lastBinding = effectBinding;
@@ -268,6 +268,7 @@ namespace Nursia.Rendering
 				// Light camera
 				clone = camera.Clone();
 
+				clone.FarPlaneDistance = Math.Min(camera.FarPlaneDistance, Constants.ShadowMaxDistance);
 /*				var pos = new Vector3(1.3952415f, 24.574429f, 49.374405f);
 				clone.SetLookAt(
 					pos,
@@ -289,7 +290,11 @@ namespace Nursia.Rendering
 						_cascadeManager.LightProjs[i]);
 
 					// Render the shadow map
-					device.Viewport = new Viewport(i * Constants.ShadowMapSize, 0, Constants.ShadowMapSize, Constants.ShadowMapSize);
+					var row = i / Constants.ShadowMapCascadesPerRow;
+					var col = i % Constants.ShadowMapCascadesPerRow;
+					device.Viewport = new Viewport(col * Constants.ShadowMapCascadeSize,
+						row * Constants.ShadowMapCascadeSize,
+						Constants.ShadowMapCascadeSize, Constants.ShadowMapCascadeSize);
 
 					// Switch face culling in order to get rid of so called "peter panning"
 					device.RasterizerState = RasterizerState.CullClockwise;

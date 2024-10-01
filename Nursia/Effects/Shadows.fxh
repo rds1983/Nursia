@@ -3,6 +3,7 @@
 float4x4 _lightViewProj;
 float _shadowDepthBias = 0.001f;
 DECLARE_TEXTURE_POINT_CLAMP(_shadowMap);
+float2 _shadowMapPixelSize;
 
 float _cascadesDistances[CASCADES_COUNT];
 float4x4 _lightViewProjs[CASCADES_COUNT];
@@ -44,8 +45,21 @@ float CalculateShadowFactor(int cascadeIndex, float3 worldPos)
 	// The bias is used to prevent folating point errors that occur when
 	// the pixel of the occluder is being drawn
 	float currentDepth = lightingPosition.z - _shadowDepthBias;
-	float shadowDepth = SAMPLE_TEXTURE(_shadowMap, shadowTexCoord).r; 
-	float shadow = currentDepth > shadowDepth ? 1.0 : 0.0;
+	float shadow = 0.0;
+	float2 texelSize = float2(1.0 / 2048.0, 1.0 / 2048.0);
+
+	[unroll]
+	for(int x = -1; x <= 1; ++x)
+	{
+		[unroll]
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = SAMPLE_TEXTURE(_shadowMap, shadowTexCoord + float2(x, y) * _shadowMapPixelSize).r; 
+			shadow += currentDepth > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+
+	shadow /= 9.0;
 
 	return shadow;
 }

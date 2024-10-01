@@ -178,6 +178,10 @@ namespace Nursia.Rendering
 						effectBinding.ShadowMap?.SetValue(ShadowMap);
 						effectBinding.LightViewProjs?.SetValue(_cascadeManager.LightViewProjs);
 						effectBinding.ShadowMapCascadesDistances?.SetValue(_cascadeManager.Distances);
+
+						var shadowMapSize = new Vector2(ShadowMap.Width, ShadowMap.Height);
+						effectBinding.ShadowMapSize?.SetValue(shadowMapSize);
+						effectBinding.ShadowMapPixelSize?.SetValue(new Vector2(0.5f / shadowMapSize.X, 0.5f / shadowMapSize.Y));
 					}
 
 					lastBinding = effectBinding;

@@ -63,11 +63,9 @@ namespace Nursia.Rendering
 		public EffectParameter LightColor { get; private set; }
 		public EffectParameter LightCount { get; private set; }
 		public EffectParameter ShadowMap { get; private set; }
-		public EffectParameter ShadowMap1 { get; private set; }
-		public EffectParameter ShadowMap2 { get; private set; }
-		public EffectParameter ShadowMap3 { get; private set; }
-		public EffectParameter ShadowMap4 { get; private set; }
 		public EffectParameter ShadowMapCascadesDistances { get; private set; }
+		public EffectParameter ShadowMapSize { get; private set; }
+		public EffectParameter ShadowMapPixelSize { get; private set; }
 		public EffectParameter LightViewProjs { get; private set; }
 		public EffectParameter Bones { get; private set; }
 
@@ -95,11 +93,9 @@ namespace Nursia.Rendering
 			Bones = Effect.FindParameterByName("_bones");
 
 			ShadowMap = Effect.FindParameterByName("_shadowMap");
-			ShadowMap1 = Effect.FindParameterByName("_shadowMap1");
-			ShadowMap2 = Effect.FindParameterByName("_shadowMap2");
-			ShadowMap3 = Effect.FindParameterByName("_shadowMap3");
-			ShadowMap4 = Effect.FindParameterByName("_shadowMap4");
 			ShadowMapCascadesDistances = Effect.FindParameterByName("_cascadesDistances");
+			ShadowMapSize = Effect.FindParameterByName("_shadowMapSize");
+			ShadowMapPixelSize = Effect.FindParameterByName("_shadowMapPixelSize");
 			LightViewProjs = Effect.FindParameterByName("_lightViewProjs");
 		}
 	}

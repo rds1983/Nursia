@@ -22,6 +22,12 @@ namespace NursiaEditor.UI
 	{
 		private const int GridSize = 200;
 
+		private static readonly Dictionary<Type, Texture2D> _typesIcons = new Dictionary<Type, Texture2D>
+		{
+			[typeof(BaseLight)] = NursiaEditor.Resources.IconDirectionalLight,
+			[typeof(Camera)] = NursiaEditor.Resources.IconCamera
+		};
+
 		private Scene _scene;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
@@ -245,6 +251,7 @@ namespace NursiaEditor.UI
 			{
 				device.Viewport = new Viewport(bounds.X, bounds.Y, bounds.Width, bounds.Height);
 
+				var camera = StudioGame.MainForm.CurrentCamera;
 				_renderer.AddNode(Scene);
 
 				if (NursiaEditorOptions.ShowGrid)
@@ -254,7 +261,7 @@ namespace NursiaEditor.UI
 
 				// Selected object
 				var selectionNode = _3DUtils.GetSelectionNode(StudioGame.MainForm.SelectedObject as SceneNode);
-				if (selectionNode != null)
+				if (selectionNode != null && camera == Scene.Camera)
 				{
 					_renderer.AddNode(selectionNode);
 				}
@@ -262,28 +269,31 @@ namespace NursiaEditor.UI
 				// Draw lights' icons'
 				Scene.Iterate(n =>
 				{
-					var asLight = n as BaseLight;
-					if (asLight != null)
+					foreach(var pair in _typesIcons)
 					{
-						BillboardNode node;
-						if (asLight.Tag == null)
+						if (pair.Key.IsAssignableFrom(n.GetType()))
 						{
-							var icon = NursiaEditor.Resources.IconDirectionalLight;
-							node = new BillboardNode
+							BillboardNode node;
+							if (n.Tag == null)
 							{
-								Translation = n.Translation,
-								Texture = icon,
-							};
+								node = new BillboardNode
+								{
+									Texture = pair.Value
+								};
 
-							asLight.Tag = node;
+								n.Tag = node;
+							}
+
+							node = (BillboardNode)n.Tag;
+							node.Translation = n.Translation;
+							_renderer.AddNode(node);
+
+							break;
 						}
-
-						node = (BillboardNode)asLight.Tag;
-						_renderer.AddNode(node);
 					}
 				});
 
-				_renderer.Render(Scene.Camera);
+				_renderer.Render(camera);
 
 				RenderStatistics = _renderer.Statistics;
 

@@ -20,6 +20,9 @@ namespace NursiaEditor.UI
 {
 	public partial class MainForm
 	{
+		private const string ButtonsPanelId = "_buttonsPanel";
+		private const string ButtonCameraViewId = "_buttonCameraView";
+
 		private string _filePath;
 		private bool _explorerTouchDown = false;
 		private readonly TreeView _treeFileExplorer, _treeFileSolution;
@@ -55,7 +58,7 @@ namespace NursiaEditor.UI
 					return null;
 				}
 
-				return (SceneWidget)_tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Content;
+				return _tabControlScenes.SelectedItem.Content.FindChild<SceneWidget>();
 			}
 		}
 
@@ -64,6 +67,26 @@ namespace NursiaEditor.UI
 		public ProjectInSolution CurrentProject => CurrentSceneWidget.Project;
 
 		private readonly List<InstrumentButton> _allButtons = new List<InstrumentButton>();
+
+		public Camera CurrentCamera
+		{
+			get
+			{
+				var camera = CurrentScene.Camera;
+
+				var asCamera = SelectedObject as Camera;
+				if (asCamera != null)
+				{
+					var buttonCameraView = _tabControlScenes.SelectedItem.Content.FindChildById<ToggleButton>(ButtonCameraViewId);
+					if (buttonCameraView != null && buttonCameraView.IsToggled)
+					{
+						camera = asCamera;
+					}
+				}
+
+				return camera;
+			}
+		}
 
 		public event EventHandler SelectedObjectChanged
 		{
@@ -197,6 +220,40 @@ namespace NursiaEditor.UI
 
 			_treeFileSolution.TouchDoubleClick += (s, a) => OpenCurrentSolutionItem();
 
+			_propertyGrid.ObjectChanged += (s, a) =>
+			{
+				var tab = _tabControlScenes.SelectedItem;
+				if (tab == null)
+				{
+					return;
+				}
+
+				var buttonsGrid = _tabControlScenes.SelectedItem.Content.FindChildById<StackPanel>(ButtonsPanelId);
+				var buttonShowCamera = tab.Content.FindChildById<ToggleButton>(ButtonCameraViewId);
+				var asCamera = _propertyGrid.Object as Camera;
+
+				if (asCamera == null && buttonShowCamera != null)
+				{
+					// Remove button from the grid
+					buttonsGrid.Widgets.Remove(buttonShowCamera);
+				} else if (asCamera != null && buttonShowCamera == null)
+				{
+					// Add button to the grid
+					var label = new Label
+					{
+						Text = "Camera View"
+					};
+
+					buttonShowCamera = new ToggleButton
+					{
+						Id = ButtonCameraViewId,
+						Content = label,
+					};
+
+					buttonsGrid.Widgets.Add(buttonShowCamera);
+				}
+			};
+
 			_propertyGrid.PropertyChanged += (s, a) =>
 			{
 				InvalidateCurrentItem();
@@ -215,8 +272,8 @@ namespace NursiaEditor.UI
 
 			_propertyGrid.CustomWidgetProvider = CreateCustomEditor;
 
+			_tabControlScenes.Items.Clear();
 			_tabControlScenes.SelectedIndexChanged += (s, a) => RefreshExplorer(null);
-
 			_tabControlScenes.ItemsCollectionChanged += (s, a) => UpdateStackPanelEditor();
 
 			_buttonGrid.IsToggled = NursiaEditorOptions.ShowGrid;
@@ -373,12 +430,23 @@ namespace NursiaEditor.UI
 						Project = (ProjectInSolution)node.ParentNode.ParentNode.Tag
 					};
 
+					var panel = new Panel();
+					var buttonsPanel = new HorizontalStackPanel
+					{
+						Id = ButtonsPanelId,
+						Left = 2,
+						Top = 2,
+					};
+
+					panel.Widgets.Add(sceneWidget);
+					panel.Widgets.Add(buttonsPanel);
+
 					var tabInfo = new TabInfo(file);
 
 					var tabItem = new TabItem
 					{
 						Text = tabInfo.Title,
-						Content = sceneWidget,
+						Content = panel,
 						Tag = tabInfo
 					};
 
@@ -419,6 +487,46 @@ namespace NursiaEditor.UI
 		{
 			var newNode = new Text3DNode();
 			AddNewNode(sceneNode, newNode);
+		}
+
+		private void OnAddCamera(SceneNode sceneNode)
+		{
+			var dialog = new AddNewItemDialog
+			{
+				Title = "Add Camera"
+			};
+
+			dialog.AddItem("Orthographic Camera");
+			dialog.AddItem("Perspective Camera");
+
+			dialog.Closed += (s, a) =>
+			{
+				if (!dialog.Result)
+				{
+					// "Cancel" or Escape
+					return;
+				}
+
+				// "Ok" or Enter
+				Camera camera = null;
+				switch (dialog.SelectedIndex)
+				{
+					case 0:
+						camera = new OrthographicCamera();
+						break;
+					case 1:
+						camera = new PerspectiveCamera();
+						break;
+				}
+
+				if (camera != null)
+				{
+					camera.Id = dialog.ItemName;
+					AddNewNode(sceneNode, camera);
+				}
+			};
+
+			dialog.ShowModal(Desktop);
 		}
 
 		private void OnAddNewLight(SceneNode sceneNode)
@@ -622,6 +730,7 @@ namespace NursiaEditor.UI
 				new Tuple<string, Action>("Insert &Gltf/Glb Model...", () => OnAddGltfModel(sceneNode)),
 				new Tuple<string, Action>("Insert &Billboard...", () => OnAddBillboard(sceneNode)),
 				new Tuple<string, Action>("Insert &Text 3D...", () => OnAddText3D(sceneNode)),
+				new Tuple<string, Action>("Insert &Camera...", () => OnAddCamera(sceneNode))
 			};
 
 			if (treeNode != _treeFileExplorer.GetSubNode(0))
@@ -828,7 +937,7 @@ namespace NursiaEditor.UI
 				return;
 			}
 
-			var sceneWidget = (SceneWidget)_tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Content;
+			var sceneWidget = _tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Content.FindChild<SceneWidget>();
 			RecursiveAddToExplorer(_treeFileExplorer, sceneWidget.Scene);
 			_treeFileExplorer.SelectedNode = _treeFileExplorer.FindNode(n => n.Tag == selectedNode);
 		}
@@ -856,7 +965,7 @@ namespace NursiaEditor.UI
 			}
 
 			var tab = _tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value];
-			var sceneWidget = (SceneWidget)tab.Content;
+			var sceneWidget = tab.Content.FindChild<SceneWidget>();
 
 			var tabInfo = (TabInfo)_tabControlScenes.Items[_tabControlScenes.SelectedIndex.Value].Tag;
 			sceneWidget.Scene.SaveToFile(tabInfo.FilePath);

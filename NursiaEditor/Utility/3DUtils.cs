@@ -93,8 +93,7 @@ namespace NursiaEditor.Utility
 				result = asMeshNode.BoundingBox;
 			}
 
-			var asLightNode = obj as BaseLight;
-			if (asLightNode != null)
+			if (obj is BaseLight || obj is Camera)
 			{
 				result = MathUtils.CreateBoundingBox(
 					0, 1,

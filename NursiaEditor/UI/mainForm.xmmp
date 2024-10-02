@@ -36,7 +36,15 @@
               </ToggleButton>
             </HorizontalStackPanel>
             <Panel StackPanel.ProportionType="Fill">
-              <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes" />
+              <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseableTabs="True" Id="_tabControlScenes">
+                <TabItem Text="Test">
+                  <HorizontalStackPanel Left="2" Top="2">
+                    <ToggleButton>
+                      <Label Text="Camera View" />
+                    </ToggleButton>
+                  </HorizontalStackPanel>
+                </TabItem>
+              </TabControl>
               <Grid ColumnSpacing="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Left="-4" Id="_panelStatistics">
                 <Grid.DefaultRowProportion Type="Auto" />
                 <Grid.ColumnsProportions>

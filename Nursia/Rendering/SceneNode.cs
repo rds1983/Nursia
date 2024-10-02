@@ -247,14 +247,19 @@ namespace Nursia.Rendering
 			return result;
 		}
 
+		private static void IterateInternal(SceneNode node, Action<SceneNode> action)
+		{
+			action(node);
+
+			foreach (var child in node.Children)
+			{
+				IterateInternal(child, action);
+			}
+		}
+
 		public void Iterate(Action<SceneNode> action)
 		{
-			action(this);
-
-			foreach (var child in Children)
-			{
-				action(child);
-			}
+			IterateInternal(this, action);
 		}
 
 		public void RemoveFromParent()

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Nursia.Utilities;
 using System;
+using System.ComponentModel;
 
 namespace Nursia.Rendering
 {
@@ -42,6 +43,7 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
 		[JsonIgnore]
 		public Vector3 Direction
 		{
@@ -52,10 +54,12 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
 		[JsonIgnore]
 		public Vector3 Target => Translation + Direction;
 
 
+		[Browsable(false)]
 		[JsonIgnore]
 		public Vector3 Up
 		{
@@ -66,6 +70,7 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
 		[JsonIgnore]
 		public Vector3 Right
 		{
@@ -76,6 +81,7 @@ namespace Nursia.Rendering
 			}
 		}
 
+		[Browsable(false)]
 		[JsonIgnore]
 		public Matrix View
 		{

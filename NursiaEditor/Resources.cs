@@ -9,7 +9,7 @@ namespace NursiaEditor
 	internal static class Resources
 	{
 		private static readonly AssetManager _assetManager = AssetManager.CreateResourceAssetManager(typeof(Resources).Assembly, "Assets");
-		private static Texture2D _iconDirectionalLight;
+		private static Texture2D _iconDirectionalLight, _iconCamera;
 		private static SceneNode _modelAxises;
 		private static FontSystem _fontSystem;
 
@@ -34,10 +34,23 @@ namespace NursiaEditor
 			{
 				if (_iconDirectionalLight == null)
 				{
-					_iconDirectionalLight = _assetManager.LoadTexture2D(Nrs.GraphicsDevice, "Images/DirectionalLight.png");
+					_iconDirectionalLight = _assetManager.LoadTexture2D(Nrs.GraphicsDevice, "Icons/DirectionalLight.png");
 				}
 
 				return _iconDirectionalLight;
+			}
+		}
+
+		public static Texture2D IconCamera
+		{
+			get
+			{
+				if (_iconCamera == null)
+				{
+					_iconCamera = _assetManager.LoadTexture2D(Nrs.GraphicsDevice, "Icons/Camera.png");
+				}
+
+				return _iconCamera;
 			}
 		}
 

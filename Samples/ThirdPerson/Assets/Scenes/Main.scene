@@ -4,19 +4,20 @@
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "-10.745874, 37.817295, 50.20664",
+    "Translation": "11.1279545, 25.988651, 46.786285",
     "Scale": "1, 1, 1",
-    "Rotation": "34.700626, 162.39981, 0",
+    "Rotation": "21.900747, 194.0998, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
   "Children": [
     {
       "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
-      "Direction": "0, -1, -1",
+      "Direction": "-0.32006815, -0.5735766, -0.7540333",
       "Color": "255, 255, 255, 255",
       "Translation": "-5, 25, 6",
       "Scale": "1, 1, 1",
+      "Rotation": "325, 23, 0",
       "Children": [],
       "Id": "DirectLight"
     },
@@ -45,7 +46,7 @@
     {
       "$type": "Nursia.Modelling.NursiaModel, Nursia",
       "ModelPath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Models\\mixamo_base.glb",
-      "Scale": "2, 2, 2",
+      "Scale": "1, 1, 1",
       "Children": [],
       "Id": "player"
     },
@@ -65,7 +66,7 @@
         "DiffuseColor": "255, 255, 255, 255"
       },
       "Translation": "8, 2, 10",
-      "Scale": "2, 2, 2",
+      "Scale": "1, 1, 1",
       "Children": [],
       "Id": "c"
     }

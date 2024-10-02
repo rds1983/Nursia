@@ -98,7 +98,7 @@ namespace Nursia.Rendering
 
 				_effectLightType[_lightCount] = 0;
 				_effectLightColor[_lightCount] = directLight.Color.ToVector3();
-				_effectLightDirection[_lightCount] = directLight.NormalizedDirection;
+				_effectLightDirection[_lightCount] = directLight.Direction;
 				++_lightCount;
 			}
 
@@ -324,6 +324,26 @@ namespace Nursia.Rendering
 			device.DepthStencilState = DepthStencilState.DepthRead;
 			RenderPass(camera.View, proj, RenderPassType.Transparent);
 
+			if (DebugSettings.DrawCamerasFrustums)
+			{
+				foreach(var node in _nodes)
+				{
+					node.Iterate(n =>
+					{
+						var camera = n as Camera;
+						if (camera == null)
+						{
+							return;
+						}
+
+						var far = Math.Min(1, camera.FarPlaneDistance);
+
+						var frustum = new BoundingFrustum(camera.View * camera.CalculateProjection(camera.NearPlaneDistance, far));
+						DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Brown);
+					});
+				}
+			}
+
 			if (DebugSettings.DrawBoundingBoxes)
 			{
 				foreach (var job in _batch.Jobs)
@@ -344,9 +364,28 @@ namespace Nursia.Rendering
 
 					frustum = new BoundingFrustum(_cascadeManager.SourceViewProjs[i]);
 					DebugShapeRenderer.AddBoundingFrustum(frustum, Color.Magenta);
-
 				}
+			}
 
+			if (DebugSettings.DrawLights)
+			{
+				foreach (var node in _nodes)
+				{
+					node.Iterate(n =>
+					{
+						var directLight = n as DirectLight;
+						if (directLight == null)
+						{
+							return;
+						}
+
+						var tr = directLight.GlobalTransform;
+						var p = tr.Translation;
+						var p2 = p + tr.Forward * 2;
+
+						DebugShapeRenderer.AddLine(p, p2, Color.Yellow);
+					});
+				}
 			}
 
 			DebugShapeRenderer.Draw(camera.View, _batch.Projection);

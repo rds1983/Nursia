@@ -293,7 +293,7 @@ namespace NursiaEditor.UI
 				var c = Scene.Camera.Clone();
 
 				// Make the gizmo placed always in front of the camera
-				c.Position = Vector3.Zero;
+				c.Translation = Vector3.Zero;
 				m.Translation = c.Direction * 2;
 
 				_renderer.AddNode(m);

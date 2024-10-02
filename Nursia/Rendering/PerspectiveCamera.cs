@@ -11,18 +11,16 @@ namespace Nursia.Rendering
 				Nrs.GraphicsDevice.Viewport.AspectRatio,
 				near, far);
 
-		public override Camera Clone()
+		public new PerspectiveCamera Clone() => (PerspectiveCamera)base.Clone();
+
+		protected override SceneNode CreateInstanceCore() => new PerspectiveCamera();
+
+		protected override void CopyFrom(SceneNode node)
 		{
-			return new PerspectiveCamera
-			{
-				Position = Position,
-				YawAngle = YawAngle,
-				PitchAngle = PitchAngle,
-				RollAngle = RollAngle,
-				ViewAngle = ViewAngle,
-				NearPlaneDistance = NearPlaneDistance,
-				FarPlaneDistance = FarPlaneDistance
-			};
+			base.CopyFrom(node);
+
+			var camera = (PerspectiveCamera)node;
+			ViewAngle = camera.ViewAngle;
 		}
 	}
 }

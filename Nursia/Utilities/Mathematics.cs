@@ -91,7 +91,7 @@ namespace Nursia.Utilities
 
 		public static Matrix CreateTransform(Vector3 translation, Vector3 scale, Quaternion rotation)
 		{
-			return Matrix.CreateScale(scale) * 
+			return Matrix.CreateScale(scale) *
 				Matrix.CreateFromQuaternion(rotation) *
 				Matrix.CreateTranslation(translation);
 		}
@@ -133,6 +133,19 @@ namespace Nursia.Utilities
 		public static Color ToColor(this Vector4 v)
 		{
 			return new Color((byte)(v.X * 255.0f), (byte)(v.Y * 255.0f), (byte)(v.Z * 255.0f), (byte)(v.W * 255.0f));
+		}
+
+		public static float ClampDegree(this float deg)
+		{
+			var isNegative = deg < 0;
+			deg = Math.Abs(deg);
+			deg = deg % 360;
+			if (isNegative)
+			{
+				deg = 360 - deg;
+			}
+
+			return deg;
 		}
 	}
 }

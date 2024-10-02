@@ -2,11 +2,12 @@
   "Camera": {
     "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
     "ViewAngle": 60.0,
-    "Position": "5.0912247, 38.5304, 47.601944",
-    "YawAngle": 190.3005,
-    "PitchAngle": 36.29921,
     "NearPlaneDistance": 0.1,
-    "FarPlaneDistance": 1000.0
+    "FarPlaneDistance": 1000.0,
+    "Translation": "-10.745874, 37.817295, 50.20664",
+    "Scale": "1, 1, 1",
+    "Rotation": "34.700626, 162.39981, 0",
+    "Children": []
   },
   "Scale": "1, 1, 1",
   "Children": [

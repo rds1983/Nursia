@@ -12,19 +12,17 @@ namespace Nursia.Rendering
 			return Matrix.CreateOrthographic(Width, Height, near, far);
 		}
 
-		public override Camera Clone()
+		public new OrthographicCamera Clone() => (OrthographicCamera)base.Clone();
+
+		protected override SceneNode CreateInstanceCore() => new OrthographicCamera();
+
+		protected override void CopyFrom(SceneNode node)
 		{
-			return new OrthographicCamera
-			{
-				Position = Position,
-				YawAngle = YawAngle,
-				PitchAngle = PitchAngle,
-				RollAngle = RollAngle,
-				Width = Width,
-				Height = Height,
-				NearPlaneDistance = NearPlaneDistance,
-				FarPlaneDistance = FarPlaneDistance
-			};
+			base.CopyFrom(node);
+
+			var camera = (OrthographicCamera)node;
+			Width = camera.Width;
+			Height = camera.Height;
 		}
 	}
 }

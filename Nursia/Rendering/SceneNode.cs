@@ -64,6 +64,10 @@ namespace Nursia.Rendering
 
 			set
 			{
+				value.X = value.X.ClampDegree();
+				value.Y = value.Y.ClampDegree();
+				value.Z = value.Z.ClampDegree();
+
 				if (value == _rotation)
 				{
 					return;
@@ -83,9 +87,9 @@ namespace Nursia.Rendering
 				if (_localTransform == null)
 				{
 					var quaternion = Quaternion.CreateFromYawPitchRoll(
-						MathHelper.ToRadians(_rotation.Y),
-						MathHelper.ToRadians(_rotation.X),
-						MathHelper.ToRadians(_rotation.Z));
+											MathHelper.ToRadians(_rotation.Y),
+											MathHelper.ToRadians(_rotation.X),
+											MathHelper.ToRadians(_rotation.Z));
 					_localTransform = Mathematics.CreateTransform(Translation, Scale, quaternion);
 				}
 
@@ -100,17 +104,7 @@ namespace Nursia.Rendering
 		{
 			get
 			{
-				if (_globalTransform == null)
-				{
-					if (Parent != null)
-					{
-						_globalTransform = LocalTransform * Parent.GlobalTransform;
-					}
-					else
-					{
-						_globalTransform = LocalTransform;
-					}
-				}
+				UpdateGlobalTransform();
 
 				return _globalTransform.Value;
 			}
@@ -271,6 +265,61 @@ namespace Nursia.Rendering
 			}
 
 			Parent.Children.Remove(this);
+		}
+
+		public SceneNode Clone()
+		{
+			var result = CreateInstanceCore();
+			if (result.GetType() != GetType())
+			{
+				throw new Exception($"Node of type {GetType()} didnt implement cloning.");
+			}
+
+			result.CopyFrom(this);
+
+			return result;
+		}
+
+		protected void UpdateGlobalTransform()
+		{
+			if (_globalTransform != null)
+			{
+				return;
+			}
+
+			if (Parent != null)
+			{
+				_globalTransform = LocalTransform * Parent.GlobalTransform;
+			}
+			else
+			{
+				_globalTransform = LocalTransform;
+			}
+
+			OnGlobalTransformUpdated();
+		}
+
+		protected virtual void OnGlobalTransformUpdated()
+		{
+		}
+
+		protected virtual SceneNode CreateInstanceCore()
+		{
+			return new SceneNode();
+		}
+
+		protected virtual void CopyFrom(SceneNode node)
+		{
+			Translation = node.Translation;
+			Scale = node.Scale;
+			Rotation = node.Rotation;
+			Tag = node.Tag;
+
+			Children.Clear();
+			foreach (var child in node.Children)
+			{
+				Children.Add(child.Clone());
+			}
 		}
 	}
 }

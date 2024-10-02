@@ -5,78 +5,12 @@ using System;
 
 namespace Nursia.Rendering
 {
-	public abstract class Camera
+	public abstract class Camera : SceneNode
 	{
-		private Vector3 _position;
-		private float _yawAngle, _pitchAngle, _rollAngle;
 		private Vector3 _up, _right, _direction;
 		private Matrix _view;
 		private float _nearPlaneDistance = 0.1f;
 		private float _farPlaneDistance = 1000f;
-
-		private bool _dirty = true;
-		private string _string;
-
-		public Vector3 Position
-		{
-			get { return _position; }
-			set
-			{
-				if (_position != value)
-				{
-					_position = value;
-					Invalidate();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Yaw Angle in Degrees
-		/// </summary>
-		public float YawAngle
-		{
-			get { return _yawAngle; }
-			set
-			{
-				value = ClampDegree(value);
-				if (_yawAngle != value)
-				{
-					_yawAngle = value;
-					Invalidate();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Pitch Angle In Degrees
-		/// </summary>
-		public float PitchAngle
-		{
-			get { return _pitchAngle; }
-			set
-			{
-				value = ClampDegree(value);
-				if (_pitchAngle != value)
-				{
-					_pitchAngle = value;
-					Invalidate();
-				}
-			}
-		}
-
-		public float RollAngle
-		{
-			get { return _rollAngle; }
-			set
-			{
-				value = ClampDegree(value);
-				if (_rollAngle != value)
-				{
-					_rollAngle = value;
-					Invalidate();
-				}
-			}
-		}
 
 		public float NearPlaneDistance
 		{
@@ -113,13 +47,13 @@ namespace Nursia.Rendering
 		{
 			get
 			{
-				Update();
+				UpdateGlobalTransform();
 				return _direction;
 			}
 		}
 
 		[JsonIgnore]
-		public Vector3 Target => Position + Direction;
+		public Vector3 Target => Translation + Direction;
 
 
 		[JsonIgnore]
@@ -127,7 +61,7 @@ namespace Nursia.Rendering
 		{
 			get
 			{
-				Update();
+				UpdateGlobalTransform();
 				return _up;
 			}
 		}
@@ -137,7 +71,7 @@ namespace Nursia.Rendering
 		{
 			get
 			{
-				Update();
+				UpdateGlobalTransform();
 				return _right;
 			}
 		}
@@ -147,9 +81,10 @@ namespace Nursia.Rendering
 		{
 			get
 			{
-				Update();
+				UpdateGlobalTransform();
 				return _view;
 			}
+
 		}
 
 		public Camera()
@@ -158,70 +93,46 @@ namespace Nursia.Rendering
 
 		public void SetLookAt(Vector3 position, Vector3 target)
 		{
-			Position = position;
+			Translation = position;
 
-			var direction = target - _position;
+			var direction = target - Translation;
 			direction.Normalize();
 
-			PitchAngle = 360 - MathHelper.ToDegrees((float)Math.Asin(direction.Y));
-			YawAngle = MathHelper.ToDegrees((float)Math.Atan2(direction.X, direction.Y));
+			var rotation = Rotation;
+			rotation.X = 360 - MathHelper.ToDegrees((float)Math.Asin(direction.Y));
+			rotation.Y = MathHelper.ToDegrees((float)Math.Atan2(direction.X, direction.Y));
+
+			Rotation = rotation;
 		}
 
-		private float ClampDegree(float deg)
+		protected override void OnGlobalTransformUpdated()
 		{
-			var isNegative = deg < 0;
-			deg = Math.Abs(deg);
-			deg = deg % 360;
-			if (isNegative)
-			{
-				deg = 360 - deg;
-			}
+			base.OnGlobalTransformUpdated();
 
-			return deg;
-		}
+			Vector3 scale, translation;
+			Quaternion quaternion;
+			GlobalTransform.Decompose(out scale, out quaternion, out translation);
 
-		private void Invalidate()
-		{
-			_dirty = true;
-		}
-
-		private void Update()
-		{
-			if (!_dirty)
-			{
-				return;
-			}
-
-			var rotation = Matrix.CreateFromYawPitchRoll(
-				MathHelper.ToRadians(YawAngle),
-				MathHelper.ToRadians(PitchAngle),
-				MathHelper.ToRadians(RollAngle));
-
-			_direction = Vector3.Transform(Vector3.Backward, rotation);
-			_up = Vector3.Transform(Vector3.Up, rotation);
+			_direction = Vector3.Transform(Vector3.Backward, quaternion);
+			_up = Vector3.Transform(Vector3.Up, quaternion);
 			_right = Vector3.Cross(_direction, _up);
 			_right.Normalize();
 
-			_view = Matrix.CreateLookAt(Position, Position + _direction, _up);
-
-			_string = string.Format("{0:0.##}/{1:0.##}/{2:0.##};{3:0.##};{4:0.##}",
-				Position.X,
-				Position.Y,
-				Position.Z,
-				YawAngle,
-				PitchAngle);
-
-			_dirty = false;
-		}
-
-		public override string ToString()
-		{
-			Update();
-			return _string;
+			_view = Matrix.CreateLookAt(translation, translation + _direction, _up);
 		}
 
 		public abstract Matrix CalculateProjection(float near, float far);
 		public Matrix CalculateProjection() => CalculateProjection(NearPlaneDistance, FarPlaneDistance);
-		public abstract Camera Clone();
+
+		public new Camera Clone() => (Camera)base.Clone();
+
+		protected override void CopyFrom(SceneNode node)
+		{
+			base.CopyFrom(node);
+
+			var camera = (Camera)node;
+			NearPlaneDistance = camera.NearPlaneDistance;
+			FarPlaneDistance = camera.FarPlaneDistance;
+		}
 	}
 }

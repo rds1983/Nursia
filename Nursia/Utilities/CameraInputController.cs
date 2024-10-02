@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Nursia.Rendering;
 
@@ -76,20 +77,23 @@ namespace Nursia.Utilities
 
 			if (_rotateTouchDown)
 			{
+				var rotation = _camera.Rotation;
 				if (delta.Y != 0)
 				{
-					_camera.PitchAngle += delta.Y * RotateDelta;
+					rotation.X += delta.Y * RotateDelta;
 				}
 
 				if (delta.X != 0)
 				{
-					_camera.YawAngle += -delta.X * RotateDelta;
+					rotation.Y += -delta.X * RotateDelta;
 				}
+
+				_camera.Rotation = rotation;
 			}
 
 			if (_moveTouchDown)
 			{
-				var cameraPosition = _camera.Position;
+				var cameraPosition = _camera.Translation;
 
 				if (delta.Y != 0)
 				{
@@ -106,7 +110,7 @@ namespace Nursia.Utilities
 					cameraPosition += right;
 				}
 
-				_camera.Position = cameraPosition;
+				_camera.Translation = cameraPosition;
 			}
 
 			_touchStart = position;
@@ -119,9 +123,9 @@ namespace Nursia.Utilities
 				return;
 			}
 
-			var cameraPosition = _camera.Position;
+			var cameraPosition = _camera.Translation;
 			cameraPosition += _camera.Direction * delta * MoveDelta;
-			_camera.Position = cameraPosition;
+			_camera.Translation = cameraPosition;
 		}
 
 		public void SetControlKeyState(ControlKeys key, bool isDown)
@@ -178,32 +182,32 @@ namespace Nursia.Utilities
 
 			if (_forwardKeyPressed)
 			{
-				_camera.Position += delta * _camera.Direction;
+				_camera.Translation += delta * _camera.Direction;
 			}
 
 			if (_leftKeyPressed)
 			{
-				_camera.Position -= delta * _camera.Right;
+				_camera.Translation -= delta * _camera.Right;
 			}
 
 			if (_rightKeyPressed)
 			{
-				_camera.Position += delta * _camera.Right;
+				_camera.Translation += delta * _camera.Right;
 			}
 
 			if (_backwardKeyPressed)
 			{
-				_camera.Position -= delta * _camera.Direction;
+				_camera.Translation -= delta * _camera.Direction;
 			}
 
 			if (_upKeyPressed)
 			{
-				_camera.Position += delta * _camera.Up;
+				_camera.Translation += delta * _camera.Up;
 			}
 
 			if (_downKeyPressed)
 			{
-				_camera.Position -= delta * _camera.Up;
+				_camera.Translation -= delta * _camera.Up;
 			}
 
 			_keyboardLastTime = DateTime.Now;

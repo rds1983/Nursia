@@ -181,7 +181,6 @@ namespace Nursia.Rendering
 
 						var shadowMapSize = new Vector2(ShadowMap.Width, ShadowMap.Height);
 						effectBinding.ShadowMapSize?.SetValue(shadowMapSize);
-						effectBinding.ShadowMapPixelSize?.SetValue(new Vector2(1f / shadowMapSize.X, 1f / shadowMapSize.Y));
 					}
 
 					lastBinding = effectBinding;

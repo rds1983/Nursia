@@ -49,7 +49,7 @@ LightPower CalculateLightPower(float3 normal, float3 sourcePosition, float3 toCa
 		result.Diffuse += diffuseFactor * lightColor;
 
 		// Compute the reflection from sunlight
-		float3 R = normalize(reflect(-toCamera, normal));
+		float3 R = normalize(reflect(toCamera, normal));
 		result.Specular = _specularFactor * pow(saturate(dot(R, lightDirection)), _specularPower) * lightColor;
 	}
 	

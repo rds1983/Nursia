@@ -3,7 +3,10 @@
 
 float4x4 _lightViewProj;
 float _shadowDepthBias = 0.001f;
-DECLARE_TEXTURE_POINT_CLAMP(_shadowMap);
+DECLARE_TEXTURE_POINT_CLAMP(_shadowMap1);
+DECLARE_TEXTURE_POINT_CLAMP(_shadowMap2);
+DECLARE_TEXTURE_POINT_CLAMP(_shadowMap3);
+DECLARE_TEXTURE_POINT_CLAMP(_shadowMap4);
 float _shadowMapSize;
 
 float _cascadesDistances[CASCADES_COUNT];
@@ -24,11 +27,27 @@ int DetermineCascadeIndex(float distance)
 	return cascadeIndex;
 }
 
-float SampleShadowMap(float2 texCoord, float currentDepth)
+float SampleShadowMap(sampler2D shadowMapSampler, float2 texCoord, float currentDepth)
 {
-	float shadowDepth = SAMPLE_TEXTURE(_shadowMap, texCoord).r;
-	
+	float shadowDepth = SAMPLE_TEXTURE(shadowMap, texCoord).r;
+
 	return shadowDepth < currentDepth ? 1.0 : 0.0;
+}
+
+float CalculateShadowPcf2x2(sampler2D shadowMapSampler, float2 shadowTexCoord, float currentDepth)
+{
+	float pixelSize = 0.5 / _shadowMapSize;
+
+	float samples[4];
+	samples[0] = SampleShadowMap(shadowMapSampler, shadowTexCoord, currentDepth);
+	samples[1] = SampleShadowMap(shadowMapSampler, shadowTexCoord + float2(pixelSize, 0), currentDepth);
+	samples[2] = SampleShadowMap(shadowMapSampler, shadowTexCoord + float2(0, pixelSize), currentDepth);
+	samples[3] = SampleShadowMap(shadowMapSampler, shadowTexCoord + float2(pixelSize, pixelSize), currentDepth);
+
+	float2 vLerpFactor = frac(_shadowMapSize * shadowTexCoord.xy);
+	return lerp(lerp(samples[0], samples[1], vLerpFactor.x),
+				lerp(samples[2], samples[3], vLerpFactor.x),
+				vLerpFactor.y);
 }
 
 float CalculateShadowFactor(int cascadeIndex, float3 worldPos)
@@ -47,31 +66,20 @@ float CalculateShadowFactor(int cascadeIndex, float3 worldPos)
 	float2 shadowTexCoord = 0.5 * lightingPosition.xy + float2( 0.5, 0.5 );
 	shadowTexCoord.y = 1.0f - shadowTexCoord.y;
 
-	// Apply cascadeIndex to x
-	float cascadeSize = 1.0 / CASCADES_PER_ROW;
-	int cascadeRow = cascadeIndex / CASCADES_PER_ROW;
-	int cascadeCol = cascadeIndex % CASCADES_PER_ROW;
-	shadowTexCoord.x = cascadeCol * cascadeSize + shadowTexCoord.x / CASCADES_PER_ROW;
-	shadowTexCoord.y = cascadeRow * cascadeSize + shadowTexCoord.y / CASCADES_PER_ROW;
-
 	// Calculate the current pixel depth
 	// The bias is used to prevent folating point errors that occur when
 	// the pixel of the occluder is being drawn
 	float currentDepth = lightingPosition.z;
 
-	// Simple 2x2 pcf
-	float pixelSize = 0.5 / _shadowMapSize;
+	if (cascadeIndex < 1) {
+		return CalculateShadowPcf2x2(_shadowMap1Sampler, shadowTexCoord, currentDepth);
+	} else if (cascadeIndex < 2) {
+		return CalculateShadowPcf2x2(_shadowMap2Sampler, shadowTexCoord, currentDepth);
+	} else if (cascadeIndex < 3) {
+		return CalculateShadowPcf2x2(_shadowMap3Sampler, shadowTexCoord, currentDepth);
+	}
 
-	float samples[4];
-	samples[0] = SampleShadowMap(shadowTexCoord, currentDepth);
-	samples[1] = SampleShadowMap(shadowTexCoord + float2(pixelSize, 0), currentDepth);
-	samples[2] = SampleShadowMap(shadowTexCoord + float2(0, pixelSize), currentDepth);
-	samples[3] = SampleShadowMap(shadowTexCoord + float2(pixelSize, pixelSize), currentDepth);
-
-	float2 vLerpFactor = frac(_shadowMapSize * shadowTexCoord.xy);
-	return lerp(lerp(samples[0], samples[1], vLerpFactor.x),
-				lerp(samples[2], samples[3], vLerpFactor.x),
-				vLerpFactor.y);
+	return CalculateShadowPcf2x2(_shadowMap4Sampler, shadowTexCoord, currentDepth);
 
 	// return SAMPLE_TEXTURE(_shadowMap, shadowTexCoord).r < currentDepth ? 1.0 : 0.0; 
 }

@@ -6,7 +6,7 @@
     "YawAngle": 176.19977,
     "PitchAngle": 34.199226,
     "NearPlaneDistance": 0.1,
-    "FarPlaneDistance": 500.0
+    "FarPlaneDistance": 1000.0
   },
   "Scale": "1, 1, 1",
   "Children": [

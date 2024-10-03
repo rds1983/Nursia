@@ -4,19 +4,19 @@
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "-6.740063, 59.78396, 119.06106",
+    "Translation": "25.577564, 39.899586, 40.13073",
     "Scale": "1, 1, 1",
-    "Rotation": "8.1000185, 189.29999, 0",
+    "Rotation": "44.600067, 223.69997, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
   "Children": [
     {
       "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
-      "Direction": "0, -1, -1",
       "Color": "255, 255, 255, 255",
       "Translation": "-5, 50, 6",
       "Scale": "1, 1, 1",
+      "Rotation": "330, 0, 0",
       "Children": [],
       "Id": "DirectLight"
     },

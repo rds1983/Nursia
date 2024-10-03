@@ -36,7 +36,7 @@ namespace Nursia.Rendering
 		private RenderTargetUsage _oldRenderTargetUsage;
 		private readonly RenderBatch _batch = new RenderBatch();
 		private readonly ShadowMapCascadeManager _cascadeManager = new ShadowMapCascadeManager();
-
+		private RenderTarget2D _shadowMap;
 		public DepthStencilState DepthStencilState { get; set; } = DepthStencilState.Default;
 		public RasterizerState RasterizerState { get; set; } = RasterizerState.CullCounterClockwise;
 		public BlendState BlendState { get; set; } = BlendState.Opaque;
@@ -46,8 +46,22 @@ namespace Nursia.Rendering
 		public RenderStatistics Statistics => _statistics;
 
 		public int ShadowMapCascadesCount => _cascadeManager.Count;
-		public RenderTarget2D[] ShadowMaps => _cascadeManager.ShadowMaps;
-		
+
+		public RenderTarget2D ShadowMap
+		{
+			get
+			{
+				if (_shadowMap == null)
+				{
+					_shadowMap = new RenderTarget2D(Nrs.GraphicsDevice,
+						Constants.ShadowMapCascadeSize * Constants.ShadowMapCascadesPerRow,
+						Constants.ShadowMapCascadeSize * Constants.ShadowMapCascadesPerRow,
+						false, SurfaceFormat.Single, DepthFormat.Depth24);
+				}
+				return _shadowMap;
+			}
+		}
+
 		public ForwardRenderer()
 		{
 		}
@@ -159,14 +173,10 @@ namespace Nursia.Rendering
 
 					if (passType != RenderPassType.ShadowMap)
 					{
-						effectBinding.ShadowMap1?.SetValue(_cascadeManager.ShadowMaps[0]);
-						effectBinding.ShadowMap2?.SetValue(_cascadeManager.ShadowMaps[1]);
-						effectBinding.ShadowMap3?.SetValue(_cascadeManager.ShadowMaps[2]);
-						effectBinding.ShadowMap4?.SetValue(_cascadeManager.ShadowMaps[3]);
 						effectBinding.LightViewProjs?.SetValue(_cascadeManager.LightViewProjs);
 						effectBinding.ShadowMapCascadesDistances?.SetValue(_cascadeManager.Distances);
-
-						effectBinding.ShadowMapSize?.SetValue(Constants.ShadowMapSize);
+						effectBinding.ShadowMap?.SetValue(ShadowMap);
+						effectBinding.ShadowMapSize?.SetValue(Constants.ShadowMapCascadeSize);
 					}
 
 					lastBinding = effectBinding;
@@ -255,19 +265,28 @@ namespace Nursia.Rendering
 				camera.FarPlaneDistance = Math.Min(camera.FarPlaneDistance, Constants.ShadowMaxDistance);
 				_cascadeManager.Update(camera, ShadowCastingLight);
 
+				device.SetRenderTarget(ShadowMap);
+
+				// Clear the render target to white or all 1's
+				// We set the clear to white since that represents the 
+				// furthest the object could be away
+				device.Clear(Color.White);
 				for (var i = 0; i < _cascadeManager.Count; ++i)
 				{
-					device.SetRenderTarget(_cascadeManager.ShadowMaps[i]);
-
-					// Clear the render target to white or all 1's
-					// We set the clear to white since that represents the 
-					// furthest the object could be away
-					device.Clear(Color.White);
-
 					// Batch render jobs
 					BatchNodes(RenderBatchPass.ShadowMap,
 						_cascadeManager.LightViews[i],
 						_cascadeManager.LightProjs[i]);
+
+					// Render the shadow map
+					var row = i / Constants.ShadowMapCascadesPerRow;
+					var col = i % Constants.ShadowMapCascadesPerRow;
+					device.Viewport = new Viewport(col * Constants.ShadowMapCascadeSize,
+						row * Constants.ShadowMapCascadeSize,
+						Constants.ShadowMapCascadeSize, Constants.ShadowMapCascadeSize);
+
+					// Switch face culling in order to get rid of so called "peter panning"
+					device.RasterizerState = RasterizerState.CullClockwise;
 
 					// Shadow map pass
 					RenderPass(_cascadeManager.LightViews[i], _cascadeManager.LightProjs[i], RenderPassType.ShadowMap);

@@ -236,7 +236,8 @@ namespace NursiaEditor.UI
 				{
 					// Remove button from the grid
 					buttonsGrid.Widgets.Remove(buttonShowCamera);
-				} else if (asCamera != null && buttonShowCamera == null)
+				}
+				else if (asCamera != null && buttonShowCamera == null)
 				{
 					// Add button to the grid
 					var label = new Label
@@ -578,7 +579,7 @@ namespace NursiaEditor.UI
 
 			dialog.AddItem("Capsule");
 			dialog.AddItem("Cone");
-			dialog.AddItem("Cube");
+			dialog.AddItem("Box");
 			dialog.AddItem("Cylinder");
 			dialog.AddItem("Disc");
 			dialog.AddItem("GeoSphere");
@@ -596,7 +597,7 @@ namespace NursiaEditor.UI
 				}
 
 				// "Ok" or Enter
-				PrimitiveMesh primitiveMesh = null;
+				PrimitiveMeshNode primitiveMesh = null;
 				switch (dialog.SelectedIndex)
 				{
 					case 0:
@@ -608,7 +609,7 @@ namespace NursiaEditor.UI
 						break;
 
 					case 2:
-						primitiveMesh = new Cube();
+						primitiveMesh = new Box();
 						break;
 
 					case 3:
@@ -642,14 +643,10 @@ namespace NursiaEditor.UI
 
 				if (primitiveMesh != null)
 				{
-					var meshNode = new PrimitiveMeshNode
-					{
-						Id = dialog.ItemName,
-						Material = new DefaultMaterial(),
-						PrimitiveMesh = primitiveMesh
-					};
+					primitiveMesh.Id = dialog.ItemName;
+					primitiveMesh.Material = new DefaultMaterial();
 
-					AddNewNode(sceneNode, meshNode);
+					AddNewNode(sceneNode, primitiveMesh);
 				}
 			};
 

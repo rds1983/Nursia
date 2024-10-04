@@ -1,4 +1,7 @@
-﻿// Copyright (c) 2010-2014 SharpDX - Alexandre Mutel
+﻿// Copyright (c) .NET Foundation and Contributors (https://dotnetfoundation.org/ & https://stride3d.net) and Silicon Studio Corp. (https://www.siliconstudio.co.jp)
+// Distributed under the MIT license. See the LICENSE.md file in the project root for more information.
+//
+// Copyright (c) 2010-2013 SharpDX - Alexandre Mutel
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,97 +73,100 @@
 // contributors exclude the implied warranties of merchantability, fitness for a
 // particular purpose and non-infringement.
 
+using Nursia.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Rendering;
-using Nursia.Utilities;
+using System;
 
-namespace Nursia.Primitives
+namespace Nursia.Data.Meshes
 {
-	public class Cube : PrimitiveMesh
+	partial class MeshHelper
 	{
-		private const int CubeFaceCount = 6;
-
-		private static readonly Vector3[] FaceNormals = new Vector3[CubeFaceCount]
+		/// <summary>
+		/// Creates a sphere primitive.
+		/// </summary>
+		/// <param name="length">The length of the capsule. That is the distance between the two sphere centers.</param>
+		/// <param name="radius">The radius of the capsule.</param>
+		/// <param name="tessellation">The tessellation.</param>
+		/// <param name="uScale">Scale U coordinates between 0 and the values of this parameter.</param>
+		/// <param name="vScale">Scale V coordinates 0 and the values of this parameter.</param>
+		/// <param name="toLeftHanded">if set to <c>true</c> vertices and indices will be transformed to left handed. Default is false.</param>
+		/// <returns>A sphere primitive.</returns>
+		/// <exception cref="System.ArgumentOutOfRangeException">tessellation;Must be &gt;= 3</exception>
+		public static Mesh CreateCapsule(float length = 1.0f, float radius = 0.5f, int tessellation = 8, float uScale = 1.0f, float vScale = 1.0f, bool toLeftHanded = false)
 		{
-			new Vector3(0, 0, 1),
-			new Vector3(0, 0, -1),
-			new Vector3(1, 0, 0),
-			new Vector3(-1, 0, 0),
-			new Vector3(0, 1, 0),
-			new Vector3(0, -1, 0),
-		};
+			if (tessellation < 3)
+				throw new ArgumentOutOfRangeException("tessellation", "tessellation parameter out of range");
 
-		private static readonly Vector2[] TextureCoordinates = new Vector2[4]
-		{
-			new Vector2(1, 0),
-			new Vector2(1, 1),
-			new Vector2(0, 1),
-			new Vector2(0, 0),
-		};
+			int verticalSegments = 2 * tessellation;
+			int horizontalSegments = 4 * tessellation;
 
-		private Vector3 _size = Vector3.One;
+			var builder = new MeshBuilder();
 
-		public Vector3 Size
-		{
-			get => _size;
-
-			set
+			// Create rings of vertices at progressively higher latitudes.
+			for (int i = 0; i < verticalSegments; i++)
 			{
-				if (value.EpsilonEquals(_size))
+				float v;
+				float deltaY;
+				float latitude;
+				if (i < verticalSegments / 2)
 				{
-					return;
+					deltaY = -length / 2;
+					v = 1.0f - (0.25f * i / (tessellation - 1));
+					latitude = (float)((i * Math.PI / (verticalSegments - 2)) - Math.PI / 2.0);
+				}
+				else
+				{
+					deltaY = length / 2;
+					v = 0.5f - (0.25f * (i - 1) / (tessellation - 1));
+					latitude = (float)(((i - 1) * Math.PI / (verticalSegments - 2)) - Math.PI / 2.0);
 				}
 
-				_size = value;
-				InvalidateMesh();
+				var dy = MathF.Sin(latitude);
+				var dxz = MathF.Cos(latitude);
+
+				// Create a single ring of vertices at this latitude.
+				for (int j = 0; j <= horizontalSegments; j++)
+				{
+					float u = (float)j / horizontalSegments;
+
+					var longitude = (float)(j * 2.0 * Math.PI / horizontalSegments);
+					var dx = MathF.Sin(longitude);
+					var dz = MathF.Cos(longitude);
+
+					dx *= dxz;
+					dz *= dxz;
+
+					var normal = new Vector3(dx, dy, dz);
+					var textureCoordinate = new Vector2(u * uScale, v * vScale);
+					var position = radius * normal + new Vector3(0, deltaY, 0);
+
+					builder.AddVertex(new VertexPositionNormalTexture(position, normal, textureCoordinate));
+				}
 			}
-		}
 
-		protected override Mesh CreateMesh()
-		{
-			var builder = new Builder();
+			// Fill the index buffer with triangles joining each pair of latitude rings.
+			int stride = horizontalSegments + 1;
 
-			var texCoords = new Vector2[4];
-			for (var i = 0; i < 4; i++)
+			for (int i = 0; i < verticalSegments - 1; i++)
 			{
-				texCoords[i] = TextureCoordinates[i] * new Vector2(UScale, VScale);
-			}
+				for (int j = 0; j <= horizontalSegments; j++)
+				{
+					int nextI = i + 1;
+					int nextJ = (j + 1) % stride;
 
-			// Create each face in turn.
-			var size = _size / 2.0f;
-			for (int i = 0; i < CubeFaceCount; i++)
-			{
-				Vector3 normal = FaceNormals[i];
+					builder.AddIndex(i * stride + j);
+					builder.AddIndex(nextI * stride + j);
+					builder.AddIndex(i * stride + nextJ);
 
-				// Get two vectors perpendicular both to the face normal and to each other.
-				Vector3 basis = (i >= 4) ? Vector3.UnitZ : Vector3.UnitY;
-
-				Vector3 side1;
-				Vector3.Cross(ref normal, ref basis, out side1);
-
-				Vector3 side2;
-				Vector3.Cross(ref normal, ref side1, out side2);
-
-				// Six indices (two triangles) per face.
-				int vbase = i * 4;
-				builder.Indices.Add(vbase + 0);
-				builder.Indices.Add(vbase + 1);
-				builder.Indices.Add(vbase + 2);
-
-				builder.Indices.Add(vbase + 0);
-				builder.Indices.Add(vbase + 2);
-				builder.Indices.Add(vbase + 3);
-
-				// Four vertices per face.
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 - side2) * size, normal, texCoords[0]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal - side1 + side2) * size, normal, texCoords[1]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 + side2) * size, normal, texCoords[2]));
-				builder.Vertices.Add(new VertexPositionNormalTexture((normal + side1 - side2) * size, normal, texCoords[3]));
+					builder.AddIndex(i * stride + nextJ);
+					builder.AddIndex(nextI * stride + j);
+					builder.AddIndex(nextI * stride + nextJ);
+				}
 			}
 
 			// Create the primitive object.
-			return builder.Create(IsLeftHanded);
+			return builder.Create(toLeftHanded);
 		}
 	}
 }

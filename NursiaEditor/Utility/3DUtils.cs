@@ -32,7 +32,7 @@ namespace NursiaEditor.Utility
 						new VertexPosition(new Vector3(-0.5f, -0.5f, -0.5f))
 					};
 
-					var indices = new short[]
+					var indices = new ushort[]
 					{
 						0, 1,
 						1, 2,

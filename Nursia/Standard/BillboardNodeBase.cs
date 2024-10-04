@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Nursia.Data.Meshes;
 using Nursia.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -39,8 +40,7 @@ namespace Nursia.Standard
 			{
 				if (_mesh == null)
 				{
-					var plane = new Plane();
-					_mesh = plane.Mesh;
+					_mesh = MeshHelper.CreatePlane();
 				}
 
 				return _mesh;

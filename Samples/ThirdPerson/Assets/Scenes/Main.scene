@@ -4,9 +4,9 @@
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "-15.2726755, 9.480271, 5.98925",
+    "Translation": "5.9830117, 16.682331, 27.244593",
     "Scale": "1, 1, 1",
-    "Rotation": "23.500721, 132.09988, 0",
+    "Rotation": "35.60072, 184.89984, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
@@ -21,15 +21,12 @@
       "Id": "DirectLight"
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Plane, Nursia",
-        "Size": "1, 1",
-        "Tessellation": "1, 1",
-        "NormalDirection": 1,
-        "UScale": 50.0,
-        "VScale": 50.0
-      },
+      "$type": "Nursia.Primitives.Plane, Nursia",
+      "Size": "1, 1",
+      "Tessellation": "1, 1",
+      "NormalDirection": 1,
+      "UScale": 50.0,
+      "VScale": 50.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "TexturePath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Textures\\checker.dds",
@@ -61,15 +58,12 @@
       "Id": "player"
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Capsule, Nursia",
-        "Length": 1.0,
-        "Radius": 0.5,
-        "Tessellation": 8,
-        "UScale": 1.0,
-        "VScale": 1.0
-      },
+      "$type": "Nursia.Primitives.Capsule, Nursia",
+      "Length": 1.0,
+      "Radius": 0.5,
+      "Tessellation": 8,
+      "UScale": 1.0,
+      "VScale": 1.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularPower": 250.0,

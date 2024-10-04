@@ -130,11 +130,23 @@ namespace Nursia.Utilities
 			return result;
 		}
 
-		public static IndexBuffer CreateIndexBuffer(this short[] indices)
+		public static IndexBuffer CreateIndexBuffer(this ushort[] indices)
 		{
 			var device = Nrs.GraphicsDevice;
 			var result = new IndexBuffer(device,
 				IndexElementSize.SixteenBits,
+				indices.Length,
+				BufferUsage.None);
+			result.SetData(indices);
+
+			return result;
+		}
+
+		public static IndexBuffer CreateIndexBuffer(this int[] indices)
+		{
+			var device = Nrs.GraphicsDevice;
+			var result = new IndexBuffer(device,
+				IndexElementSize.ThirtyTwoBits,
 				indices.Length,
 				BufferUsage.None);
 			result.SetData(indices);

@@ -4,9 +4,9 @@
     "ViewAngle": 90.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "25.577564, 39.899586, 40.13073",
+    "Translation": "5.3104973, 69.52594, 111.976204",
     "Scale": "1, 1, 1",
-    "Rotation": "44.600067, 223.69997, 0",
+    "Rotation": "37.300095, 190.09999, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
@@ -28,15 +28,12 @@
       "Children": []
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Plane, Nursia",
-        "Size": "1, 1",
-        "Tessellation": "1, 1",
-        "NormalDirection": 1,
-        "UScale": 1.0,
-        "VScale": 1.0
-      },
+      "$type": "Nursia.Primitives.Plane, Nursia",
+      "Size": "1, 1",
+      "Tessellation": "1, 1",
+      "NormalDirection": 1,
+      "UScale": 1.0,
+      "VScale": 1.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "CastsShadows": false,
@@ -50,15 +47,12 @@
       "Id": "p"
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Torus, Nursia",
-        "MajorRadius": 2.5,
-        "MinorRadius": 0.16666,
-        "Tessellation": 32,
-        "UScale": 1.0,
-        "VScale": 1.0
-      },
+      "$type": "Nursia.Primitives.Torus, Nursia",
+      "MajorRadius": 2.5,
+      "MinorRadius": 0.16666,
+      "Tessellation": 32,
+      "UScale": 1.0,
+      "VScale": 1.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularFactor": 1.0,
@@ -71,14 +65,11 @@
       "Id": "t"
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Sphere, Nursia",
-        "Radius": 0.5,
-        "Tessellation": 16,
-        "UScale": 1.0,
-        "VScale": 1.0
-      },
+      "$type": "Nursia.Primitives.Sphere, Nursia",
+      "Radius": 0.5,
+      "Tessellation": 16,
+      "UScale": 1.0,
+      "VScale": 1.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularFactor": 2.0,
@@ -91,14 +82,11 @@
       "Id": "s"
     },
     {
-      "$type": "Nursia.Primitives.PrimitiveMeshNode, Nursia",
-      "PrimitiveMesh": {
-        "$type": "Nursia.Primitives.Teapot, Nursia",
-        "Size": 1.0,
-        "Tessellation": 8,
-        "UScale": 1.0,
-        "VScale": 1.0
-      },
+      "$type": "Nursia.Primitives.Teapot, Nursia",
+      "Size": 1.0,
+      "Tessellation": 8,
+      "UScale": 1.0,
+      "VScale": 1.0,
       "Material": {
         "$type": "Nursia.Standard.DefaultMaterial, Nursia",
         "SpecularPower": 250.0,

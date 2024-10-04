@@ -44,22 +44,42 @@ namespace Nursia.Rendering
 			}
 		}
 
-		public Mesh(VertexPositionNormalTexture[] vertices, short[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public Mesh(VertexPositionNormalTexture[] vertices, ushort[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
 		{
 		}
 
-		public Mesh(VertexPositionTexture[] vertices, short[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public Mesh(VertexPositionNormalTexture[] vertices, int[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
 		{
 		}
 
-		public Mesh(VertexPositionNormal[] vertices, short[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public Mesh(VertexPositionTexture[] vertices, ushort[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
 		{
 		}
 
-		public Mesh(VertexPosition[] vertices, short[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public Mesh(VertexPositionTexture[] vertices, int[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
+		{
+		}
+
+		public Mesh(VertexPositionNormal[] vertices, ushort[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
+		{
+		}
+
+		public Mesh(VertexPositionNormal[] vertices, int[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
+		{
+		}
+
+		public Mesh(VertexPosition[] vertices, ushort[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
+		{
+		}
+
+		public Mesh(VertexPosition[] vertices, int[] indices, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(vertices.CreateVertexBuffer(), indices.CreateIndexBuffer(), vertices.GetPositions(), primitiveType)
 		{
 		}

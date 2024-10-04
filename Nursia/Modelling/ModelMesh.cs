@@ -33,22 +33,22 @@ namespace Nursia.Modelling
 		{
 		}
 
-		public ModelMesh(VertexPositionNormalTexture[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionNormalTexture[] vertices, ushort[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPositionTexture[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionTexture[] vertices, ushort[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPositionNormal[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPositionNormal[] vertices, ushort[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}
 
-		public ModelMesh(VertexPosition[] vertices, short[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
+		public ModelMesh(VertexPosition[] vertices, ushort[] indices, IMaterial material, PrimitiveType primitiveType = PrimitiveType.TriangleList) :
 			this(new Mesh(vertices, indices, primitiveType), material)
 		{
 		}

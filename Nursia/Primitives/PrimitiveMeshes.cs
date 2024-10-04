@@ -8,7 +8,7 @@ namespace Nursia.Primitives
 {
 	public static partial class PrimitiveMeshes
 	{
-		private static readonly short[] _cubeIndices =
+		private static readonly ushort[] _cubeIndices =
 		{
 			0, 1, 3, 1, 2, 3, 1, 5, 2,
 			2, 5, 6, 4, 7, 5, 5, 7, 6,
@@ -16,7 +16,7 @@ namespace Nursia.Primitives
 			6, 3, 2, 4, 5, 0, 0, 5, 1
 		};
 
-		private static readonly short[] _squareIndices =
+		private static readonly ushort[] _squareIndices =
 		{
 			0, 1, 2, 3, 4, 5
 		};
@@ -144,7 +144,7 @@ namespace Nursia.Primitives
 			}
 		}
 
-		private static Mesh CreatePrimitivePosition(Vector3[] positions, short[] indices)
+		private static Mesh CreatePrimitivePosition(Vector3[] positions, ushort[] indices)
 		{
 			var vertices = new List<VertexPosition>();
 			foreach (var point in positions)

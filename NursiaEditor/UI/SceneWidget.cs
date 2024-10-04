@@ -62,9 +62,9 @@ namespace NursiaEditor.UI
 				if (_gridMesh == null)
 				{
 					var vertices = new List<VertexPosition>();
-					var indices = new List<short>();
+					var indices = new List<ushort>();
 
-					short idx = 0;
+					ushort idx = 0;
 					for (var x = -GridSize; x <= GridSize; ++x)
 					{
 						vertices.Add(new VertexPosition

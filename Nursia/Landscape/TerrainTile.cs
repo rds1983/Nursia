@@ -172,7 +172,7 @@ namespace Nursia.Landscape
 
 			var isFlatTile = CheckIfFlatTile();
 			VertexPositionNormalTexture[] vertices;
-			short[] indices;
+			ushort[] indices;
 			if (isFlatTile)
 			{
 				var h = Terrain.DefaultHeight;
@@ -186,7 +186,7 @@ namespace Nursia.Landscape
 					new VertexPositionNormalTexture(new Vector3(Size.X, h, Size.Y), Vector3.Up, new Vector2(1.0f, 1.0f))
 				};
 
-				indices = new short[]
+				indices = new ushort[]
 				{
 					0, 1, 2, 3, 4, 5
 				};
@@ -217,15 +217,15 @@ namespace Nursia.Landscape
 				}
 
 				idx = 0;
-				indices = new short[6 * (sizeX - 1) * (sizeY - 1)];
+				indices = new ushort[6 * (sizeX - 1) * (sizeY - 1)];
 				for (var z = 0; z < sizeY - 1; ++z)
 				{
 					for (var x = 0; x < sizeX - 1; ++x)
 					{
-						short topLeft = (short)(z * sizeX + x);
-						short topRight = (short)(topLeft + 1);
-						short bottomLeft = (short)((z + 1) * sizeX + x);
-						short bottomRight = (short)(bottomLeft + 1);
+						ushort topLeft = (ushort)(z * sizeX + x);
+						ushort topRight = (ushort)(topLeft + 1);
+						ushort bottomLeft = (ushort)((z + 1) * sizeX + x);
+						ushort bottomRight = (ushort)(bottomLeft + 1);
 
 						indices[idx++] = topLeft;
 						indices[idx++] = bottomLeft;

@@ -28,6 +28,6 @@ namespace Nursia.Standard
 			}
 		}
 
-		protected internal override Texture2D RenderTexture => Texture;
+		protected override Texture2D RenderTexture => Texture;
 	}
 }

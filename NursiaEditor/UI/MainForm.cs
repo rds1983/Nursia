@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AssetManagementBase;
 using Microsoft.Build.Construction;
 using Microsoft.Xna.Framework.Input;
@@ -473,33 +474,18 @@ namespace NursiaEditor.UI
 			RefreshExplorer(child);
 		}
 
-		private void OnAddNode(SceneNode sceneNode)
-		{
-			var newNode = new SceneNode();
-			AddNewNode(sceneNode, newNode);
-		}
-
-		private void OnAddBillboard(SceneNode sceneNode)
-		{
-			var newNode = new BillboardNode();
-			AddNewNode(sceneNode, newNode);
-		}
-
-		private void OnAddText3D(SceneNode sceneNode)
-		{
-			var newNode = new Text3DNode();
-			AddNewNode(sceneNode, newNode);
-		}
-
-		private void OnAddCamera(SceneNode sceneNode)
+		private void OnAddGenericNode(SceneNode parent, string category, List<Type> types)
 		{
 			var dialog = new AddNewItemDialog
 			{
-				Title = "Add Camera"
+				Title = $"Add New {category}"
 			};
 
-			dialog.AddItem("Orthographic Camera");
-			dialog.AddItem("Perspective Camera");
+			var orderedTypes = (from t in types orderby t.Name select t).ToArray();
+			foreach (var ot in orderedTypes)
+			{
+				dialog.AddItem(ot.Name);
+			}
 
 			dialog.Closed += (s, a) =>
 			{
@@ -509,152 +495,22 @@ namespace NursiaEditor.UI
 					return;
 				}
 
-				// "Ok" or Enter
-				Camera camera = null;
-				switch (dialog.SelectedIndex)
+				var newNode = (SceneNode)Activator.CreateInstance(orderedTypes[dialog.SelectedIndex.Value]);
+				newNode.Id = dialog.ItemName;
+
+				var asMeshNodeBase = newNode as MeshNodeBase;
+				if (asMeshNodeBase != null)
 				{
-					case 0:
-						camera = new OrthographicCamera();
-						break;
-					case 1:
-						camera = new PerspectiveCamera();
-						break;
+					asMeshNodeBase.Material = new DefaultMaterial();
 				}
 
-				if (camera != null)
-				{
-					camera.Id = dialog.ItemName;
-					AddNewNode(sceneNode, camera);
-				}
+				AddNewNode(parent, newNode);
 			};
 
 			dialog.ShowModal(Desktop);
 		}
 
-		private void OnAddNewLight(SceneNode sceneNode)
-		{
-			var dialog = new AddNewItemDialog
-			{
-				Title = "Add New Light"
-			};
-
-			dialog.AddItem("Direct");
-			dialog.AddItem("Point");
-
-			dialog.Closed += (s, a) =>
-			{
-				if (!dialog.Result)
-				{
-					// "Cancel" or Escape
-					return;
-				}
-
-				// "Ok" or Enter
-				BaseLight light = null;
-				switch (dialog.SelectedIndex)
-				{
-					case 0:
-						light = new DirectLight();
-						break;
-					case 1:
-						light = new PointLight();
-						break;
-				}
-
-				if (light != null)
-				{
-					light.Id = dialog.ItemName;
-					AddNewNode(sceneNode, light);
-				}
-			};
-
-			dialog.ShowModal(Desktop);
-		}
-
-		private void OnAddNewGeometricPrimitive(SceneNode sceneNode)
-		{
-			var dialog = new AddNewItemDialog
-			{
-				Title = "Add New Geometric Primitive"
-			};
-
-			dialog.AddItem("Capsule");
-			dialog.AddItem("Cone");
-			dialog.AddItem("Box");
-			dialog.AddItem("Cylinder");
-			dialog.AddItem("Disc");
-			dialog.AddItem("GeoSphere");
-			dialog.AddItem("Plane");
-			dialog.AddItem("Sphere");
-			dialog.AddItem("Teapot");
-			dialog.AddItem("Torus");
-
-			dialog.Closed += (s, a) =>
-			{
-				if (!dialog.Result)
-				{
-					// "Cancel" or Escape
-					return;
-				}
-
-				// "Ok" or Enter
-				PrimitiveMeshNode primitiveMesh = null;
-				switch (dialog.SelectedIndex)
-				{
-					case 0:
-						primitiveMesh = new Capsule();
-						break;
-
-					case 1:
-						primitiveMesh = new Cone();
-						break;
-
-					case 2:
-						primitiveMesh = new Box();
-						break;
-
-					case 3:
-						primitiveMesh = new Cylinder();
-						break;
-
-					case 4:
-						primitiveMesh = new Disc();
-						break;
-
-					case 5:
-						primitiveMesh = new GeoSphere();
-						break;
-
-					case 6:
-						primitiveMesh = new Nursia.Primitives.Plane();
-						break;
-
-					case 7:
-						primitiveMesh = new Sphere();
-						break;
-
-					case 8:
-						primitiveMesh = new Teapot();
-						break;
-
-					case 9:
-						primitiveMesh = new Torus();
-						break;
-				}
-
-				if (primitiveMesh != null)
-				{
-					primitiveMesh.Id = dialog.ItemName;
-					primitiveMesh.Material = new DefaultMaterial();
-
-					AddNewNode(sceneNode, primitiveMesh);
-				}
-			};
-
-			dialog.ShowModal(Desktop);
-		}
-
-		private void OnAddGltfModel(SceneNode sceneNode)
+		private void OnAddGltfModel(SceneNode parent)
 		{
 			try
 			{
@@ -685,7 +541,7 @@ namespace NursiaEditor.UI
 						var assetManager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(path));
 						node.Load(assetManager);
 
-						AddNewNode(sceneNode, node);
+						AddNewNode(parent, node);
 					}
 					catch (Exception ex)
 					{
@@ -720,16 +576,23 @@ namespace NursiaEditor.UI
 
 			var sceneNode = (SceneNode)treeNode.Tag;
 
-			var contextMenuOptions = new List<Tuple<string, Action>>
+			var contextMenuOptions = new List<Tuple<string, Action>>();
+			foreach (var pair in NodesRegistry.NodesByCategories)
 			{
-				new Tuple<string, Action>("Insert &Node...", () => OnAddNode(sceneNode)),
-				new Tuple<string, Action>("Insert &Light...", () => OnAddNewLight(sceneNode)),
-				new Tuple<string, Action>("Insert &Geometric Primitive...", () => OnAddNewGeometricPrimitive(sceneNode)),
-				new Tuple<string, Action>("Insert &Gltf/Glb Model...", () => OnAddGltfModel(sceneNode)),
-				new Tuple<string, Action>("Insert &Billboard...", () => OnAddBillboard(sceneNode)),
-				new Tuple<string, Action>("Insert &Text 3D...", () => OnAddText3D(sceneNode)),
-				new Tuple<string, Action>("Insert &Camera...", () => OnAddCamera(sceneNode))
-			};
+				Action action = null;
+
+				if (pair.Value.Count == 1 && pair.Value[0] == typeof(NursiaModel))
+				{
+					// Special case
+					action = () => OnAddGltfModel(sceneNode);
+				}
+				else
+				{
+					// Ordinary case
+					action = () => OnAddGenericNode(sceneNode, pair.Key, pair.Value);
+				}
+				contextMenuOptions.Add(new Tuple<string, Action>($"Insert {pair.Key}...", action));
+			}
 
 			if (treeNode != _treeFileExplorer.GetSubNode(0))
 			{

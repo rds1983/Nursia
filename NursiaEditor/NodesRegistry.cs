@@ -9,7 +9,9 @@ namespace NursiaEditor
 	internal static class NodesRegistry
 	{
 		private static readonly List<Assembly> _assemblies = new List<Assembly>();
-		private static readonly Dictionary<string, List<Type>> _nodesByCategories = new Dictionary<string, List<Type>>();
+		private static readonly SortedDictionary<string, List<Type>> _nodesByCategories = new SortedDictionary<string, List<Type>>();
+
+		public static IReadOnlyDictionary<string, List<Type>> NodesByCategories => _nodesByCategories;
 
 		public static void AddAssembly(Assembly assembly)
 		{
@@ -20,15 +22,22 @@ namespace NursiaEditor
 
 			foreach (var type in assembly.GetTypes())
 			{
-				var attr = type.GetCustomAttribute<EditorInfoAttribute>();
+				var attr = type.GetCustomAttribute<EditorInfoAttribute>(true);
 				if (attr == null)
 				{
-					return;
+					continue;
 				}
 
 				Nrs.LogInfo($"Adding node of type {type}");
 
+				List<Type> types;
+				if (!_nodesByCategories.TryGetValue(attr.Category, out types))
+				{
+					types = new List<Type>();
+					_nodesByCategories[attr.Category] = types;
+				}
 
+				types.Add(type);
 			}
 
 			_assemblies.Add(assembly);

@@ -23,7 +23,7 @@ namespace Nursia.Sky
 		}
 	}
 
-	[EditorInfo("Sky")]
+	// [EditorInfo("Sky")]
 	public class Skybox : SceneNode, IMaterial
 	{
 		private static readonly SkyboxEffectBinding _binding =

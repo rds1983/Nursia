@@ -13,7 +13,7 @@ namespace Nursia.Standard
 		private string _text;
 		private float _fontSize = 32.0f;
 
-		protected internal override Texture2D RenderTexture
+		protected override Texture2D RenderTexture
 		{
 			get
 			{
@@ -99,6 +99,8 @@ namespace Nursia.Standard
 		private void Invalidate()
 		{
 			_texture = null;
+
+			InvalidateBinding();
 		}
 	}
 }

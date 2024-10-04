@@ -1,10 +1,12 @@
 ﻿using AssetManagementBase;
 using Newtonsoft.Json;
+using Nursia.Attributes;
 using Nursia.Rendering;
 using System.ComponentModel;
 
 namespace Nursia.Modelling
 {
+	[EditorInfo("Gltf/Glb Model")]
 	public class NursiaModel : SceneNode
 	{
 		[Browsable(false)]

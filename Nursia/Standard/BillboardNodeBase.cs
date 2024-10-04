@@ -84,9 +84,9 @@ namespace Nursia.Standard
 
 		public bool ReceivesShadows => false;
 
-		protected internal float Width { get; set; } = 1.0f;
-		protected internal float Height { get; set; } = 1.0f;
-		protected internal abstract Texture2D RenderTexture { get; }
+		protected float Width { get; set; } = 1.0f;
+		protected float Height { get; set; } = 1.0f;
+		protected abstract Texture2D RenderTexture { get; }
 
 		protected internal override void Render(RenderBatch batch)
 		{

@@ -9,10 +9,11 @@ using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Myra.Graphics2D.UI.Properties;
 using Nursia;
+using Nursia.Cameras;
+using Nursia.Lights;
 using Nursia.Modelling;
 using Nursia.Primitives;
 using Nursia.Rendering;
-using Nursia.Rendering.Lights;
 using Nursia.Standard;
 using NursiaEditor.Utility;
 

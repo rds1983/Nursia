@@ -1,10 +1,12 @@
 ﻿using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nursia.Attributes;
 using Nursia.Utilities;
 
 namespace Nursia.Standard
 {
+	[EditorInfo("Billboard")]
 	public class Text3DNode : BillboardNodeBase
 	{
 		private Texture2D _texture = null;

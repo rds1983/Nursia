@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Nursia.Attributes;
 using Nursia.Primitives;
 using Nursia.Rendering;
-using Nursia.Standard;
 using System.ComponentModel;
 
 namespace Nursia.Sky
@@ -23,6 +23,7 @@ namespace Nursia.Sky
 		}
 	}
 
+	[EditorInfo("Sky")]
 	public class Skybox : SceneNode, IMaterial
 	{
 		private static readonly SkyboxEffectBinding _binding =

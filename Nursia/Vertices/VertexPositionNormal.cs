@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Nursia.Rendering.Vertices
+namespace Nursia.Vertices
 {
 	[Serializable]
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -79,17 +79,17 @@ namespace Nursia.Rendering.Vertices
 
 		public override string ToString()
 		{
-			return (
+			return
 				"{{Position:" + Position.ToString() +
 				" Normal:" + Normal.ToString() +
 				"}}"
-			);
+			;
 		}
 
 		public static bool operator ==(VertexPositionNormal left, VertexPositionNormal right)
 		{
-			return ((left.Position == right.Position) &&
-					(left.Normal == right.Normal));
+			return left.Position == right.Position &&
+					left.Normal == right.Normal;
 		}
 
 		public static bool operator !=(VertexPositionNormal left, VertexPositionNormal right)
@@ -103,11 +103,11 @@ namespace Nursia.Rendering.Vertices
 			{
 				return false;
 			}
-			if (obj.GetType() != base.GetType())
+			if (obj.GetType() != GetType())
 			{
 				return false;
 			}
-			return (this == ((VertexPositionNormal)obj));
+			return this == (VertexPositionNormal)obj;
 		}
 
 		#endregion

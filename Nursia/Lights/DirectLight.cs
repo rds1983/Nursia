@@ -1,9 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using Nursia.Attributes;
+using Nursia.Rendering;
 using System.ComponentModel;
 
-namespace Nursia.Rendering.Lights
+namespace Nursia.Lights
 {
+	[EditorInfo("Light")]
 	public class DirectLight : BaseLight
 	{
 		public override bool RenderCastsShadow => CastsShadow;

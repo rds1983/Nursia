@@ -5,9 +5,8 @@ using System.Reflection;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Rendering.Vertices;
-
-using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
+using Nursia.Vertices;
+using VertexPosition = Nursia.Vertices.VertexPosition;
 
 namespace Nursia.Utilities
 {

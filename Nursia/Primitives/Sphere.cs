@@ -1,9 +1,11 @@
 ﻿using Nursia.Rendering;
 using Nursia.Utilities;
 using Nursia.Data.Meshes;
+using Nursia.Attributes;
 
 namespace Nursia.Primitives
 {
+	[EditorInfo("Primitive")]
 	public class Sphere : PrimitiveMeshNode
 	{
 		private float _radius = 0.5f;

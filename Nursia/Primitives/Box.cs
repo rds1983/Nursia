@@ -2,9 +2,11 @@
 using Nursia.Rendering;
 using Nursia.Utilities;
 using Nursia.Data.Meshes;
+using Nursia.Attributes;
 
 namespace Nursia.Primitives
 {
+	[EditorInfo("Primitive")]
 	public class Box : PrimitiveMeshNode
 	{
 		private Vector3 _size = Vector3.One;

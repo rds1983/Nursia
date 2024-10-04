@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D.UI;
 using Nursia;
+using Nursia.Rendering;
 using NursiaEditor.UI;
 
 namespace NursiaEditor
@@ -91,6 +92,8 @@ namespace NursiaEditor
 
 			DebugSettings.DrawCamerasFrustums = true;
 			DebugSettings.DrawLights = true;
+
+			NodesRegistry.AddAssembly(typeof(SceneNode).Assembly);
 		}
 
 		protected override void Update(GameTime gameTime)

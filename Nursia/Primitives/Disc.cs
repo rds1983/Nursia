@@ -3,12 +3,14 @@ using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
 using Nursia.Data.Meshes;
+using Nursia.Attributes;
 
 namespace Nursia.Primitives
 {
 	/// <summary>
 	/// A disc - a circular base, or a circular sector.
 	/// </summary>
+	[EditorInfo("Primitive")]
 	public class Disc : PrimitiveMeshNode
 	{
 		private float _radius = 0.5f;

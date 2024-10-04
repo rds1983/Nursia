@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nursia;
+using Nursia.Lights;
 using Nursia.Modelling;
 using Nursia.Rendering;
-using Nursia.Rendering.Lights;
 using Nursia.Utilities;
 using System;
 using System.IO;
@@ -74,7 +74,7 @@ namespace SimpleScene
 
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
 
-//			DebugSettings.DrawLightViewFrustrum = true;
+			//			DebugSettings.DrawLightViewFrustrum = true;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -129,9 +129,9 @@ namespace SimpleScene
 
 			_spriteBatch.Begin();
 
-/*			_spriteBatch.Draw(_light.ShadowMap, 
-				new Rectangle(0, 0, 256, 256), 
-				Color.White);*/
+			/*			_spriteBatch.Draw(_light.ShadowMap, 
+							new Rectangle(0, 0, 256, 256), 
+							Color.White);*/
 
 			_spriteBatch.End();
 		}

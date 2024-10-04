@@ -1,9 +1,11 @@
 ﻿using Nursia.Utilities;
 using Nursia.Rendering;
 using Nursia.Data.Meshes;
+using Nursia.Attributes;
 
 namespace Nursia.Primitives
 {
+	[EditorInfo("Primitive")]
 	public class Teapot : PrimitiveMeshNode
 	{
 		private float _size = 1.0f;

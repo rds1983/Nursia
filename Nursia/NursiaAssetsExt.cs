@@ -1,7 +1,6 @@
 ﻿using AssetManagementBase;
 using Nursia.Modelling;
 using Nursia.Rendering;
-using System.Collections.Generic;
 
 namespace Nursia
 {

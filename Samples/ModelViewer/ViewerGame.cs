@@ -8,9 +8,9 @@ using Myra.Events;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
+using Nursia.Lights;
 using Nursia.Modelling;
 using Nursia.Rendering;
-using Nursia.Rendering.Lights;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -98,7 +98,7 @@ namespace ModelViewer
 					}
 
 					var current = _scene.QueryByType<NursiaModel>();
-					foreach(var c in current)
+					foreach (var c in current)
 					{
 						_scene.Children.Remove(c);
 					}
@@ -170,7 +170,7 @@ namespace ModelViewer
 			Nrs.Game = this;
 			LoadModel(string.Empty);
 
-			foreach(var l in _defaultLights)
+			foreach (var l in _defaultLights)
 			{
 				_scene.Children.Add(l);
 			}
@@ -181,7 +181,7 @@ namespace ModelViewer
 		private void UpdateLights()
 		{
 			var pl = _scene.QueryByType<PointLight>();
-			foreach(var l in pl)
+			foreach (var l in pl)
 			{
 				_scene.Children.Remove(l);
 			}
@@ -354,7 +354,7 @@ namespace ModelViewer
 
 			_mainPanel._labelCamera.Text = "Camera: " + _scene.Camera.ToString();
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
-//			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
+			//			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
 
 			_desktop.Render();
 

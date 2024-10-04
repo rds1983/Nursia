@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Nursia.Utilities;
-using Nursia.Rendering.Lights;
 using System;
 using System.Collections.Generic;
+using Nursia.Lights;
 
 namespace Nursia.Rendering
 {
@@ -345,7 +345,7 @@ namespace Nursia.Rendering
 
 			if (DebugSettings.DrawCamerasFrustums)
 			{
-				foreach(var node in _nodes)
+				foreach (var node in _nodes)
 				{
 					node.Iterate(n =>
 					{

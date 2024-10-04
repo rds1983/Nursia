@@ -1,10 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Rendering;
-using Nursia.Rendering.Vertices;
+using Nursia.Vertices;
 using System;
 using System.Collections.Generic;
-using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
+using VertexPosition = Nursia.Vertices.VertexPosition;
 
 namespace Nursia.Modelling
 {

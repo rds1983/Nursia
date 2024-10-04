@@ -2,10 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Nursia.Modelling;
 using Nursia.Rendering;
-using Nursia.Rendering.Lights;
-using Nursia.Rendering.Vertices;
 using Nursia.Standard;
 using Nursia.Utility;
+using Nursia.Vertices;
 
 namespace NursiaEditor.Utility
 {

@@ -1,18 +1,18 @@
 {
   "Camera": {
-    "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
+    "$type": "Nursia.Cameras.PerspectiveCamera, Nursia",
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "5.9830117, 16.682331, 27.244593",
+    "Translation": "6.5813518, 30.925186, 48.380936",
     "Scale": "1, 1, 1",
-    "Rotation": "35.60072, 184.89984, 0",
+    "Rotation": "38.600727, 177.59987, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
   "Children": [
     {
-      "$type": "Nursia.Rendering.Lights.DirectLight, Nursia",
+      "$type": "Nursia.Lights.DirectLight, Nursia",
       "Color": "255, 255, 255, 255",
       "Translation": "-5, 25, 6",
       "Scale": "1, 1, 1",
@@ -45,7 +45,7 @@
       "Scale": "1, 1, 1",
       "Children": [
         {
-          "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
+          "$type": "Nursia.Cameras.PerspectiveCamera, Nursia",
           "ViewAngle": 60.0,
           "NearPlaneDistance": 0.1,
           "FarPlaneDistance": 1000.0,

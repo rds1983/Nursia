@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Nursia.Rendering.Lights;
+using Nursia.Lights;
 using Nursia.Utilities;
 using System.Collections.Generic;
 

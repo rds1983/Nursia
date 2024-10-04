@@ -1,6 +1,6 @@
 {
   "Camera": {
-    "$type": "Nursia.Rendering.PerspectiveCamera, Nursia",
+    "$type": "Nursia.Cameras.PerspectiveCamera, Nursia",
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,

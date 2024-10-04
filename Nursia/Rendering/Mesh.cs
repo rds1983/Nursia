@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nursia.Rendering.Vertices;
 using Nursia.Utilities;
-using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
+using Nursia.Vertices;
+using VertexPosition = Nursia.Vertices.VertexPosition;
 
 namespace Nursia.Rendering
 {

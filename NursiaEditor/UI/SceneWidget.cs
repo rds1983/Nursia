@@ -7,14 +7,13 @@ using Nursia;
 using Nursia.Rendering;
 using Nursia.Modelling;
 using System.Collections.Generic;
-using VertexPosition = Nursia.Rendering.Vertices.VertexPosition;
 using Nursia.Utilities;
 using static Nursia.Utilities.CameraInputController;
-using Nursia.Rendering.Lights;
 using Nursia.Standard;
 using NursiaEditor.Utility;
 using Microsoft.Build.Construction;
 using Myra.Graphics2D;
+using Nursia.Vertices;
 
 namespace NursiaEditor.UI
 {
@@ -207,7 +206,7 @@ namespace NursiaEditor.UI
 		{
 			base.OnLostKeyboardFocus();
 
-			for(var i = 0; i < _keysDown.Length; i++)
+			for (var i = 0; i < _keysDown.Length; i++)
 			{
 				_keysDown[i] = false;
 			}
@@ -269,7 +268,7 @@ namespace NursiaEditor.UI
 				// Draw lights' icons'
 				Scene.Iterate(n =>
 				{
-					foreach(var pair in _typesIcons)
+					foreach (var pair in _typesIcons)
 					{
 						if (pair.Key.IsAssignableFrom(n.GetType()))
 						{

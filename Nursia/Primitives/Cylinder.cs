@@ -1,9 +1,11 @@
 ﻿using Nursia.Utilities;
 using Nursia.Rendering;
 using Nursia.Data.Meshes;
+using Nursia.Attributes;
 
 namespace Nursia.Primitives
 {
+	[EditorInfo("Primitive")]
 	public class Cylinder : PrimitiveMeshNode
 	{
 		private float _height = 1.0f;

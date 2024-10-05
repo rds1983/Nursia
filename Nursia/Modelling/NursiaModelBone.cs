@@ -9,7 +9,7 @@ namespace Nursia.Modelling
 {
 	public class NursiaModelBone : ItemWithId
 	{
-		public ModelInstance Model { get; }
+		public NursiaModel Model { get; }
 		public NursiaModelBone Parent { get; internal set; }
 		public ObservableCollection<NursiaModelBone> Children { get; } = new ObservableCollection<NursiaModelBone>();
 
@@ -29,7 +29,7 @@ namespace Nursia.Modelling
 
 		public bool HasSkin => Skin != null;
 
-		public NursiaModelBone(ModelInstance model)
+		public NursiaModelBone(NursiaModel model)
 		{
 			Model = model ?? throw new ArgumentNullException(nameof(model));
 
@@ -88,7 +88,7 @@ namespace Nursia.Modelling
 		}
 
 
-		internal void Render(NursiaModel node, RenderBatch batch, ref Matrix rootTransform)
+		internal void Render(NursiaModelNode node, RenderBatch batch, ref Matrix rootTransform)
 		{
 			if (Meshes.Count > 0)
 			{

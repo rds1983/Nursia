@@ -6,7 +6,7 @@ namespace Nursia
 {
 	public static class NursiaAssetsExt
 	{
-		private readonly static AssetLoader<ModelInstance> _gltfLoader = (manager, assetName, settings, tag) =>
+		private readonly static AssetLoader<NursiaModel> _gltfLoader = (manager, assetName, settings, tag) =>
 		{
 			var loader = new GltfLoader();
 
@@ -19,7 +19,7 @@ namespace Nursia
 			return Scene.ReadFromString(data, manager);
 		};
 
-		public static ModelInstance LoadGltf(this AssetManager assetManager,
+		public static NursiaModel LoadGltf(this AssetManager assetManager,
 			string path) => assetManager.UseLoader(_gltfLoader, path);
 
 		public static Scene LoadScene(this AssetManager assetManager,

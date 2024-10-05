@@ -18,7 +18,7 @@ namespace SimpleScene
 	{
 		private readonly GraphicsDeviceManager _graphics;
 		private Scene _scene;
-		private NursiaModel _model;
+		private NursiaModelNode _model;
 		private DirectLight _light;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
@@ -65,7 +65,7 @@ namespace SimpleScene
 			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(ExecutingAssemblyDirectory, "Assets"));
 			_scene = assetManager.LoadScene("Scenes/Main.scene");
 
-			_model = _scene.QueryByType<NursiaModel>()[0];
+			_model = _scene.QueryByType<NursiaModelNode>()[0];
 			_model.Model.CurrentAnimation = _model.Model.Animations["running"];
 
 			_light = _scene.QueryByType<DirectLight>()[0];

@@ -532,7 +532,7 @@ namespace NursiaEditor.UI
 					try
 					{
 						var path = dialog.FilePath;
-						var node = new NursiaModel
+						var node = new NursiaModelNode
 						{
 							Id = dialog.SelectedId,
 							ModelPath = dialog.FilePath
@@ -581,7 +581,7 @@ namespace NursiaEditor.UI
 			{
 				Action action = null;
 
-				if (pair.Value.Count == 1 && pair.Value[0] == typeof(NursiaModel))
+				if (pair.Value.Count == 1 && pair.Value[0] == typeof(NursiaModelNode))
 				{
 					// Special case
 					action = () => OnAddGltfModel(sceneNode);

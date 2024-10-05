@@ -21,7 +21,7 @@ namespace ModelViewer
 	public class ViewerGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private ModelInstance _model;
+		private NursiaModel _model;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private MainPanel _mainPanel;
@@ -97,13 +97,13 @@ namespace ModelViewer
 							});
 					}
 
-					var current = _scene.QueryByType<NursiaModel>();
+					var current = _scene.QueryByType<NursiaModelNode>();
 					foreach (var c in current)
 					{
 						_scene.Children.Remove(c);
 					}
 
-					_scene.Children.Add(new NursiaModel
+					_scene.Children.Add(new NursiaModelNode
 					{
 						Model = _model
 					});

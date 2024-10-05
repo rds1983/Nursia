@@ -40,7 +40,7 @@
       "Id": "plane"
     },
     {
-      "$type": "Nursia.Modelling.NursiaModel, Nursia",
+      "$type": "Nursia.Modelling.NursiaModelNode, Nursia",
       "ModelPath": "D:\\Projects\\Nursia\\Samples\\ThirdPerson\\Assets/Models\\mixamo_base.glb",
       "Scale": "1, 1, 1",
       "Children": [

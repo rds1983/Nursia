@@ -71,7 +71,7 @@ namespace Nursia.Modelling
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 		private readonly List<List<NursiaModelMesh>> _meshes = new List<List<NursiaModelMesh>>();
-		private ModelInstance _model;
+		private NursiaModel _model;
 		private readonly List<NursiaModelBone> _allNodes = new List<NursiaModelBone>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
@@ -606,12 +606,12 @@ namespace Nursia.Modelling
 			}
 		}
 
-		public ModelInstance Load(AssetManager manager, string assetName)
+		public NursiaModel Load(AssetManager manager, string assetName)
 		{
 			_meshes.Clear();
 			_allNodes.Clear();
 			_skinCache.Clear();
-			_model = new ModelInstance();
+			_model = new NursiaModel();
 
 			_assetManager = manager;
 			_assetName = assetName;

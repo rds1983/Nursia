@@ -100,7 +100,7 @@ namespace NursiaEditor.Utility
 					0, 1);
 			}
 
-			var asModel = obj as NursiaModel;
+			var asModel = obj as NursiaModelNode;
 			if (asModel != null)
 			{
 				result = asModel.Model.BoundingBox;

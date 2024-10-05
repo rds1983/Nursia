@@ -21,7 +21,7 @@ namespace NursiaEditor.UI
 
 		public float Radius { get; set; } = 4.0f;
 		public float Power { get; set; } = 0.2f;
-		public ModelInstance Model { get; set; }
+		public NursiaModel Model { get; set; }
 
 		public bool IsPaintInstrument => Type != InstrumentType.None &&
 				Type != InstrumentType.Water &&

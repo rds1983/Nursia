@@ -10,7 +10,7 @@ namespace Nursia.Modelling
 	{
 		private ModelAnimation _currentAnimation = null;
 
-		public List<ModelNode> RootNodes { get; } = new List<ModelNode>();
+		public List<NursiaModelBone> RootNodes { get; } = new List<NursiaModelBone>();
 
 		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
 
@@ -46,7 +46,7 @@ namespace Nursia.Modelling
 		{
 		}
 
-		private void TraverseNodes(ModelNode root, Action<ModelNode> action)
+		private void TraverseNodes(NursiaModelBone root, Action<NursiaModelBone> action)
 		{
 			action(root);
 
@@ -56,7 +56,7 @@ namespace Nursia.Modelling
 			}
 		}
 
-		internal void TraverseNodes(Action<ModelNode> action)
+		internal void TraverseNodes(Action<NursiaModelBone> action)
 		{
 			foreach (var root in RootNodes)
 			{

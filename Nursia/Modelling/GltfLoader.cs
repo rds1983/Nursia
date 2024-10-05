@@ -13,6 +13,8 @@ using Nursia.Utilities;
 using static glTFLoader.Schema.Accessor;
 using static glTFLoader.Schema.AnimationChannelTarget;
 
+using Mesh = Nursia.Rendering.Mesh;
+
 namespace Nursia.Modelling
 {
 	internal class GltfLoader
@@ -68,9 +70,9 @@ namespace Nursia.Modelling
 		private string _assetName;
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
-		private readonly List<List<ModelMesh>> _meshes = new List<List<ModelMesh>>();
+		private readonly List<List<NursiaModelMesh>> _meshes = new List<List<NursiaModelMesh>>();
 		private ModelInstance _model;
-		private readonly List<ModelNode> _allNodes = new List<ModelNode>();
+		private readonly List<NursiaModelBone> _allNodes = new List<NursiaModelBone>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
 		private byte[] FileResolver(string path)
@@ -320,7 +322,7 @@ namespace Nursia.Modelling
 		{
 			foreach (var gltfMesh in _gltf.Meshes)
 			{
-				var meshes = new List<ModelMesh>();
+				var meshes = new List<NursiaModelMesh>();
 				foreach (var primitive in gltfMesh.Primitives)
 				{
 					if (primitive.Mode != MeshPrimitive.ModeEnum.TRIANGLES)
@@ -453,7 +455,11 @@ namespace Nursia.Modelling
 						DiffuseColor = Color.White,
 					};
 
-					var mesh = new ModelMesh(vertexBuffer, indexBuffer, positions, material);
+					var mesh = new Mesh(vertexBuffer, indexBuffer, positions);
+					var modelMesh = new NursiaModelMesh(mesh)
+					{
+						Material = material
+					};
 
 					if (primitive.Material != null)
 					{
@@ -490,7 +496,7 @@ namespace Nursia.Modelling
 						}
 					}
 
-					meshes.Add(mesh);
+					meshes.Add(modelMesh);
 				}
 
 				_meshes.Add(meshes);
@@ -510,14 +516,24 @@ namespace Nursia.Modelling
 				throw new Exception($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} bones which exceeds maximum {Constants.MaximumBones}");
 			}
 
-			result = new Skin();
-			foreach (var jointIndex in gltfSkin.Joints)
+			var transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
+			if (gltfSkin.Joints.Length != transforms.Length)
 			{
+				throw new Exception($"Skin {gltfSkin.Name} inconsistency. Joints amount: {gltfSkin.Joints.Length}, Inverse bind matrices amount: {transforms.Length}");
+			}
+
+			result = new Skin();
+
+			for (var i = 0; i < gltfSkin.Joints.Length; ++i)
+			{
+				var jointIndex = gltfSkin.Joints[i];
+
+				var node = _allNodes[jointIndex];
+				node.InverseBindTransform = transforms[i];
 				result.JointNodes.Add(_allNodes[jointIndex]);
 			}
 
-			result.Transforms = GetAccessorAs<Matrix>(gltfSkin.InverseBindMatrices.Value);
-			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints and {result.Transforms.Length} transforms");
+			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints");
 
 			_skinCache[skinId] = result;
 
@@ -531,7 +547,7 @@ namespace Nursia.Modelling
 			{
 				var gltfNode = _gltf.Nodes[i];
 
-				var modelNode = new ModelNode(_model)
+				var modelNode = new NursiaModelBone(_model)
 				{
 					Id = gltfNode.Name,
 					DefaultTranslation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
@@ -555,7 +571,10 @@ namespace Nursia.Modelling
 
 				if (gltfNode.Mesh != null)
 				{
-					modelNode.Meshes.AddRange(_meshes[gltfNode.Mesh.Value]);
+					foreach (var m in _meshes[gltfNode.Mesh.Value])
+					{
+						modelNode.Meshes.Add(m);
+					}
 				}
 
 				_allNodes.Add(modelNode);
@@ -581,8 +600,6 @@ namespace Nursia.Modelling
 					foreach (var childIndex in gltfNode.Children)
 					{
 						var childNode = _allNodes[childIndex];
-
-						childNode.Parent = modelNode;
 						modelNode.Children.Add(childNode);
 					}
 				}

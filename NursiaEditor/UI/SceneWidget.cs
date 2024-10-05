@@ -31,7 +31,7 @@ namespace NursiaEditor.UI
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private CameraInputController _controller;
 		private MeshNode _gridMesh;
-		private Nursia.Modelling.ModelMesh _waterMarker;
+		private Nursia.Modelling.NursiaModelMesh _waterMarker;
 		private ModelInstance _modelMarker;
 		private Vector3? _touchDownStart;
 		private readonly bool[] _keysDown = new bool[256];

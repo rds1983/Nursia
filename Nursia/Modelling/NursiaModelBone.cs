@@ -1,19 +1,54 @@
 ﻿using Microsoft.Xna.Framework;
 using Nursia.Rendering;
-using Nursia.Utilities;
-using System;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
 namespace Nursia.Modelling
 {
-	public class NursiaModelBone : ItemWithId
+	public class NursiaModelBone
 	{
-		public NursiaModel Model { get; }
-		public NursiaModelBone Parent { get; internal set; }
-		public ObservableCollection<NursiaModelBone> Children { get; } = new ObservableCollection<NursiaModelBone>();
+		private NursiaModelBone[] _children;
+		private NursiaModelMesh[] _meshes;
 
-		public ObservableCollection<NursiaModelMesh> Meshes { get; } = new ObservableCollection<NursiaModelMesh>();
+		public int Index { get; }
+		public string Name { get; }
+		public NursiaModelBone Parent { get; private set; }
+
+		public NursiaModelBone[] Children
+		{
+			get => _children;
+
+			internal set
+			{
+				if (value != null)
+				{
+					foreach (var b in value)
+					{
+						b.Parent = this;
+					}
+				}
+
+				_children = value;
+			}
+
+		}
+
+		public NursiaModelMesh[] Meshes
+		{
+			get => _meshes;
+
+			internal set
+			{
+				if (value != null)
+				{
+					foreach (var m in value)
+					{
+						m.ParentBone = this;
+					}
+				}
+
+				_meshes = value;
+			}
+		}
+
 
 		public Skin Skin { get; set; }
 
@@ -22,75 +57,21 @@ namespace Nursia.Modelling
 		public Quaternion DefaultRotation = Quaternion.Identity;
 
 		public Matrix Transform = Matrix.Identity;
-		public Matrix InverseBindTransform = Matrix.Identity;
 
 		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;
 		public BoundingBox BoundingBox { get; internal set; }
 
 		public bool HasSkin => Skin != null;
 
-		public NursiaModelBone(NursiaModel model)
+		internal NursiaModelBone(int index, string name)
 		{
-			Model = model ?? throw new ArgumentNullException(nameof(model));
-
-			Children.CollectionChanged += Children_CollectionChanged;
-			Meshes.CollectionChanged += Meshes_CollectionChanged;
+			Index = index;
+			Name = name;
 		}
 
-		private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		internal void Render(RenderBatch batch, ref Matrix rootTransform)
 		{
-			if (args.Action == NotifyCollectionChangedAction.Add)
-			{
-				foreach (NursiaModelBone n in args.NewItems)
-				{
-					n.Parent = this;
-				}
-			}
-			else if (args.Action == NotifyCollectionChangedAction.Remove)
-			{
-				foreach (NursiaModelBone n in args.OldItems)
-				{
-					n.Parent = null;
-				}
-			}
-			else if (args.Action == NotifyCollectionChangedAction.Reset)
-			{
-				foreach (var n in Children)
-				{
-					n.Parent = null;
-				}
-			}
-		}
-
-		private void Meshes_CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
-		{
-			if (args.Action == NotifyCollectionChangedAction.Add)
-			{
-				foreach (NursiaModelMesh n in args.NewItems)
-				{
-					n.ParentBone = this;
-				}
-			}
-			else if (args.Action == NotifyCollectionChangedAction.Remove)
-			{
-				foreach (NursiaModelMesh n in args.OldItems)
-				{
-					n.ParentBone = null;
-				}
-			}
-			else if (args.Action == NotifyCollectionChangedAction.Reset)
-			{
-				foreach (var n in Meshes)
-				{
-					n.ParentBone = null;
-				}
-			}
-		}
-
-
-		internal void Render(NursiaModelNode node, RenderBatch batch, ref Matrix rootTransform)
-		{
-			if (Meshes.Count > 0)
+			if (Meshes.Length > 0)
 			{
 				// If mesh has bones, then parent node transform had been already
 				// applied to bones transform
@@ -107,7 +88,6 @@ namespace Nursia.Modelling
 
 				foreach (var mesh in Meshes)
 				{
-					var m = mesh.Transform * AbsoluteTransform * rootTransform;
 					if (HasSkin)
 					{
 						mesh.Mesh.BonesTransforms = bonesTransforms;
@@ -119,7 +99,7 @@ namespace Nursia.Modelling
 
 			foreach (var child in Children)
 			{
-				child.Render(node, batch, ref rootTransform);
+				child.Render(batch, ref rootTransform);
 			}
 		}
 	}

@@ -71,8 +71,7 @@ namespace Nursia.Modelling
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 		private readonly List<List<NursiaModelMesh>> _meshes = new List<List<NursiaModelMesh>>();
-		private NursiaModel _model;
-		private readonly List<NursiaModelBone> _allNodes = new List<NursiaModelBone>();
+		private readonly List<NursiaModelBoneDesc> _allNodes = new List<NursiaModelBoneDesc>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
 		private byte[] FileResolver(string path)
@@ -503,7 +502,7 @@ namespace Nursia.Modelling
 			}
 		}
 
-		private Skin LoadSkin(int skinId)
+		private Skin LoadSkin(int skinId, NursiaModelBone[] allBones)
 		{
 			if (_skinCache.TryGetValue(skinId, out Skin result))
 			{
@@ -522,16 +521,14 @@ namespace Nursia.Modelling
 				throw new Exception($"Skin {gltfSkin.Name} inconsistency. Joints amount: {gltfSkin.Joints.Length}, Inverse bind matrices amount: {transforms.Length}");
 			}
 
-			result = new Skin();
-
+			var bones = new List<NursiaModelBone>();
 			for (var i = 0; i < gltfSkin.Joints.Length; ++i)
 			{
 				var jointIndex = gltfSkin.Joints[i];
-
-				var node = _allNodes[jointIndex];
-				node.InverseBindTransform = transforms[i];
-				result.JointNodes.Add(_allNodes[jointIndex]);
+				bones.Add(allBones[jointIndex]);
 			}
+
+			result = new Skin(bones.ToArray(), transforms);
 
 			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints");
 
@@ -547,12 +544,12 @@ namespace Nursia.Modelling
 			{
 				var gltfNode = _gltf.Nodes[i];
 
-				var modelNode = new NursiaModelBone(_model)
+				var modelNode = new NursiaModelBoneDesc
 				{
-					Id = gltfNode.Name,
-					DefaultTranslation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
-					DefaultScale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One,
-					DefaultRotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
+					Name = gltfNode.Name,
+					Translation = gltfNode.Translation != null ? gltfNode.Translation.ToVector3() : Vector3.Zero,
+					Scale = gltfNode.Scale != null ? gltfNode.Scale.ToVector3() : Vector3.One,
+					Rotation = gltfNode.Rotation != null ? gltfNode.Rotation.ToQuaternion() : Quaternion.Identity
 				};
 
 				if (gltfNode.Matrix != null)
@@ -563,9 +560,9 @@ namespace Nursia.Modelling
 					{
 						matrix.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation);
 
-						modelNode.DefaultTranslation = translation;
-						modelNode.DefaultScale = scale;
-						modelNode.DefaultRotation = rotation;
+						modelNode.Translation = translation;
+						modelNode.Scale = scale;
+						modelNode.Rotation = rotation;
 					}
 				}
 
@@ -586,15 +583,6 @@ namespace Nursia.Modelling
 				var gltfNode = _gltf.Nodes[i];
 				var modelNode = _allNodes[i];
 
-				if (gltfNode.Skin != null)
-				{
-					modelNode.Skin = LoadSkin(gltfNode.Skin.Value);
-					foreach (var mesh in modelNode.Meshes)
-					{
-						((DefaultMaterial)mesh.Material).Skinning = true;
-					}
-				}
-
 				if (gltfNode.Children != null)
 				{
 					foreach (var childIndex in gltfNode.Children)
@@ -611,7 +599,6 @@ namespace Nursia.Modelling
 			_meshes.Clear();
 			_allNodes.Clear();
 			_skinCache.Clear();
-			_model = new NursiaModel();
 
 			_assetManager = manager;
 			_assetName = assetName;
@@ -623,10 +610,31 @@ namespace Nursia.Modelling
 			LoadMeshes();
 			LoadAllNodes();
 
-			var scene = _gltf.Scenes[_gltf.Scene.Value];
-			foreach (var node in scene.Nodes)
+			var allMeshes = new List<NursiaModelMesh>();
+			foreach (var m in _meshes)
 			{
-				_model.RootNodes.Add(_allNodes[node]);
+				foreach (var m2 in m)
+				{
+					allMeshes.Add(m2);
+				}
+			}
+			var scene = _gltf.Scenes[_gltf.Scene.Value];
+			var model = ModelBuilder.Create(_allNodes, allMeshes, scene.Nodes[0]);
+
+			// Set skins
+			for (var i = 0; i < _gltf.Nodes.Length; ++i)
+			{
+				var gltfNode = _gltf.Nodes[i];
+				var bone = model.Bones[i];
+
+				if (gltfNode.Skin != null)
+				{
+					bone.Skin = LoadSkin(gltfNode.Skin.Value, model.Bones);
+					foreach (var mesh in bone.Meshes)
+					{
+						((DefaultMaterial)mesh.Material).Skinning = true;
+					}
+				}
 			}
 
 			if (_gltf.Animations != null)
@@ -652,7 +660,7 @@ namespace Nursia.Modelling
 
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new NodeAnimation(_allNodes[pair.Key]);
+						var nodeAnimation = new NodeAnimation(model.Bones[pair.Key]);
 
 						foreach (var pathInfo in pair.Value)
 						{
@@ -681,13 +689,13 @@ namespace Nursia.Modelling
 					animation.UpdateStartEnd();
 
 					var id = animation.Id ?? "(default)";
-					_model.Animations[id] = animation;
+					model.Animations[id] = animation;
 				}
 			}
 
-			_model.UpdateBoundingBox();
+			model.UpdateBoundingBox();
 
-			return _model;
+			return model;
 		}
 	}
 }

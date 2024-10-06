@@ -1,25 +1,54 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Microsoft.Xna.Framework;
 
 namespace Nursia.Modelling
 {
 	public class Skin : ItemWithId
 	{
-		private Matrix[] _boneTransforms = null;
+		private readonly Matrix[] _boneTransforms;
 
-		public List<NursiaModelBone> JointNodes { get; } = new List<NursiaModelBone>();
+		public NursiaModelBone[] JointNodes { get; }
+
+		public Matrix[] InverseBindTransforms { get; }
+
+		public Skin(NursiaModelBone[] jointNodes, Matrix[] inverseBindTransforms)
+		{
+			if (jointNodes == null)
+			{
+				throw new ArgumentNullException(nameof(jointNodes));
+			}
+
+			if (jointNodes.Length == 0)
+			{
+				throw new ArgumentException(nameof(jointNodes), "no joints");
+			}
+
+			if (inverseBindTransforms == null)
+			{
+				throw new ArgumentNullException(nameof(inverseBindTransforms));
+			}
+
+			if (inverseBindTransforms.Length == 0)
+			{
+				throw new ArgumentException(nameof(inverseBindTransforms), "no inverse bind transforms");
+			}
+
+			if (jointNodes.Length != inverseBindTransforms.Length)
+			{
+				throw new ArgumentException($"Different sizes. JointNodes has {jointNodes.Length}, InverseBindTransforms has {inverseBindTransforms.Length}");
+			}
+
+			JointNodes = jointNodes;
+			InverseBindTransforms = inverseBindTransforms;
+			_boneTransforms = new Matrix[jointNodes.Length];
+		}
 
 		internal Matrix[] CalculateBoneTransforms()
 		{
-			if (_boneTransforms == null || _boneTransforms.Length != JointNodes.Count)
-			{
-				_boneTransforms = new Matrix[JointNodes.Count];
-			}
-
-			for (var i = 0; i < JointNodes.Count; ++i)
+			for (var i = 0; i < JointNodes.Length; ++i)
 			{
 				var joint = JointNodes[i];
-				_boneTransforms[i] = joint.InverseBindTransform * joint.AbsoluteTransform;
+				_boneTransforms[i] = InverseBindTransforms[i] * joint.AbsoluteTransform;
 			}
 
 			return _boneTransforms;

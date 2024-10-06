@@ -1,5 +1,6 @@
 ﻿using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
+using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,9 @@ namespace Nursia.Modelling
 	{
 		private ModelAnimation _currentAnimation = null;
 
-		public List<NursiaModelBone> RootNodes { get; } = new List<NursiaModelBone>();
+		public NursiaModelBone[] Bones { get; }
+		public NursiaModelMesh[] Meshes { get; }
+		public NursiaModelBone Root { get; }
 
 		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
 
@@ -40,10 +43,36 @@ namespace Nursia.Modelling
 
 		public BoundingBox BoundingBox { get; internal set; }
 
-		public bool CastsShadow { get; set; } = true;
-
-		internal NursiaModel()
+		internal NursiaModel(NursiaModelBone[] bones, NursiaModelMesh[] meshes, int rootIndex = 0)
 		{
+			if (bones == null)
+			{
+				throw new ArgumentNullException(nameof(bones));
+			}
+
+			if (bones.Length == 0)
+			{
+				throw new ArgumentException(nameof(bones), "no bones");
+			}
+
+			if (meshes == null)
+			{
+				throw new ArgumentNullException(nameof(meshes));
+			}
+
+			if (meshes.Length == 0)
+			{
+				throw new ArgumentException(nameof(meshes), "no meshes");
+			}
+
+			if (rootIndex < 0 || rootIndex >= bones.Length)
+			{
+				throw new ArgumentOutOfRangeException(nameof(rootIndex));
+			}
+
+			Bones = bones;
+			Meshes = meshes;
+			Root = bones[rootIndex];
 		}
 
 		private void TraverseNodes(NursiaModelBone root, Action<NursiaModelBone> action)
@@ -58,10 +87,7 @@ namespace Nursia.Modelling
 
 		internal void TraverseNodes(Action<NursiaModelBone> action)
 		{
-			foreach (var root in RootNodes)
-			{
-				TraverseNodes(root, action);
-			}
+			TraverseNodes(Root, action);
 		}
 
 		internal void UpdateNodesAbsoluteTransforms()
@@ -151,6 +177,13 @@ namespace Nursia.Modelling
 			});
 
 			BoundingBox = boundingBox;
+		}
+
+		public void Render(RenderBatch batch, ref Matrix transform)
+		{
+			UpdateNodesAbsoluteTransforms();
+
+			Root.Render(batch, ref transform);
 		}
 	}
 }

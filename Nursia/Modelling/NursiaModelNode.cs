@@ -25,13 +25,8 @@ namespace Nursia.Modelling
 				return;
 			}
 
-			Model.UpdateNodesAbsoluteTransforms();
-
 			var transform = GlobalTransform;
-			foreach (var node in Model.RootNodes)
-			{
-				node.Render(this, batch, ref transform);
-			}
+			Model.Render(batch, ref transform);
 		}
 
 		public override void Load(AssetManager assetManager)

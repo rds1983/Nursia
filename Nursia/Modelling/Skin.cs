@@ -1,48 +1,61 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace Nursia.Modelling
 {
+	public class SkinJoint
+	{
+		public NursiaModelBone Bone { get; }
+		public Matrix InverseBindTransform { get; }
+
+		public SkinJoint(NursiaModelBone bone, Matrix inverseBindTransform)
+		{
+			if (bone == null)
+			{
+				throw new ArgumentNullException(nameof(bone));
+			}
+
+			Bone = bone;
+			InverseBindTransform = inverseBindTransform;
+		}
+	}
+
 	public class Skin : ItemWithId
 	{
 		private readonly Matrix[] _boneTransforms;
 
-		public NursiaModelBone[] Bones { get; }
+		public SkinJoint[] Joints { get; }
 
-		public Matrix[] InverseBindTransforms { get; }
-
-		public Skin(NursiaModelBone[] bones, Matrix[] inverseBindTransforms)
+		/// <summary>
+		/// Creates a skin from array of joints
+		/// </summary>
+		/// <param name="joints"></param>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="ArgumentException"></exception>
+		public Skin(SkinJoint[] joints)
 		{
-			if (bones == null)
+			if (joints == null)
 			{
-				throw new ArgumentNullException(nameof(bones));
+				throw new ArgumentNullException(nameof(joints));
 			}
 
-			if (bones.Length == 0)
+			if (joints.Length == 0)
 			{
-				throw new ArgumentException(nameof(bones), "no joints");
+				throw new ArgumentException(nameof(joints), "no joints");
 			}
 
-			if (inverseBindTransforms == null)
-			{
-				throw new ArgumentNullException(nameof(inverseBindTransforms));
-			}
-
-			if (inverseBindTransforms.Length == 0)
-			{
-				throw new ArgumentException(nameof(inverseBindTransforms), "no inverse bind transforms");
-			}
-
-			if (bones.Length != inverseBindTransforms.Length)
-			{
-				throw new ArgumentException($"Different sizes. JointNodes has {bones.Length}, InverseBindTransforms has {inverseBindTransforms.Length}");
-			}
-
-			Bones = bones;
-			InverseBindTransforms = inverseBindTransforms;
-			_boneTransforms = new Matrix[bones.Length];
+			Joints = joints;
+			_boneTransforms = new Matrix[joints.Length];
 		}
 
+		/// <summary>
+		/// Creates a skin frmo array of bones, 
+		/// automatically calculating inverse bind matrices by inverting bones' absolute transforms
+		/// </summary>
+		/// <param name="bones"></param>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="ArgumentException"></exception>
 		public Skin(NursiaModelBone[] bones)
 		{
 			if (bones == null)
@@ -55,26 +68,25 @@ namespace Nursia.Modelling
 				throw new ArgumentException(nameof(bones), "no joints");
 			}
 
-			Bones = bones;
-
-			// Automatically calculate inverse bind transform
-			InverseBindTransforms = new Matrix[bones.Length];
-			for(var i = 0; i < bones.Length; ++i)
+			var joints = new List<SkinJoint>();
+			foreach (var bone in bones)
 			{
-				var bone = bones[i];
-				InverseBindTransforms[i] = Matrix.Invert(bone.AbsoluteTransform);
+				var inverseBindTransform = Matrix.Invert(bone.AbsoluteTransform);
+
+				joints.Add(new SkinJoint(bone, inverseBindTransform));
 			}
 
+			Joints = joints.ToArray();
 			_boneTransforms = new Matrix[bones.Length];
 		}
 
 		internal Matrix[] CalculateBoneTransforms()
 		{
-			for (var i = 0; i < Bones.Length; ++i)
+			for (var i = 0; i < Joints.Length; ++i)
 			{
-				var joint = Bones[i];
+				var joint = Joints[i];
 
-				_boneTransforms[i] = InverseBindTransforms[i] * joint.AbsoluteTransform;
+				_boneTransforms[i] = joint.InverseBindTransform * joint.Bone.AbsoluteTransform;
 			}
 
 			return _boneTransforms;

@@ -521,15 +521,15 @@ namespace Nursia.Modelling
 				throw new Exception($"Skin {gltfSkin.Name} inconsistency. Joints amount: {gltfSkin.Joints.Length}, Inverse bind matrices amount: {transforms.Length}");
 			}
 
-			var bones = new List<NursiaModelBone>();
+			var bones = new List<SkinJoint>();
 			for (var i = 0; i < gltfSkin.Joints.Length; ++i)
 			{
 				var jointIndex = gltfSkin.Joints[i];
 				var bone = allBones[jointIndex];
-				bones.Add(bone);
+				bones.Add(new SkinJoint(bone, transforms[i]));
 			}
 
-			result = new Skin(bones.ToArray(), transforms);
+			result = new Skin(bones.ToArray());
 
 			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints");
 

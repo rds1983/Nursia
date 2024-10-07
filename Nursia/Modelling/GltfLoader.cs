@@ -71,7 +71,7 @@ namespace Nursia.Modelling
 		private Gltf _gltf;
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 		private readonly List<List<NursiaModelMesh>> _meshes = new List<List<NursiaModelMesh>>();
-		private readonly List<NursiaModelBoneDesc> _allNodes = new List<NursiaModelBoneDesc>();
+		private readonly List<NursiaModelBoneDesc> _allBones = new List<NursiaModelBoneDesc>();
 		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
 
 		private byte[] FileResolver(string path)
@@ -525,7 +525,8 @@ namespace Nursia.Modelling
 			for (var i = 0; i < gltfSkin.Joints.Length; ++i)
 			{
 				var jointIndex = gltfSkin.Joints[i];
-				bones.Add(allBones[jointIndex]);
+				var bone = allBones[jointIndex];
+				bones.Add(bone);
 			}
 
 			result = new Skin(bones.ToArray(), transforms);
@@ -574,20 +575,20 @@ namespace Nursia.Modelling
 					}
 				}
 
-				_allNodes.Add(modelNode);
+				_allBones.Add(modelNode);
 			}
 
 			// Second run - set children and skins
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
-				var modelNode = _allNodes[i];
+				var modelNode = _allBones[i];
 
 				if (gltfNode.Children != null)
 				{
 					foreach (var childIndex in gltfNode.Children)
 					{
-						var childNode = _allNodes[childIndex];
+						var childNode = _allBones[childIndex];
 						modelNode.Children.Add(childNode);
 					}
 				}
@@ -597,7 +598,7 @@ namespace Nursia.Modelling
 		public NursiaModel Load(AssetManager manager, string assetName)
 		{
 			_meshes.Clear();
-			_allNodes.Clear();
+			_allBones.Clear();
 			_skinCache.Clear();
 
 			_assetManager = manager;
@@ -619,7 +620,10 @@ namespace Nursia.Modelling
 				}
 			}
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
-			var model = ModelBuilder.Create(_allNodes, allMeshes, scene.Nodes[0]);
+			var model = NursiaModelBuilder.Create(_allBones, allMeshes, scene.Nodes[0]);
+
+			model.ResetTransforms();
+			model.UpdateNodesAbsoluteTransforms();
 
 			// Set skins
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)

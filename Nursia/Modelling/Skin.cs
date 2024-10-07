@@ -7,20 +7,20 @@ namespace Nursia.Modelling
 	{
 		private readonly Matrix[] _boneTransforms;
 
-		public NursiaModelBone[] JointNodes { get; }
+		public NursiaModelBone[] Bones { get; }
 
 		public Matrix[] InverseBindTransforms { get; }
 
-		public Skin(NursiaModelBone[] jointNodes, Matrix[] inverseBindTransforms)
+		public Skin(NursiaModelBone[] bones, Matrix[] inverseBindTransforms)
 		{
-			if (jointNodes == null)
+			if (bones == null)
 			{
-				throw new ArgumentNullException(nameof(jointNodes));
+				throw new ArgumentNullException(nameof(bones));
 			}
 
-			if (jointNodes.Length == 0)
+			if (bones.Length == 0)
 			{
-				throw new ArgumentException(nameof(jointNodes), "no joints");
+				throw new ArgumentException(nameof(bones), "no joints");
 			}
 
 			if (inverseBindTransforms == null)
@@ -33,21 +33,47 @@ namespace Nursia.Modelling
 				throw new ArgumentException(nameof(inverseBindTransforms), "no inverse bind transforms");
 			}
 
-			if (jointNodes.Length != inverseBindTransforms.Length)
+			if (bones.Length != inverseBindTransforms.Length)
 			{
-				throw new ArgumentException($"Different sizes. JointNodes has {jointNodes.Length}, InverseBindTransforms has {inverseBindTransforms.Length}");
+				throw new ArgumentException($"Different sizes. JointNodes has {bones.Length}, InverseBindTransforms has {inverseBindTransforms.Length}");
 			}
 
-			JointNodes = jointNodes;
+			Bones = bones;
 			InverseBindTransforms = inverseBindTransforms;
-			_boneTransforms = new Matrix[jointNodes.Length];
+			_boneTransforms = new Matrix[bones.Length];
+		}
+
+		public Skin(NursiaModelBone[] bones)
+		{
+			if (bones == null)
+			{
+				throw new ArgumentNullException(nameof(bones));
+			}
+
+			if (bones.Length == 0)
+			{
+				throw new ArgumentException(nameof(bones), "no joints");
+			}
+
+			Bones = bones;
+
+			// Automatically calculate inverse bind transform
+			InverseBindTransforms = new Matrix[bones.Length];
+			for(var i = 0; i < bones.Length; ++i)
+			{
+				var bone = bones[i];
+				InverseBindTransforms[i] = Matrix.Invert(bone.AbsoluteTransform);
+			}
+
+			_boneTransforms = new Matrix[bones.Length];
 		}
 
 		internal Matrix[] CalculateBoneTransforms()
 		{
-			for (var i = 0; i < JointNodes.Length; ++i)
+			for (var i = 0; i < Bones.Length; ++i)
 			{
-				var joint = JointNodes[i];
+				var joint = Bones[i];
+
 				_boneTransforms[i] = InverseBindTransforms[i] * joint.AbsoluteTransform;
 			}
 

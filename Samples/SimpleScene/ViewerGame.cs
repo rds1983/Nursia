@@ -63,7 +63,7 @@ namespace SimpleScene
 			Nrs.Game = this;
 
 			var assetManager = AssetManager.CreateFileAssetManager(Path.Combine(ExecutingAssemblyDirectory, "Assets"));
-			_scene = assetManager.LoadScene("test.scene");
+			_scene = assetManager.LoadScene("Scenes/test.scene");
 
 			_model = _scene.QueryByType<NursiaModelNode>()[0];
 			_model.Model.CurrentAnimation = _model.Model.Animations.First().Value;
@@ -122,7 +122,8 @@ namespace SimpleScene
 
 			GraphicsDevice.Clear(Color.Black);
 
-			_renderer.Render(_scene, _scene.Camera);
+			_renderer.AddNode(_scene);
+			_renderer.Render(_scene.Camera);
 
 			_fpsCounter.Draw(gameTime);
 

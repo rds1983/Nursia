@@ -93,7 +93,7 @@ namespace Nursia.Modelling
 						mesh.Mesh.BonesTransforms = bonesTransforms;
 					}
 
-					batch.BatchJob(mesh.Material, mesh.Transform * meshTransform, mesh.Mesh);
+					batch.BatchJob(mesh.Material, meshTransform, mesh.Mesh);
 				}
 			}
 

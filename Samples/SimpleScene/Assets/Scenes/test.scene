@@ -21,7 +21,7 @@
       "Id": "DirectLight"
     },
     {
-      "$type": "Nursia.Modelling.NursiaModel, Nursia",
+      "$type": "Nursia.Modelling.NursiaModelNode, Nursia",
       "ModelPath": "Models\\BrainStem.gltf",
       "Translation": "-20, 1, 0",
       "Scale": "4, 4, 4",

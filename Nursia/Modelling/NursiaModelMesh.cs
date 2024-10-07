@@ -12,7 +12,6 @@ namespace Nursia.Modelling
 
 		public NursiaModelBone ParentBone { get; internal set; }
 		public IMaterial Material { get; set; }
-		public Matrix Transform = Matrix.Identity;
 
 		public NursiaModelMesh(Mesh meshData)
 		{

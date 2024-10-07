@@ -622,23 +622,15 @@ namespace Nursia.Modelling
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
 			var model = NursiaModelBuilder.Create(_allBones, allMeshes, scene.Nodes[0]);
 
-			model.ResetTransforms();
-			model.UpdateNodesAbsoluteTransforms();
-
 			// Set skins
-			for (var i = 0; i < _gltf.Nodes.Length; ++i)
+			if (_gltf.Skins != null && _gltf.Skins.Length > 0)
 			{
-				var gltfNode = _gltf.Nodes[i];
-				var bone = model.Bones[i];
-
-				if (gltfNode.Skin != null)
+				foreach(var mesh in model.Meshes)
 				{
-					bone.Skin = LoadSkin(gltfNode.Skin.Value, model.Bones);
-					foreach (var mesh in bone.Meshes)
-					{
-						((DefaultMaterial)mesh.Material).Skinning = true;
-					}
+					((DefaultMaterial)mesh.Material).Skinning = true;
 				}
+				
+				model.Skin = LoadSkin(0, model.Bones);
 			}
 
 			if (_gltf.Animations != null)
@@ -696,8 +688,6 @@ namespace Nursia.Modelling
 					model.Animations[id] = animation;
 				}
 			}
-
-			model.UpdateBoundingBox();
 
 			return model;
 		}

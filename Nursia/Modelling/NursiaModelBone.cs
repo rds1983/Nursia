@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Nursia.Rendering;
+using Nursia.Utilities;
 
 namespace Nursia.Modelling
 {
@@ -50,57 +50,26 @@ namespace Nursia.Modelling
 		}
 
 
-		public Skin Skin { get; set; }
-
 		public Vector3 DefaultTranslation = Vector3.Zero;
 		public Vector3 DefaultScale = Vector3.One;
 		public Quaternion DefaultRotation = Quaternion.Identity;
-
-		public Matrix Transform = Matrix.Identity;
-
-		internal Matrix AbsoluteTransform { get; set; } = Matrix.Identity;
-		public BoundingBox BoundingBox { get; internal set; }
-
-		public bool HasSkin => Skin != null;
 
 		internal NursiaModelBone(int index, string name)
 		{
 			Index = index;
 			Name = name;
 		}
+		public override string ToString() => Name;
 
-		internal void Render(RenderBatch batch, ref Matrix rootTransform)
+		public Matrix CalculateDefaultLocalTransform() => Mathematics.CreateTransform(DefaultTranslation, DefaultScale, DefaultRotation);
+		public Matrix CalculateDefaultAbsoluteTransform()
 		{
-			if (Meshes.Length > 0)
+			if (Parent == null)
 			{
-				// If mesh has bones, then parent node transform had been already
-				// applied to bones transform
-				// Thus to avoid applying parent transform twice, we use
-				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				Matrix meshTransform = HasSkin ? rootTransform : AbsoluteTransform * rootTransform;
-				Matrix[] bonesTransforms = null;
-
-				// Apply the effect and render items
-				if (HasSkin)
-				{
-					bonesTransforms = Skin.CalculateBoneTransforms();
-				}
-
-				foreach (var mesh in Meshes)
-				{
-					if (HasSkin)
-					{
-						mesh.Mesh.BonesTransforms = bonesTransforms;
-					}
-
-					batch.BatchJob(mesh.Material, meshTransform, mesh.Mesh);
-				}
+				return CalculateDefaultLocalTransform();
 			}
 
-			foreach (var child in Children)
-			{
-				child.Render(batch, ref rootTransform);
-			}
+			return CalculateDefaultLocalTransform() * Parent.CalculateDefaultAbsoluteTransform();
 		}
 	}
 }

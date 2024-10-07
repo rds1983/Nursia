@@ -103,7 +103,7 @@ namespace NursiaEditor.Utility
 			var asModel = obj as NursiaModelNode;
 			if (asModel != null)
 			{
-				result = asModel.Model.BoundingBox;
+				result = asModel.CalculateBoundingBox();
 			}
 
 			return result;

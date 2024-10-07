@@ -66,7 +66,7 @@ namespace SimpleScene
 			_scene = assetManager.LoadScene("Scenes/Main.scene");
 
 			_model = _scene.QueryByType<NursiaModelNode>()[0];
-			_model.Model.CurrentAnimation = _model.Model.Animations["running"];
+			_model.CurrentAnimation = _model.Model.Animations["running"];
 
 			_light = _scene.QueryByType<DirectLight>()[0];
 
@@ -106,9 +106,9 @@ namespace SimpleScene
 			else
 			{
 				var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
-				_model.Model.UpdateCurrentAnimation(passed);
+				_model.UpdateCurrentAnimation(passed);
 
-				if (passed > _model.Model.CurrentAnimation.Time)
+				if (passed > _model.CurrentAnimation.Time)
 				{
 					// Restart
 					_animationMoment = DateTime.Now;

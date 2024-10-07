@@ -23,8 +23,6 @@ namespace Nursia.Modelling
 
 	public class Skin : ItemWithId
 	{
-		private readonly Matrix[] _boneTransforms;
-
 		public SkinJoint[] Joints { get; }
 
 		/// <summary>
@@ -46,12 +44,11 @@ namespace Nursia.Modelling
 			}
 
 			Joints = joints;
-			_boneTransforms = new Matrix[joints.Length];
 		}
 
 		/// <summary>
-		/// Creates a skin frmo array of bones, 
-		/// automatically calculating inverse bind matrices by inverting bones' absolute transforms
+		/// Creates a skin from array of bones,
+		/// automatically calculating inverse bind matrices by inverting bones' absolute transforms.
 		/// </summary>
 		/// <param name="bones"></param>
 		/// <exception cref="ArgumentNullException"></exception>
@@ -71,25 +68,11 @@ namespace Nursia.Modelling
 			var joints = new List<SkinJoint>();
 			foreach (var bone in bones)
 			{
-				var inverseBindTransform = Matrix.Invert(bone.AbsoluteTransform);
-
+				var inverseBindTransform = Matrix.Invert(bone.CalculateDefaultAbsoluteTransform());
 				joints.Add(new SkinJoint(bone, inverseBindTransform));
 			}
 
 			Joints = joints.ToArray();
-			_boneTransforms = new Matrix[bones.Length];
-		}
-
-		internal Matrix[] CalculateBoneTransforms()
-		{
-			for (var i = 0; i < Joints.Length; ++i)
-			{
-				var joint = Joints[i];
-
-				_boneTransforms[i] = joint.InverseBindTransform * joint.Bone.AbsoluteTransform;
-			}
-
-			return _boneTransforms;
 		}
 	}
 }

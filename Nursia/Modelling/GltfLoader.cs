@@ -13,7 +13,7 @@ using Nursia.Standard;
 using Nursia.Utilities;
 using static glTFLoader.Schema.Accessor;
 using static glTFLoader.Schema.AnimationChannelTarget;
-
+using AnimationChannel = Nursia.Animation.AnimationChannel;
 using Mesh = Nursia.Rendering.Mesh;
 
 namespace Nursia.Modelling
@@ -653,11 +653,6 @@ namespace Nursia.Modelling
 			{
 				foreach (var gltfAnimation in _gltf.Animations)
 				{
-					var animation = new AnimationClip
-					{
-						Id = gltfAnimation.Name
-					};
-
 					var channelsDict = new Dictionary<int, List<PathInfo>>();
 					foreach (var channel in gltfAnimation.Channels)
 					{
@@ -670,12 +665,16 @@ namespace Nursia.Modelling
 						targets.Add(new PathInfo(channel.Sampler, channel.Target.Path));
 					}
 
+					var channels = new List<AnimationChannel>();
 					float time = 0;
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new BoneAnimation(model.Bones[pair.Key]);
+						var bone = model.Bones[pair.Key];
 						var animationData = new SortedDictionary<float, Pose>();
-						
+
+						var translationMode = InterpolationMode.None;
+						var rotationMode = InterpolationMode.None;
+						var scaleMode = InterpolationMode.None;
 						foreach (var pathInfo in pair.Value)
 						{
 							var sampler = gltfAnimation.Samplers[pathInfo.Sampler];
@@ -684,31 +683,32 @@ namespace Nursia.Modelling
 							switch (pathInfo.Path)
 							{
 								case PathEnum.translation:
-									LoadAnimationTransforms(nodeAnimation.Bone.DefaultPose, animationData,
+									LoadAnimationTransforms(bone.DefaultPose, animationData,
 										(ref Pose p, Vector3 d) => p.Translation = d,
 										times, sampler);
-									nodeAnimation.TranslationInterpolation = sampler.Interpolation.ToInterpolationMode();
+									translationMode = sampler.Interpolation.ToInterpolationMode();
 									break;
 								case PathEnum.rotation:
-									LoadAnimationTransforms(nodeAnimation.Bone.DefaultPose, animationData,
+									LoadAnimationTransforms(bone.DefaultPose, animationData,
 										(ref Pose p, Quaternion d) => p.Orientation = d,
 										times, sampler);
-									nodeAnimation.RotationInterpolation = sampler.Interpolation.ToInterpolationMode();
+									rotationMode = sampler.Interpolation.ToInterpolationMode();
 									break;
 								case PathEnum.scale:
-									LoadAnimationTransforms(nodeAnimation.Bone.DefaultPose, animationData,
+									LoadAnimationTransforms(bone.DefaultPose, animationData,
 										(ref Pose p, Vector3 d) => p.Scale = d,
 										times, sampler);
-									nodeAnimation.ScaleInterpolation = sampler.Interpolation.ToInterpolationMode();
+									scaleMode = sampler.Interpolation.ToInterpolationMode();
 									break;
 								case PathEnum.weights:
 									break;
 							}
 						}
 
-						foreach(var pair2 in animationData)
+						var keyframes = new List<AnimationChannelKeyframe>();
+						foreach (var pair2 in animationData)
 						{
-							nodeAnimation.Values.Add(new AnimationTransformKeyframe(pair2.Key, pair2.Value));
+							keyframes.Add(new AnimationChannelKeyframe(TimeSpan.FromSeconds(pair2.Key), pair2.Value));
 
 							if (pair2.Key > time)
 							{
@@ -716,11 +716,18 @@ namespace Nursia.Modelling
 							}
 						}
 
-						animation.BoneAnimations.Add(nodeAnimation);
+						var animationChannel = new AnimationChannel(bone, keyframes.ToArray())
+						{
+							TranslationMode = translationMode,
+							RotationMode = rotationMode,
+							ScaleMode = scaleMode
+						};
+
+						channels.Add(animationChannel);
 					}
 
-					animation.Time = time;
-					var id = animation.Id ?? "(default)";
+					var animation = new AnimationClip(gltfAnimation.Name, TimeSpan.FromSeconds(time), channels.ToArray());
+					var id = animation.Name ?? "(default)";
 					model.Animations[id] = animation;
 				}
 			}

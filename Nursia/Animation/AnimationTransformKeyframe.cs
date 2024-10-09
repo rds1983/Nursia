@@ -1,4 +1,4 @@
-﻿namespace Nursia.Modelling
+﻿namespace Nursia.Animation
 {
 	public class AnimationTransformKeyframe<T>
 	{

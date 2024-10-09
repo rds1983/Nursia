@@ -1,11 +1,9 @@
 ﻿using AssetManagementBase;
-using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Nursia.Attributes;
 using Nursia.Rendering;
 using Nursia.Utilities;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -14,7 +12,7 @@ namespace Nursia.Modelling
 	[EditorInfo("Gltf/Glb Model")]
 	public class NursiaModelNode : SceneNode
 	{
-		private ModelAnimation _currentAnimation = null;
+		private bool _transformsDirty = true;
 		private NursiaModelBone[] _traverseOrder;
 		private Matrix[] _localTransforms;
 		private Matrix[] _worldTransforms;
@@ -68,32 +66,6 @@ namespace Nursia.Modelling
 		[Browsable(false)]
 		public string ModelPath { get; set; }
 
-		[Browsable(false)]
-		[JsonIgnore]
-		public ModelAnimation CurrentAnimation
-		{
-			get
-			{
-				return _currentAnimation;
-			}
-
-			set
-			{
-				if (value == _currentAnimation)
-				{
-					return;
-				}
-
-				if (value != null && !Model.Animations.ContainsValue(value))
-				{
-					throw new ArgumentException("This animation doesnt not belong to this model");
-				}
-
-				_currentAnimation = value;
-				ResetTransforms();
-			}
-		}
-
 		public void ResetTransforms()
 		{
 			if (Model == null)
@@ -106,10 +78,17 @@ namespace Nursia.Modelling
 				var bone = _traverseOrder[i];
 				_localTransforms[bone.Index] = Mathematics.CreateTransform(bone.DefaultTranslation, bone.DefaultScale, bone.DefaultRotation);
 			}
+
+			_transformsDirty = true;
 		}
 
-		private void UpdateWorldTransforms()
+		private void UpdateTransforms()
 		{
+			if (!_transformsDirty)
+			{
+				return;
+			}
+
 			for (var i = 0; i < _traverseOrder.Length; i++)
 			{
 				var bone = _traverseOrder[i];
@@ -123,6 +102,19 @@ namespace Nursia.Modelling
 					_worldTransforms[bone.Index] = _localTransforms[bone.Index] * _worldTransforms[bone.Parent.Index];
 				}
 			}
+
+			// Update skin transforms
+			if (_model.Skin != null)
+			{
+				for (var i = 0; i < _model.Skin.Joints.Length; ++i)
+				{
+					var joint = _model.Skin.Joints[i];
+
+					_skinTransforms[i] = joint.InverseBindTransform * _worldTransforms[joint.Bone.Index];
+				}
+			}
+
+			_transformsDirty = false;
 		}
 
 		protected internal override void Render(RenderBatch batch)
@@ -134,7 +126,7 @@ namespace Nursia.Modelling
 				return;
 			}
 
-			UpdateWorldTransforms();
+			UpdateTransforms();
 
 			// Render meshes
 			var rootTransform = GlobalTransform;
@@ -149,13 +141,6 @@ namespace Nursia.Modelling
 				// Apply the effect and render items
 				if (_model.Skin != null)
 				{
-					for (var i = 0; i < _model.Skin.Joints.Length; ++i)
-					{
-						var joint = _model.Skin.Joints[i];
-
-						_skinTransforms[i] = joint.InverseBindTransform * _worldTransforms[joint.Bone.Index];
-					}
-
 					mesh.Mesh.BonesTransforms = _skinTransforms;
 				}
 
@@ -172,7 +157,7 @@ namespace Nursia.Modelling
 
 		public BoundingBox CalculateBoundingBox()
 		{
-			UpdateWorldTransforms();
+			UpdateTransforms();
 
 			var boundingBox = new BoundingBox();
 			foreach (var mesh in _model.Meshes)
@@ -185,51 +170,12 @@ namespace Nursia.Modelling
 			return boundingBox;
 		}
 
-		private static T GetAnimationTransform<T>(AnimationTransforms<T> transformFrames, float passed, T defaultValue)
+		public Matrix GetLocalTransform(int boneIndex) => _localTransforms[boneIndex];
+
+		public void SetLocalTransform(int boneIndex, Matrix transform)
 		{
-			if (transformFrames.Values.Count == 0)
-			{
-				return defaultValue;
-			}
-
-			var i = transformFrames.FindIndexByTime(passed);
-			T result;
-			if (i > 0)
-			{
-				if (transformFrames.Interpolation == InterpolationEnum.STEP)
-				{
-					result = transformFrames.Values[i - 1].Value;
-				}
-				else
-				{
-					result = transformFrames.CalculateInterpolatedValue(passed, i);
-				}
-			}
-			else
-			{
-				result = transformFrames.Values[i].Value;
-			}
-
-			return result;
-		}
-
-		public void UpdateCurrentAnimation(float passed)
-		{
-			if (_currentAnimation == null)
-			{
-				return;
-			}
-
-			foreach (var boneAnimation in _currentAnimation.BoneAnimations)
-			{
-				var bone = boneAnimation.Bone;
-
-				var translation = GetAnimationTransform(boneAnimation.Translations, passed, bone.DefaultTranslation);
-				var scale = GetAnimationTransform(boneAnimation.Scales, passed, bone.DefaultScale);
-				var rotation = GetAnimationTransform(boneAnimation.Rotations, passed, bone.DefaultRotation);
-
-				_localTransforms[bone.Index] = Mathematics.CreateTransform(translation, scale, rotation);
-			}
+			_localTransforms[boneIndex] = transform;
+			_transformsDirty = true;
 		}
 	}
 }

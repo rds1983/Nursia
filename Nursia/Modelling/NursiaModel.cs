@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nursia.Animation;
 
 namespace Nursia.Modelling
 {
@@ -10,7 +11,7 @@ namespace Nursia.Modelling
 		public NursiaModelBone Root { get; }
 		public Skin Skin { get; set; }
 
-		public Dictionary<string, ModelAnimation> Animations { get; } = new Dictionary<string, ModelAnimation>();
+		public Dictionary<string, AnimationClip> Animations { get; } = new Dictionary<string, AnimationClip>();
 
 		internal NursiaModel(NursiaModelBone[] bones, NursiaModelMesh[] meshes, int rootIndex = 0)
 		{

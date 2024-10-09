@@ -8,6 +8,7 @@ using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
+using Nursia.Animation;
 using Nursia.Standard;
 using Nursia.Utilities;
 using static glTFLoader.Schema.Accessor;
@@ -625,11 +626,11 @@ namespace Nursia.Modelling
 			// Set skins
 			if (_gltf.Skins != null && _gltf.Skins.Length > 0)
 			{
-				foreach(var mesh in model.Meshes)
+				foreach (var mesh in model.Meshes)
 				{
 					((DefaultMaterial)mesh.Material).Skinning = true;
 				}
-				
+
 				model.Skin = LoadSkin(0, model.Bones);
 			}
 
@@ -637,7 +638,7 @@ namespace Nursia.Modelling
 			{
 				foreach (var gltfAnimation in _gltf.Animations)
 				{
-					var animation = new ModelAnimation
+					var animation = new AnimationClip
 					{
 						Id = gltfAnimation.Name
 					};
@@ -656,7 +657,7 @@ namespace Nursia.Modelling
 
 					foreach (var pair in channelsDict)
 					{
-						var nodeAnimation = new NodeAnimation(model.Bones[pair.Key]);
+						var nodeAnimation = new BoneAnimation(model.Bones[pair.Key]);
 
 						foreach (var pathInfo in pair.Value)
 						{

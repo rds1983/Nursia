@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace Nursia.Modelling
+namespace Nursia.Animation
 {
-	public class ModelAnimation : ItemWithId
+	public class AnimationClip : ItemWithId
 	{
-		public List<NodeAnimation> BoneAnimations { get; } = new List<NodeAnimation>();
+		public List<BoneAnimation> BoneAnimations { get; } = new List<BoneAnimation>();
 		public float Time { get; set; }
 
 		private void UpdateStartEndInternal<T>(AnimationTransforms<T> transformFrames, ref float? start, ref float? end)

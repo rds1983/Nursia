@@ -2,7 +2,7 @@
 using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 
-namespace Nursia.Modelling
+namespace Nursia.Animation
 {
 	public abstract class AnimationTransforms<T>
 	{
@@ -38,7 +38,7 @@ namespace Nursia.Modelling
 
 			while (start < end)
 			{
-				var middle = start + ((end - start) >> 1);
+				var middle = start + (end - start >> 1);
 				if (passed < Values[middle].Time)
 				{
 					end = middle;
@@ -61,7 +61,7 @@ namespace Nursia.Modelling
 		{
 			var k = Values[frameIndex].DeltaK * (passed - Values[frameIndex - 1].Time);
 
-			return (Values[frameIndex - 1].Value * (1 - k)) + (Values[frameIndex].Value * k);
+			return Values[frameIndex - 1].Value * (1 - k) + Values[frameIndex].Value * k;
 		}
 	}
 

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nursia;
+using Nursia.Animation;
 using Nursia.Lights;
 using Nursia.Modelling;
 using Nursia.Rendering;
@@ -19,6 +20,7 @@ namespace SimpleScene
 		private readonly GraphicsDeviceManager _graphics;
 		private Scene _scene;
 		private NursiaModelNode _model;
+		private AnimationPlayer _player;
 		private DirectLight _light;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
@@ -66,7 +68,8 @@ namespace SimpleScene
 			_scene = assetManager.LoadScene("Scenes/Main.scene");
 
 			_model = _scene.QueryByType<NursiaModelNode>()[0];
-			_model.CurrentAnimation = _model.Model.Animations["running"];
+			_player = new AnimationPlayer(_model);
+			_player.StartAnimation("running");
 
 			_light = _scene.QueryByType<DirectLight>()[0];
 
@@ -106,9 +109,9 @@ namespace SimpleScene
 			else
 			{
 				var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
-				_model.UpdateCurrentAnimation(passed);
+				_player.UpdateCurrentAnimation(passed);
 
-				if (passed > _model.CurrentAnimation.Time)
+				if (passed > _player.CurrentAnimation.Time)
 				{
 					// Restart
 					_animationMoment = DateTime.Now;

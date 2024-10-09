@@ -1,15 +1,14 @@
 ﻿namespace Nursia.Animation
 {
-	public class AnimationTransformKeyframe<T>
+	public class AnimationTransformKeyframe
 	{
-		public float Time { get; internal set; }
-		public float DeltaK { get; internal set; }
-		public T Value { get; }
+		public float Time { get; }
+		public Pose Pose { get; }
 
-		public AnimationTransformKeyframe(float time, T value)
+		public AnimationTransformKeyframe(float time, Pose pose)
 		{
 			Time = time;
-			Value = value;
+			Pose = pose;
 		}
 	}
 }

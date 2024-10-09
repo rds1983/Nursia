@@ -1,4 +1,5 @@
-﻿using static glTFLoader.Schema.Accessor;
+﻿using glTFLoader.Schema;
+using static glTFLoader.Schema.Accessor;
 
 namespace Nursia.Utilities
 {
@@ -28,5 +29,18 @@ namespace Nursia.Utilities
 
 		public static int GetComponentCount(this TypeEnum type) => ComponentsCount[(int)type];
 		public static int GetComponentSize(this ComponentTypeEnum type) => ComponentSizes[(int)type - 5120];
+
+		public static InterpolationMode ToInterpolationMode(this InterpolationEnum v)
+		{
+			switch (v)
+			{
+				case InterpolationEnum.LINEAR:
+					return InterpolationMode.Linear;
+				case InterpolationEnum.CUBICSPLINE:
+					return InterpolationMode.Cubic;
+			}
+
+			return InterpolationMode.None;
+		}
 	}
 }

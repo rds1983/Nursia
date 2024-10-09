@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,21 +14,7 @@ namespace Nursia.Modelling
 		/// </summary>
 		public string Name { get; set; }
 
-
-		/// <summary>
-		/// Translaction
-		/// </summary>
-		public Vector3 Translation = Vector3.Zero;
-
-		/// <summary>
-		/// Scale
-		/// </summary>
-		public Vector3 Scale = Vector3.One;
-
-		/// <summary>
-		/// Rotation
-		/// </summary>
-		public Quaternion Rotation = Quaternion.Identity;
+		public Pose Pose = Pose.Identity;
 
 		/// <summary>
 		/// Meshes of the model bone
@@ -97,9 +82,7 @@ namespace Nursia.Modelling
 				var desc = bones[i];
 				var bone = new NursiaModelBone(i, desc.Name)
 				{
-					DefaultTranslation = desc.Translation,
-					DefaultScale = desc.Scale,
-					DefaultRotation = desc.Rotation,
+					DefaultPose = desc.Pose,
 					Meshes = desc.Meshes.ToArray(),
 				};
 

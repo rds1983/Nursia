@@ -8,6 +8,7 @@ using Myra.Events;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using Nursia;
+using Nursia.Animation;
 using Nursia.Lights;
 using Nursia.Modelling;
 using Nursia.Rendering;
@@ -281,7 +282,7 @@ namespace ModelViewer
 			}
 			else
 			{
-				_model.CurrentAnimation = (ModelAnimation)_mainPanel._comboAnimations.SelectedItem.Tag;
+				_model.CurrentAnimation = (AnimationClip)_mainPanel._comboAnimations.SelectedItem.Tag;
 			}
 
 			ResetAnimation();

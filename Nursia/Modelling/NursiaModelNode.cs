@@ -76,7 +76,7 @@ namespace Nursia.Modelling
 			for (var i = 0; i < _traverseOrder.Length; i++)
 			{
 				var bone = _traverseOrder[i];
-				_localTransforms[bone.Index] = Mathematics.CreateTransform(bone.DefaultTranslation, bone.DefaultScale, bone.DefaultRotation);
+				_localTransforms[bone.Index] = bone.CalculateDefaultLocalTransform();
 			}
 
 			_transformsDirty = true;

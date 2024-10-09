@@ -1,6 +1,5 @@
-﻿using glTFLoader.Schema;
+﻿using Microsoft.Xna.Framework;
 using Nursia.Modelling;
-using Nursia.Utilities;
 using System;
 
 namespace Nursia.Animation
@@ -30,34 +29,6 @@ namespace Nursia.Animation
 			_node.ResetTransforms();
 		}
 
-		private static T GetAnimationTransform<T>(AnimationTransforms<T> transformFrames, float passed, T defaultValue)
-		{
-			if (transformFrames.Values.Count == 0)
-			{
-				return defaultValue;
-			}
-
-			var i = transformFrames.FindIndexByTime(passed);
-			T result;
-			if (i > 0)
-			{
-				if (transformFrames.Interpolation == InterpolationEnum.STEP)
-				{
-					result = transformFrames.Values[i - 1].Value;
-				}
-				else
-				{
-					result = transformFrames.CalculateInterpolatedValue(passed, i);
-				}
-			}
-			else
-			{
-				result = transformFrames.Values[i].Value;
-			}
-
-			return result;
-		}
-
 		public void UpdateCurrentAnimation(float passed)
 		{
 			if (_currentAnimation == null)
@@ -69,11 +40,29 @@ namespace Nursia.Animation
 			{
 				var bone = boneAnimation.Bone;
 
-				var translation = GetAnimationTransform(boneAnimation.Translations, passed, bone.DefaultTranslation);
-				var scale = GetAnimationTransform(boneAnimation.Scales, passed, bone.DefaultScale);
-				var rotation = GetAnimationTransform(boneAnimation.Rotations, passed, bone.DefaultRotation);
+				Pose pose;
+				var i = boneAnimation.FindIndexByTime(passed);
 
-				_node.SetLocalTransform(bone.Index, Mathematics.CreateTransform(translation, scale, rotation));
+				if (i >= boneAnimation.Values.Count)
+				{
+					continue;
+				}
+
+				if (i == 0)
+				{
+					pose = boneAnimation.Values[0].Pose;
+				}
+				else
+				{
+					pose = Pose.Interpolate(boneAnimation.Values[i - 1].Pose,
+						boneAnimation.Values[i].Pose,
+						MathHelper.Clamp(passed - boneAnimation.Values[i - 1].Time, 0, 1),
+						boneAnimation.TranslationInterpolation,
+						boneAnimation.RotationInterpolation,
+						boneAnimation.ScaleInterpolation);
+				}
+
+				_node.SetLocalTransform(bone.Index, pose.ToMatrix());
 			}
 		}
 	}

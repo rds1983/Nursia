@@ -49,10 +49,7 @@ namespace Nursia.Modelling
 			}
 		}
 
-
-		public Vector3 DefaultTranslation = Vector3.Zero;
-		public Vector3 DefaultScale = Vector3.One;
-		public Quaternion DefaultRotation = Quaternion.Identity;
+		public Pose DefaultPose = Pose.Identity;
 
 		internal NursiaModelBone(int index, string name)
 		{
@@ -61,7 +58,7 @@ namespace Nursia.Modelling
 		}
 		public override string ToString() => Name;
 
-		public Matrix CalculateDefaultLocalTransform() => Mathematics.CreateTransform(DefaultTranslation, DefaultScale, DefaultRotation);
+		public Matrix CalculateDefaultLocalTransform() => DefaultPose.ToMatrix();
 		public Matrix CalculateDefaultAbsoluteTransform()
 		{
 			if (Parent == null)

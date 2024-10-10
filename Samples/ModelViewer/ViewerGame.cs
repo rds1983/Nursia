@@ -14,7 +14,6 @@ using Nursia.Modelling;
 using Nursia.Rendering;
 using Nursia.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace ModelViewer
@@ -22,7 +21,8 @@ namespace ModelViewer
 	public class ViewerGame : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-		private NursiaModel _model;
+		private readonly NursiaModelNode _model = new NursiaModelNode();
+		private AnimationController _player = null;
 		private CameraInputController _controller;
 		private readonly ForwardRenderer _renderer = new ForwardRenderer();
 		private MainPanel _mainPanel;
@@ -30,29 +30,6 @@ namespace ModelViewer
 		private readonly Scene _scene = new Scene();
 		private Desktop _desktop;
 		private bool _isAnimating;
-		private DateTime? _animationMoment;
-		private static readonly List<DirectLight> _defaultLights = new List<DirectLight>();
-
-		static ViewerGame()
-		{
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(-0.5265408f, -0.5735765f, -0.6275069f),
-				Color = new Color(1, 0.9607844f, 0.8078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.7198464f, 0.3420201f, 0.6040227f),
-				Color = new Color(0.9647059f, 0.7607844f, 0.4078432f)
-			});
-
-			_defaultLights.Add(new DirectLight
-			{
-				Direction = new Vector3(0.4545195f, -0.7660444f, 0.4545195f),
-				Color = new Color(0.3231373f, 0.3607844f, 0.3937255f)
-			});
-		}
 
 		public ViewerGame()
 		{
@@ -75,7 +52,6 @@ namespace ModelViewer
 		private void ResetAnimation()
 		{
 			_mainPanel._sliderTime.Value = _mainPanel._sliderTime.Minimum;
-			_animationMoment = null;
 		}
 
 		private void LoadModel(string file)
@@ -85,11 +61,12 @@ namespace ModelViewer
 				if (!string.IsNullOrEmpty(file))
 				{
 					var manager = AssetManager.CreateFileAssetManager(Path.GetDirectoryName(file));
-					_model = manager.LoadGltf(Path.GetFileName(file));
+					var model = manager.LoadGltf(Path.GetFileName(file));
+					_model.Model = model;
 
 					_mainPanel._comboAnimations.Items.Clear();
 					_mainPanel._comboAnimations.Items.Add(new ListItem(null));
-					foreach (var pair in _model.Animations)
+					foreach (var pair in model.Animations)
 					{
 						_mainPanel._comboAnimations.Items.Add(
 							new ListItem(pair.Key)
@@ -97,26 +74,16 @@ namespace ModelViewer
 								Tag = pair.Value
 							});
 					}
-
-					var current = _scene.QueryByType<NursiaModelNode>();
-					foreach (var c in current)
-					{
-						_scene.Children.Remove(c);
-					}
-
-					_scene.Children.Add(new NursiaModelNode
-					{
-						Model = _model
-					});
 				}
 
 				_mainPanel._textPath.Text = file;
 
 				// Reset camera
-				if (_model != null)
+				if (_model.Model != null)
 				{
-					var min = _model.BoundingBox.Min;
-					var max = _model.BoundingBox.Max;
+					var bb = _model.CalculateBoundingBox();
+					var min = bb.Min;
+					var max = bb.Max;
 					var center = (min + max) / 2;
 					var cameraPosition = (max - center) * 3.0f + center;
 
@@ -169,12 +136,15 @@ namespace ModelViewer
 
 			// Nursia
 			Nrs.Game = this;
-			LoadModel(string.Empty);
 
-			foreach (var l in _defaultLights)
+			_scene.Children.Add(new DirectLight
 			{
-				_scene.Children.Add(l);
-			}
+				Rotation = new Vector3(325, 23, 0)
+			});
+			_scene.Children.Add(_model);
+			_player = new AnimationController(_model);
+
+			LoadModel(string.Empty);
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
@@ -229,22 +199,22 @@ namespace ModelViewer
 		{
 			_isAnimating = !_isAnimating;
 			_mainPanel._buttonPlayStop.Text = _isAnimating ? "Stop" : "Play";
-			_animationMoment = null;
 		}
 
 		private void _sliderTime_ValueChanged(object sender, ValueChangedEventArgs<float> e)
 		{
-			if (_model == null || _model.CurrentAnimation == null)
+			if (_model == null || _player.AnimationClip == null)
 			{
 				return;
 			}
 
 			var k = (e.NewValue - _mainPanel._sliderTime.Minimum) / (_mainPanel._sliderTime.Maximum - _mainPanel._sliderTime.Minimum);
 
-			var passed = _model.CurrentAnimation.Time * k;
+			var passed = _player.AnimationClip.Duration * k;
 
 			_mainPanel._labelTime.Text = passed.ToString();
-			_model.UpdateCurrentAnimation(passed);
+
+			_player.Time = passed;
 		}
 
 		private void _buttonChange_Click(object sender, EventArgs e)
@@ -274,15 +244,15 @@ namespace ModelViewer
 			dialog.ShowModal(_desktop);
 		}
 
-		private void _comboAnimations_SelectedIndexChanged(object sender, System.EventArgs e)
+		private void _comboAnimations_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_mainPanel._comboAnimations.SelectedItem == null)
+			if (_mainPanel._comboAnimations.SelectedItem == null || string.IsNullOrEmpty(_mainPanel._comboAnimations.SelectedItem.Text))
 			{
-				_model.CurrentAnimation = null;
+				_player.StopClip();
 			}
 			else
 			{
-				_model.CurrentAnimation = (AnimationClip)_mainPanel._comboAnimations.SelectedItem.Tag;
+				_player.StartClip(_mainPanel._comboAnimations.SelectedItem.Text);
 			}
 
 			ResetAnimation();
@@ -314,34 +284,29 @@ namespace ModelViewer
 			_controller.Update();
 		}
 
-		private void DrawModel()
+		private void DrawModel(GameTime gameTime)
 		{
 			if (_model == null)
 			{
 				return;
 			}
 
-			if (_isAnimating && _model.CurrentAnimation != null)
+			if (_isAnimating && _player.IsPlaying)
 			{
-				if (_animationMoment != null)
+				var slider = _mainPanel._sliderTime;
+				var sliderPart = (slider.Value - slider.Minimum) / (slider.Maximum - slider.Minimum);
+
+				sliderPart += (float)(gameTime.ElapsedGameTime.TotalSeconds / _player.AnimationClip.Duration.TotalSeconds);
+
+				if (sliderPart >= 1.0f)
 				{
-					var slider = _mainPanel._sliderTime;
-					var sliderPart = (slider.Value - slider.Minimum) / (slider.Maximum - slider.Minimum);
-
-					var passed = (float)(DateTime.Now - _animationMoment.Value).TotalSeconds;
-					sliderPart += (passed / _model.CurrentAnimation.Time);
-
-					if (sliderPart >= 1.0f)
-					{
-						sliderPart = 0.0f;
-					}
-
-					slider.Value = slider.Minimum + (slider.Maximum - slider.Minimum) * sliderPart;
+					sliderPart = 0.0f;
 				}
 
-				_animationMoment = DateTime.Now;
+				slider.Value = slider.Minimum + (slider.Maximum - slider.Minimum) * sliderPart;
 			}
 
+			_renderer.AddNode(_scene);
 			_renderer.Render(_scene.Camera);
 		}
 
@@ -351,7 +316,7 @@ namespace ModelViewer
 
 			GraphicsDevice.Clear(Color.Black);
 
-			DrawModel();
+			DrawModel(gameTime);
 
 			_mainPanel._labelCamera.Text = "Camera: " + _scene.Camera.ToString();
 			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;

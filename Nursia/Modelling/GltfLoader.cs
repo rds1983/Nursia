@@ -636,7 +636,27 @@ namespace Nursia.Modelling
 				}
 			}
 			var scene = _gltf.Scenes[_gltf.Scene.Value];
-			var model = NursiaModelBuilder.Create(_allBones, allMeshes, scene.Nodes[0]);
+
+			var rootIdx = scene.Nodes[0];
+			if (scene.Nodes.Length > 1)
+			{
+				// Multiple roots
+				// Create one root
+				var rootNode = new NursiaModelBoneDesc
+				{
+					Name = "_Root"
+				};
+
+				foreach(var idx in scene.Nodes)
+				{
+					rootNode.Children.Add(_allBones[idx]);
+				}
+
+				_allBones.Add(rootNode);
+				rootIdx = _allBones.Count - 1;
+			}
+
+			var model = NursiaModelBuilder.Create(_allBones, allMeshes, rootIdx);
 
 			// Set skins
 			if (_gltf.Skins != null && _gltf.Skins.Length > 0)

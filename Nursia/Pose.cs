@@ -58,7 +58,7 @@ namespace Nursia
 		{
 			Identity.Orientation = Quaternion.Identity;
 			Identity.Translation = Vector3.Zero;
-			Identity.Scale = Vector3.Zero;
+			Identity.Scale = Vector3.One;
 		}
 
 		public Matrix ToMatrix() => Mathematics.CreateTransform(Translation, Scale, Orientation);

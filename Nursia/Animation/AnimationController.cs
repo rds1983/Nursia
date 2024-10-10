@@ -39,14 +39,13 @@ namespace Nursia.Animation
 	/// </summary>
 	public class AnimationController
 	{
-		private readonly NursiaModelNode _skeleton;
+		private readonly NursiaModelNode _node;
 
 		private AnimationClip _animationClip;
 		private TimeSpan _time;
 		private float _speed;
 		private bool _loopEnabled;
 		private PlaybackMode _playbackMode;
-		private float _blendWeight;
 
 		// CrossFade fields
 		private bool _crossFadeEnabled;
@@ -62,6 +61,11 @@ namespace Nursia.Animation
 		#region Properties
 
 		/// <summary>
+		/// Model Node
+		/// </summary>
+		public NursiaModelNode Node => _node;
+
+		/// <summary>
 		/// Gets the animation clip being played.
 		/// </summary>
 		public AnimationClip AnimationClip
@@ -75,7 +79,11 @@ namespace Nursia.Animation
 		public TimeSpan Time
 		{
 			get { return _time; }
-			set { _time = value; }
+			set
+			{
+				_time = value;
+				UpdateAll();
+			}
 		}
 
 		/// <summary>
@@ -135,12 +143,6 @@ namespace Nursia.Animation
 			get { return _isPlaying; }
 		}
 
-		public float BlendWeight
-		{
-			get { return _blendWeight; }
-			set { _blendWeight = value; }
-		}
-
 		public bool CrossFading
 		{
 			get { return _crossFadeEnabled; }
@@ -160,15 +162,13 @@ namespace Nursia.Animation
 		/// <param name="skeleton">The skeleton of the model to be animated</param>
 		public AnimationController(NursiaModelNode skeleton)
 		{
-			_skeleton = skeleton ?? throw new ArgumentNullException(nameof(skeleton));
+			_node = skeleton ?? throw new ArgumentNullException(nameof(skeleton));
 			skeleton.ResetTransforms();
 
 			_time = TimeSpan.Zero;
 			_speed = 1.0f;
 			_loopEnabled = true;
 			_playbackMode = PlaybackMode.Forward;
-
-			_blendWeight = 1.0f;
 
 			_crossFadeEnabled = false;
 			_crossFadeInterpolationAmount = 0.0f;
@@ -185,12 +185,25 @@ namespace Nursia.Animation
 		/// <param name="name">Name of the clip</param>
 		public void StartClip(string name)
 		{
-			_animationClip = _skeleton.Model.Animations[name];
+			_animationClip = _node.Model.Animations[name];
 			_hasFinished = false;
 			_isPlaying = true;
 
 			_time = TimeSpan.Zero;
-			_skeleton.ResetTransforms();
+			_node.ResetTransforms();
+		}
+
+		/// <summary>
+		/// Stops the playback
+		/// </summary>
+		public void StopClip()
+		{
+			_animationClip = null;
+			_hasFinished = false;
+			_isPlaying = false;
+
+			_time = TimeSpan.Zero;
+			_node.ResetTransforms();
 		}
 
 		/// <summary>
@@ -199,7 +212,7 @@ namespace Nursia.Animation
 		/// <param name="name">Name of the clip</param>
 		public void PlayClip(string name)
 		{
-			_animationClip = _skeleton.Model.Animations[name];
+			_animationClip = _node.Model.Animations[name];
 
 			if (_time < _animationClip.Duration)
 			{
@@ -221,7 +234,7 @@ namespace Nursia.Animation
 				StartClip(_crossFadeAnimationClip.Name);
 			}
 
-			_crossFadeAnimationClip = _skeleton.Model.Animations[name];
+			_crossFadeAnimationClip = _node.Model.Animations[name];
 			_crossFadeTime = fadeTime;
 			_crossFadeElapsedTime = TimeSpan.Zero;
 
@@ -234,33 +247,52 @@ namespace Nursia.Animation
 		/// <param name="elapsedTime">Time elapsed since the last update.</param>
 		public void Update(TimeSpan elapsedTime)
 		{
-			if (_hasFinished && !_crossFadeEnabled)
+			if (!_isPlaying)
+			{
 				return;
+			}
+
+			if (_hasFinished && !_crossFadeEnabled)
+			{
+				return;
+			}
 
 			// Scale the elapsed time
 			TimeSpan scaledElapsedTime = TimeSpan.FromTicks((long)(elapsedTime.Ticks * _speed));
 
-			if (_animationClip != null)
+			// Adjust controller time
+			if (_playbackMode == PlaybackMode.Forward)
+				_time += elapsedTime;
+			else
+				_time -= elapsedTime;
+
+			if (_crossFadeEnabled)
 			{
-				UpdateAnimationTime(scaledElapsedTime);
-
-				if (_crossFadeEnabled)
-				{
-					UpdateCrossFadeTime(scaledElapsedTime);
-				}
-
-				UpdateChannelPoses();
+				_crossFadeElapsedTime += elapsedTime;
 			}
+
+			UpdateAll();
+		}
+
+		private void UpdateAll()
+		{
+			UpdateAnimationTime();
+
+			if (_crossFadeEnabled)
+			{
+				UpdateCrossFadeTime();
+			}
+
+			UpdateChannelPoses();
+
 		}
 
 		/// <summary>
 		/// Updates the CrossFade time
 		/// </summary>
 		/// <param name="elapsedTime">Time elapsed since the last update.</param>
-		private void UpdateCrossFadeTime(TimeSpan elapsedTime)
+		private void UpdateCrossFadeTime()
 		{
-			_crossFadeElapsedTime += elapsedTime;
-
 			if (_crossFadeElapsedTime > _crossFadeTime)
 			{
 				_crossFadeEnabled = false;
@@ -277,15 +309,8 @@ namespace Nursia.Animation
 		/// <summary>
 		/// Updates the animation clip time.
 		/// </summary>
-		/// <param name="elapsedTime">Time elapsed since the last update.</param>
-		private void UpdateAnimationTime(TimeSpan elapsedTime)
+		private void UpdateAnimationTime()
 		{
-			// Ajust controller time
-			if (_playbackMode == PlaybackMode.Forward)
-				_time += elapsedTime;
-			else
-				_time -= elapsedTime;
-
 			// Animation finished
 			if (_time < TimeSpan.Zero || _time > _animationClip.Duration)
 			{
@@ -303,7 +328,7 @@ namespace Nursia.Animation
 					}
 
 					// Copy bind pose on animation restart
-					_skeleton.ResetTransforms();
+					_node.ResetTransforms();
 				}
 				else
 				{
@@ -327,7 +352,7 @@ namespace Nursia.Animation
 
 				Pose pose;
 				InterpolateChannelPose(animationChannel, _time, out pose);
-				_skeleton.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
+				_node.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
 
 				// If CrossFade is enabled blend this channel in two animation clips
 				if (_crossFadeEnabled)
@@ -348,7 +373,7 @@ namespace Nursia.Animation
 					pose = Pose.Interpolate(pose, channelPose, _crossFadeInterpolationAmount,
 							animationChannel.TranslationMode, animationChannel.RotationMode, animationChannel.ScaleMode);
 
-					_skeleton.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
+					_node.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
 				}
 			}
 		}

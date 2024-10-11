@@ -1,30 +1,76 @@
 <Project>
-  <Project.ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\Samples\Nursia.Samples.ModelViewer\UI" />
+  <Project.ExportOptions Namespace="ModelViewer.UI" Class="MainPanel" OutputPath="D:\Projects\Nursia\Samples\ModelViewer\UI" />
   <Panel>
     <VerticalStackPanel Spacing="8">
       <HorizontalStackPanel Spacing="8">
         <TextBox Readonly="True" Width="300" Id="_textPath" />
-        <TextButton Text="Change..." Id="_buttonChange" />
+        <Button Id="_buttonChange">
+          <Label Text="Change..." />
+        </Button>
       </HorizontalStackPanel>
-      <ComboBox Id="_comboAnimations">
-        <ListItem />
-        <ListItem Text="Move" />
-        <ListItem Text="Attack" />
-      </ComboBox>
+      <Grid ColumnSpacing="8" RowSpacing="8">
+        <Grid.DefaultRowProportion Type="Auto" />
+        <Grid.ColumnsProportions>
+          <Proportion Type="Auto" />
+          <Proportion Type="Pixels" Value="300" />
+        </Grid.ColumnsProportions>
+        <Label Text="Animation:" />
+        <ComboView HorizontalAlignment="Stretch" Id="_comboAnimations" Grid.Column="1">
+          <Label />
+          <Label Text="Move" />
+          <Label Text="Attack" />
+        </ComboView>
+        <Label Text="Mode:" Grid.Row="1" />
+        <ComboView HorizontalAlignment="Stretch" Id="_comboPlaybackMode" Grid.Column="1" Grid.Row="1">
+          <Label Text="Forward" />
+          <Label Text="Backward" />
+        </ComboView>
+        <Label Text="Speed:" Grid.Row="2" />
+        <HorizontalStackPanel Spacing="8" Grid.Column="1" Grid.Row="2">
+          <HorizontalSlider Minimum="0.1" Maximum="3" Value="1" Id="_sliderSpeed" StackPanel.ProportionType="Fill" />
+          <Label Text="1.0" Width="40" Id="_labelSpeed" />
+        </HorizontalStackPanel>
+        <HorizontalStackPanel Spacing="8" Grid.Row="3" Grid.ColumnSpan="2">
+          <CheckButton IsChecked="True" CheckContentSpacing="8" Id="_checkLoop">
+            <Label Text="Loop" />
+          </CheckButton>
+          <CheckButton IsChecked="True" CheckContentSpacing="8" Id="_checkCrossfade">
+            <Label Text="Crossfade" />
+          </CheckButton>
+        </HorizontalStackPanel>
+      </Grid>
       <HorizontalStackPanel Spacing="8">
-        <TextButton Text="Play" Width="100" VerticalAlignment="Stretch" Id="_buttonPlayStop" />
+        <Button Width="100" VerticalAlignment="Stretch" Id="_buttonPlayStop">
+          <Label Text="Play" />
+        </Button>
         <HorizontalSlider Width="300" Id="_sliderTime" />
         <Label Text="0.0" Id="_labelTime" />
       </HorizontalStackPanel>
-      <CheckBox Text="Show Bounding Boxes" Id="_checkBoxShowBoundingBoxes" />
-      <CheckBox Text="Show Light 1" Id="_checkBoxLight1" />
-      <CheckBox Text="Show Light 2" Id="_checkBoxLight2" />
-      <CheckBox Text="Show Light 3" Id="_checkBoxLight3" />
+      <HorizontalStackPanel Spacing="8">
+        <ToggleButton Id="_buttonBoundingBoxes">
+          <Label Text="Bounding Boxes" />
+        </ToggleButton>
+        <ToggleButton Id="_buttonShadowMap">
+          <Label Text="Shadow Map" />
+        </ToggleButton>
+      </HorizontalStackPanel>
     </VerticalStackPanel>
-    <VerticalStackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <Label Text="FPS: 60.0" Id="_labelFps" />
-      <Label Text="Meshes: 15" Id="_labelMeshes" />
-      <Label Text="Camera: 0/50/0;270;0" Id="_labelCamera" />
-    </VerticalStackPanel>
+    <Grid ColumnSpacing="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Left="-4" Id="_panelStatistics">
+      <Grid.DefaultRowProportion Type="Auto" />
+      <Grid.ColumnsProportions>
+        <Proportion Type="Auto" />
+        <Proportion Type="Fill" />
+      </Grid.ColumnsProportions>
+      <Label Text="Effects Switches:" />
+      <Label Text="Draw Calls:" Grid.Row="1" />
+      <Label Text="Vertices Drawn:" Grid.Row="2" />
+      <Label Text="Primitives Drawn:" Grid.Row="3" />
+      <Label Text="Meshes Drawn:" Grid.Row="4" />
+      <Label Text="10" Id="_labelEffectsSwitches" Grid.Column="1" />
+      <Label Text="10" Id="_labelDrawCalls" Grid.Column="1" Grid.Row="1" />
+      <Label Text="10" Id="_labelVerticesDrawn" Grid.Column="1" Grid.Row="2" />
+      <Label Text="10" Id="_labelPrimitivesDrawn" Grid.Column="1" Grid.Row="3" />
+      <Label Text="10" Id="_labelMeshesDrawn" Grid.Column="1" Grid.Row="4" />
+    </Grid>
   </Panel>
 </Project>

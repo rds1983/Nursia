@@ -64,13 +64,14 @@ namespace ModelViewer
 					var model = manager.LoadGltf(Path.GetFileName(file));
 					_model.Model = model;
 
-					_mainPanel._comboAnimations.Items.Clear();
-					_mainPanel._comboAnimations.Items.Add(new ListItem(null));
+					_mainPanel._comboAnimations.Widgets.Clear();
+					_mainPanel._comboAnimations.Widgets.Add(new Label());
 					foreach (var pair in model.Animations)
 					{
-						_mainPanel._comboAnimations.Items.Add(
-							new ListItem(pair.Key)
+						_mainPanel._comboAnimations.Widgets.Add(
+							new Label
 							{
+								Text = pair.Key,
 								Tag = pair.Value
 							});
 					}
@@ -116,18 +117,33 @@ namespace ModelViewer
 			// UI
 			MyraEnvironment.Game = this;
 			_mainPanel = new MainPanel();
-			_mainPanel._comboAnimations.Items.Clear();
+			_mainPanel._comboAnimations.Widgets.Clear();
 			_mainPanel._comboAnimations.SelectedIndexChanged += _comboAnimations_SelectedIndexChanged;
+
+			_mainPanel._comboPlaybackMode.SelectedIndex = 0;
+			_mainPanel._comboPlaybackMode.SelectedIndexChanged += (s, a) =>
+			{
+				_player.PlaybackMode = (PlaybackMode)_mainPanel._comboPlaybackMode.SelectedIndex.Value;
+			};
+
+			_mainPanel._sliderSpeed.ValueChanged += (s, a) =>
+			{
+				_mainPanel._labelSpeed.Text = _mainPanel._sliderSpeed.Value.ToString("0.00");
+				_player.Speed = _mainPanel._sliderSpeed.Value;
+			};
+			
 
 			_mainPanel._buttonChange.Click += _buttonChange_Click;
 
-			_mainPanel._sliderTime.ValueChanged += _sliderTime_ValueChanged;
+			_mainPanel._sliderTime.ValueChangedByUser += _sliderTime_ValueChanged;
+			_mainPanel._sliderTime.ValueChanged += (s, a) =>
+			{
+				_mainPanel._labelTime.Text = _mainPanel._sliderTime.Value.ToString("0.00");
+			};
 
 			_mainPanel._buttonPlayStop.Click += _buttonPlayStop_Click;
-			_mainPanel._checkBoxShowBoundingBoxes.PressedChanged += _checkBoxShowBoundingBoxes_PressedChanged;
-			_mainPanel._checkBoxLight1.PressedChanged += _checkBoxLight1_PressedChanged;
-			_mainPanel._checkBoxLight2.PressedChanged += _checkBoxLight1_PressedChanged;
-			_mainPanel._checkBoxLight3.PressedChanged += _checkBoxLight1_PressedChanged;
+			_mainPanel._buttonBoundingBoxes.PressedChanged += _buttonBoundingBoxes_PressedChanged;
+			_mainPanel._buttonShadowMap.PressedChanged += _buttonShadowMap_PressedChanged;
 
 			_desktop = new Desktop
 			{
@@ -144,76 +160,51 @@ namespace ModelViewer
 			_scene.Children.Add(_model);
 			_player = new AnimationController(_model);
 
+			_player.TimeChanged += (s, a) =>
+			{
+				if (_player.AnimationClip == null)
+				{
+					return;
+				}
+
+				var k = (float)(_player.Time / _player.AnimationClip.Duration);
+
+				var slider = _mainPanel._sliderTime;
+				slider.Value = slider.Minimum + k * (slider.Maximum - slider.Minimum);
+			};
+
 			LoadModel(string.Empty);
 
 			_controller = new CameraInputController(_scene.Camera);
 		}
 
-		private void UpdateLights()
+		private void _buttonShadowMap_PressedChanged(object sender, EventArgs e)
 		{
-			var pl = _scene.QueryByType<PointLight>();
-			foreach (var l in pl)
-			{
-				_scene.Children.Remove(l);
-			}
-
-			if (_mainPanel._checkBoxLight1.IsChecked)
-			{
-				_scene.Children.Add(new PointLight
-				{
-					Translation = new Vector3(0, 0, 2),
-					Color = Color.Yellow
-				});
-			}
-
-			if (_mainPanel._checkBoxLight2.IsChecked)
-			{
-				_scene.Children.Add(new PointLight
-				{
-					Translation = new Vector3(-2, 2, 0),
-					Color = Color.Red
-				});
-			}
-
-			if (_mainPanel._checkBoxLight3.IsChecked)
-			{
-				_scene.Children.Add(new PointLight
-				{
-					Translation = new Vector3(-2, 0, -2),
-					Color = Color.Blue
-				});
-			}
+			throw new NotImplementedException();
 		}
 
-		private void _checkBoxLight1_PressedChanged(object sender, EventArgs e)
+		private void _buttonBoundingBoxes_PressedChanged(object sender, EventArgs e)
 		{
-			UpdateLights();
-		}
-
-		private void _checkBoxShowBoundingBoxes_PressedChanged(object sender, EventArgs e)
-		{
-			DebugSettings.DrawBoundingBoxes = _mainPanel._checkBoxShowBoundingBoxes.IsPressed;
+			DebugSettings.DrawBoundingBoxes = _mainPanel._buttonBoundingBoxes.IsPressed;
 		}
 
 		private void _buttonPlayStop_Click(object sender, EventArgs e)
 		{
 			_isAnimating = !_isAnimating;
-			_mainPanel._buttonPlayStop.Text = _isAnimating ? "Stop" : "Play";
+
+			var label = (Label)_mainPanel._buttonPlayStop.Content;
+			label.Text = _isAnimating ? "Stop" : "Play";
 		}
 
 		private void _sliderTime_ValueChanged(object sender, ValueChangedEventArgs<float> e)
 		{
-			if (_model == null || _player.AnimationClip == null)
+			if (!_player.IsPlaying)
 			{
 				return;
 			}
 
 			var k = (e.NewValue - _mainPanel._sliderTime.Minimum) / (_mainPanel._sliderTime.Maximum - _mainPanel._sliderTime.Minimum);
-
 			var passed = _player.AnimationClip.Duration * k;
-
-			_mainPanel._labelTime.Text = passed.ToString();
-
 			_player.Time = passed;
 		}
 
@@ -246,13 +237,13 @@ namespace ModelViewer
 
 		private void _comboAnimations_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_mainPanel._comboAnimations.SelectedItem == null || string.IsNullOrEmpty(_mainPanel._comboAnimations.SelectedItem.Text))
+			if (_mainPanel._comboAnimations.SelectedItem == null || string.IsNullOrEmpty(((Label)_mainPanel._comboAnimations.SelectedItem).Text))
 			{
 				_player.StopClip();
 			}
 			else
 			{
-				_player.StartClip(_mainPanel._comboAnimations.SelectedItem.Text);
+				_player.StartClip(((Label)_mainPanel._comboAnimations.SelectedItem).Text);
 			}
 
 			ResetAnimation();
@@ -291,19 +282,9 @@ namespace ModelViewer
 				return;
 			}
 
-			if (_isAnimating && _player.IsPlaying)
+			if (_isAnimating)
 			{
-				var slider = _mainPanel._sliderTime;
-				var sliderPart = (slider.Value - slider.Minimum) / (slider.Maximum - slider.Minimum);
-
-				sliderPart += (float)(gameTime.ElapsedGameTime.TotalSeconds / _player.AnimationClip.Duration.TotalSeconds);
-
-				if (sliderPart >= 1.0f)
-				{
-					sliderPart = 0.0f;
-				}
-
-				slider.Value = slider.Minimum + (slider.Maximum - slider.Minimum) * sliderPart;
+				_player.Update(gameTime.ElapsedGameTime);
 			}
 
 			_renderer.AddNode(_scene);
@@ -318,8 +299,13 @@ namespace ModelViewer
 
 			DrawModel(gameTime);
 
-			_mainPanel._labelCamera.Text = "Camera: " + _scene.Camera.ToString();
-			_mainPanel._labelFps.Text = "FPS: " + _fpsCounter.FramesPerSecond;
+			var stats = _renderer.Statistics;
+
+			_mainPanel._labelEffectsSwitches.Text = stats.EffectsSwitches.ToString();
+			_mainPanel._labelDrawCalls.Text = stats.DrawCalls.ToString();
+			_mainPanel._labelVerticesDrawn.Text = stats.VerticesDrawn.ToString();
+			_mainPanel._labelPrimitivesDrawn.Text = stats.PrimitivesDrawn.ToString();
+			_mainPanel._labelMeshesDrawn.Text = stats.MeshesDrawn.ToString();
 			//			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
 
 			_desktop.Render();

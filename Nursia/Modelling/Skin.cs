@@ -9,7 +9,7 @@ namespace Nursia.Modelling
 		public NursiaModelBone Bone { get; }
 		public Matrix InverseBindTransform { get; }
 
-		public SkinJoint(NursiaModelBone bone, Matrix inverseBindTransform)
+		internal SkinJoint(NursiaModelBone bone, Matrix inverseBindTransform)
 		{
 			if (bone == null)
 			{
@@ -24,6 +24,7 @@ namespace Nursia.Modelling
 	public class Skin : ItemWithId
 	{
 		public SkinJoint[] Joints { get; }
+		public int SkinIndex { get; internal set; }
 
 		/// <summary>
 		/// Creates a skin from array of joints
@@ -31,7 +32,7 @@ namespace Nursia.Modelling
 		/// <param name="joints"></param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentException"></exception>
-		public Skin(SkinJoint[] joints)
+		internal Skin(SkinJoint[] joints)
 		{
 			if (joints == null)
 			{

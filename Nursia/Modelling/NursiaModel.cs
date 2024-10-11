@@ -8,12 +8,12 @@ namespace Nursia.Modelling
 	{
 		public NursiaModelBone[] Bones { get; }
 		public NursiaModelMesh[] Meshes { get; }
+		public Skin[] Skins { get; }
 		public NursiaModelBone Root { get; }
-		public Skin Skin { get; set; }
 
 		public Dictionary<string, AnimationClip> Animations { get; } = new Dictionary<string, AnimationClip>();
 
-		internal NursiaModel(NursiaModelBone[] bones, NursiaModelMesh[] meshes, int rootIndex = 0)
+		internal NursiaModel(NursiaModelBone[] bones, NursiaModelMesh[] meshes, Skin[] skins, int rootIndex = 0)
 		{
 			if (bones == null)
 			{
@@ -42,6 +42,7 @@ namespace Nursia.Modelling
 
 			Bones = bones;
 			Meshes = meshes;
+			Skins = skins;
 			Root = bones[rootIndex];
 		}
 

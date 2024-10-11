@@ -50,6 +50,7 @@ namespace Nursia.Modelling
 		}
 
 		public Pose DefaultPose = Pose.Identity;
+		public Skin Skin { get; internal set; }
 
 		internal NursiaModelBone(int index, string name)
 		{

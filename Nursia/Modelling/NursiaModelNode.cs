@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Nursia.Attributes;
 using Nursia.Rendering;
 using Nursia.Utilities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -12,11 +13,24 @@ namespace Nursia.Modelling
 	[EditorInfo("Gltf/Glb Model")]
 	public class NursiaModelNode : SceneNode
 	{
+		private class SkinInfo
+		{
+			public Skin Skin { get; }
+			public Matrix[] Transforms { get; }
+
+			public SkinInfo(Skin skin)
+			{
+				Skin = skin ?? throw new ArgumentNullException(nameof(skin));
+				Transforms = new Matrix[skin.Joints.Length];
+			}
+		}
+
+
 		private bool _transformsDirty = true;
 		private NursiaModelBone[] _traverseOrder;
 		private Matrix[] _localTransforms;
 		private Matrix[] _worldTransforms;
-		private Matrix[] _skinTransforms;
+		private SkinInfo[] _skinInfos;
 
 		private NursiaModel _model;
 
@@ -38,7 +52,7 @@ namespace Nursia.Modelling
 				_traverseOrder = null;
 				_localTransforms = null;
 				_worldTransforms = null;
-				_skinTransforms = null;
+				_skinInfos = null;
 				if (_model != null)
 				{
 					// Build correct traverse order starting from root
@@ -52,10 +66,13 @@ namespace Nursia.Modelling
 					_traverseOrder = traverseOrder.ToArray();
 					_localTransforms = new Matrix[_model.Bones.Length];
 					_worldTransforms = new Matrix[_model.Bones.Length];
-
-					if (_model.Skin != null)
+					if (_model.Skins != null && _model.Skins.Length > 0)
 					{
-						_skinTransforms = new Matrix[_model.Skin.Joints.Length];
+						_skinInfos = new SkinInfo[_model.Skins.Length];
+						for (var i = 0; i < _model.Skins.Length; ++i)
+						{
+							_skinInfos[i] = new SkinInfo(_model.Skins[i]);
+						}
 					}
 
 					ResetTransforms();
@@ -104,14 +121,19 @@ namespace Nursia.Modelling
 			}
 
 			// Update skin transforms
-			if (_model.Skin != null)
+			if (_skinInfos != null)
 			{
-				for (var i = 0; i < _model.Skin.Joints.Length; ++i)
+				for (var i = 0; i < _skinInfos.Length; ++i)
 				{
-					var joint = _model.Skin.Joints[i];
+					var skinInfo = _skinInfos[i];
+					for (var j = 0; j < skinInfo.Skin.Joints.Length; ++j)
+					{
+						var joint = skinInfo.Skin.Joints[j];
 
-					_skinTransforms[i] = joint.InverseBindTransform * _worldTransforms[joint.Bone.Index];
+						skinInfo.Transforms[j] = joint.InverseBindTransform * _worldTransforms[joint.Bone.Index];
+					}
 				}
+
 			}
 
 			_transformsDirty = false;
@@ -136,12 +158,13 @@ namespace Nursia.Modelling
 				// applied to bones transform
 				// Thus to avoid applying parent transform twice, we use
 				// ordinary Transform(not AbsoluteTransform) for parts with bones
-				Matrix transform = _model.Skin != null ? rootTransform : _worldTransforms[mesh.ParentBone.Index] * rootTransform;
+				var bone = mesh.ParentBone;
+				Matrix transform = bone.Skin != null ? rootTransform : _worldTransforms[bone.Index] * rootTransform;
 
 				// Apply the effect and render items
-				if (_model.Skin != null)
+				if (bone.Skin != null)
 				{
-					mesh.Mesh.BonesTransforms = _skinTransforms;
+					mesh.Mesh.BonesTransforms = _skinInfos[bone.Skin.SkinIndex].Transforms;
 				}
 
 				batch.BatchJob(mesh.Material, transform, mesh.Mesh);
@@ -162,7 +185,8 @@ namespace Nursia.Modelling
 			var boundingBox = new BoundingBox();
 			foreach (var mesh in _model.Meshes)
 			{
-				var m = _worldTransforms[mesh.ParentBone.Index];
+				var bone = mesh.ParentBone;
+				var m = bone.Skin != null ? Matrix.Identity : _worldTransforms[mesh.ParentBone.Index];
 				var bb = mesh.BoundingBox.Transform(ref m);
 				boundingBox = BoundingBox.CreateMerged(boundingBox, bb);
 			}

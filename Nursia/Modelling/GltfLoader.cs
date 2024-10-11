@@ -75,7 +75,7 @@ namespace Nursia.Modelling
 		private readonly Dictionary<int, byte[]> _bufferCache = new Dictionary<int, byte[]>();
 		private readonly List<List<NursiaModelMesh>> _meshes = new List<List<NursiaModelMesh>>();
 		private readonly List<NursiaModelBoneDesc> _allBones = new List<NursiaModelBoneDesc>();
-		private readonly Dictionary<int, Skin> _skinCache = new Dictionary<int, Skin>();
+		private readonly List<SkinDesc> _skins = new List<SkinDesc>();
 
 		private byte[] FileResolver(string path)
 		{
@@ -512,13 +512,8 @@ namespace Nursia.Modelling
 			}
 		}
 
-		private Skin LoadSkin(int skinId, NursiaModelBone[] allBones)
+		private SkinDesc LoadSkin(int skinId)
 		{
-			if (_skinCache.TryGetValue(skinId, out Skin result))
-			{
-				return result;
-			}
-
 			var gltfSkin = _gltf.Skins[skinId];
 			if (gltfSkin.Joints.Length > Constants.MaximumBones)
 			{
@@ -531,19 +526,18 @@ namespace Nursia.Modelling
 				throw new Exception($"Skin {gltfSkin.Name} inconsistency. Joints amount: {gltfSkin.Joints.Length}, Inverse bind matrices amount: {transforms.Length}");
 			}
 
-			var bones = new List<SkinJoint>();
+			var result = new SkinDesc();
 			for (var i = 0; i < gltfSkin.Joints.Length; ++i)
 			{
 				var jointIndex = gltfSkin.Joints[i];
-				var bone = allBones[jointIndex];
-				bones.Add(new SkinJoint(bone, transforms[i]));
+				result.Joints.Add(new SkinJointDesc
+				{
+					BoneIndex = jointIndex,
+					InverseBindTransform = transforms[i]
+				});
 			}
 
-			result = new Skin(bones.ToArray());
-
 			Debug.WriteLine($"Skin {gltfSkin.Name} has {gltfSkin.Joints.Length} joints");
-
-			_skinCache[skinId] = result;
 
 			return result;
 		}
@@ -555,7 +549,7 @@ namespace Nursia.Modelling
 			{
 				var gltfNode = _gltf.Nodes[i];
 
-				var modelNode = new NursiaModelBoneDesc
+				var bone = new NursiaModelBoneDesc
 				{
 					Name = gltfNode.Name,
 				};
@@ -581,31 +575,50 @@ namespace Nursia.Modelling
 					}
 				}
 
-				modelNode.Pose = pose;
+				bone.Pose = pose;
 
 				if (gltfNode.Mesh != null)
 				{
 					foreach (var m in _meshes[gltfNode.Mesh.Value])
 					{
-						modelNode.Meshes.Add(m);
+						bone.Meshes.Add(m);
 					}
 				}
 
-				_allBones.Add(modelNode);
+				_allBones.Add(bone);
+			}
+
+			// Second run - build skins
+			if (_gltf.Skins != null)
+			{
+				for (var i = 0; i < _gltf.Skins.Length; ++i)
+				{
+					var skin = LoadSkin(i);
+					_skins.Add(skin);
+				}
 			}
 
 			// Second run - set children and skins
 			for (var i = 0; i < _gltf.Nodes.Length; ++i)
 			{
 				var gltfNode = _gltf.Nodes[i];
-				var modelNode = _allBones[i];
+				var bone = _allBones[i];
 
 				if (gltfNode.Children != null)
 				{
 					foreach (var childIndex in gltfNode.Children)
 					{
-						var childNode = _allBones[childIndex];
-						modelNode.Children.Add(childNode);
+						bone.ChildrenIndices.Add(childIndex);
+					}
+				}
+
+				bone.SkinIndex = gltfNode.Skin;
+
+				if (bone.SkinIndex != null)
+				{
+					foreach(var mesh in bone.Meshes)
+					{
+						((DefaultMaterial)mesh.Material).Skinning = true;
 					}
 				}
 			}
@@ -615,7 +628,7 @@ namespace Nursia.Modelling
 		{
 			_meshes.Clear();
 			_allBones.Clear();
-			_skinCache.Clear();
+			_skins.Clear();
 
 			_assetManager = manager;
 			_assetName = assetName;
@@ -641,34 +654,22 @@ namespace Nursia.Modelling
 			if (scene.Nodes.Length > 1)
 			{
 				// Multiple roots
-				// Create one root
+				// Create one root to store it
 				var rootNode = new NursiaModelBoneDesc
 				{
 					Name = "_Root"
 				};
 
-				foreach(var idx in scene.Nodes)
+				foreach (var idx in scene.Nodes)
 				{
-					rootNode.Children.Add(_allBones[idx]);
+					rootNode.ChildrenIndices.Add(idx);
 				}
 
 				_allBones.Add(rootNode);
 				rootIdx = _allBones.Count - 1;
 			}
 
-			var model = NursiaModelBuilder.Create(_allBones, allMeshes, rootIdx);
-
-			// Set skins
-			if (_gltf.Skins != null && _gltf.Skins.Length > 0)
-			{
-				foreach (var mesh in model.Meshes)
-				{
-					((DefaultMaterial)mesh.Material).Skinning = true;
-				}
-
-				model.Skin = LoadSkin(0, model.Bones);
-			}
-
+			var model = NursiaModelBuilder.Create(_allBones, allMeshes, _skins, rootIdx);
 			if (_gltf.Animations != null)
 			{
 				foreach (var gltfAnimation in _gltf.Animations)

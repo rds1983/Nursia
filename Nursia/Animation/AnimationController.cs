@@ -206,6 +206,12 @@ namespace Nursia.Animation
 		/// <param name="fadeTime">Time used to fade in and out the animation clips.</param>
 		public void CrossFade(string name, TimeSpan fadeTime)
 		{
+			if (AnimationClip == null)
+			{
+				StartClip(name);
+				return;
+			}
+
 			if (CrossFading)
 			{
 				StartClip(_crossFadeAnimationClip.Name);
@@ -284,7 +290,7 @@ namespace Nursia.Animation
 				StartClip(_crossFadeAnimationClip.Name);
 			}
 			else
-				_crossFadeInterpolationAmount = _crossFadeElapsedTime.Ticks / (float)_crossFadeTime.Ticks;
+				_crossFadeInterpolationAmount = MathHelper.Clamp(_crossFadeElapsedTime.Ticks / (float)_crossFadeTime.Ticks, 0, 1);
 		}
 
 		/// <summary>

@@ -243,7 +243,14 @@ namespace ModelViewer
 			}
 			else
 			{
-				_player.StartClip(((Label)_mainPanel._comboAnimations.SelectedItem).Text);
+				var clipName = ((Label)_mainPanel._comboAnimations.SelectedItem).Text;
+				if (_mainPanel._checkCrossfade.IsChecked)
+				{
+					_player.CrossFade(clipName, TimeSpan.FromSeconds(0.5f));
+				} else
+				{
+					_player.StartClip(clipName);
+				}
 			}
 
 			ResetAnimation();

@@ -194,9 +194,9 @@ namespace Nursia.Modelling
 			return boundingBox;
 		}
 
-		public Matrix GetLocalTransform(int boneIndex) => _localTransforms[boneIndex];
+		public Matrix GetBoneLocalTransform(int boneIndex) => _localTransforms[boneIndex];
 
-		public void SetLocalTransform(int boneIndex, Matrix transform)
+		public void SetBoneLocalTransform(int boneIndex, Matrix transform)
 		{
 			_localTransforms[boneIndex] = transform;
 			_transformsDirty = true;

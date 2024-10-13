@@ -339,7 +339,7 @@ namespace Nursia.Animation
 
 				Pose pose;
 				InterpolateChannelPose(animationChannel, _time, out pose);
-				Node.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
+				Node.SetBoneLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
 
 				// If CrossFade is enabled blend this channel in two animation clips
 				if (CrossFading)
@@ -360,7 +360,7 @@ namespace Nursia.Animation
 					pose = Pose.Interpolate(pose, channelPose, _crossFadeInterpolationAmount,
 							animationChannel.TranslationMode, animationChannel.RotationMode, animationChannel.ScaleMode);
 
-					Node.SetLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
+					Node.SetBoneLocalTransform(animationChannel.Bone.Index, pose.ToMatrix());
 				}
 			}
 		}

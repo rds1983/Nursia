@@ -313,7 +313,6 @@ namespace ModelViewer
 			_mainPanel._labelVerticesDrawn.Text = stats.VerticesDrawn.ToString();
 			_mainPanel._labelPrimitivesDrawn.Text = stats.PrimitivesDrawn.ToString();
 			_mainPanel._labelMeshesDrawn.Text = stats.MeshesDrawn.ToString();
-			//			_mainPanel._labelMeshes.Text = "Meshes: " + _renderer._statistics.MeshesDrawn;
 
 			_desktop.Render();
 

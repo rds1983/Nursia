@@ -4,9 +4,9 @@
     "ViewAngle": 60.0,
     "NearPlaneDistance": 0.1,
     "FarPlaneDistance": 1000.0,
-    "Translation": "6.5813518, 30.925186, 48.380936",
+    "Translation": "-3.849825, 5.621935, -2.9285774",
     "Scale": "1, 1, 1",
-    "Rotation": "38.600727, 177.59987, 0",
+    "Rotation": "54.700714, 73.89985, 0",
     "Children": []
   },
   "Scale": "1, 1, 1",
@@ -45,14 +45,21 @@
       "Scale": "1, 1, 1",
       "Children": [
         {
-          "$type": "Nursia.Cameras.PerspectiveCamera, Nursia",
-          "ViewAngle": 60.0,
-          "NearPlaneDistance": 0.1,
-          "FarPlaneDistance": 1000.0,
-          "Translation": "0, 2, -6",
+          "Translation": "0, 1.3, 0",
           "Scale": "1, 1, 1",
-          "Children": [],
-          "Id": "_mainCamera"
+          "Children": [
+            {
+              "$type": "Nursia.Cameras.PerspectiveCamera, Nursia",
+              "ViewAngle": 60.0,
+              "NearPlaneDistance": 0.1,
+              "FarPlaneDistance": 1000.0,
+              "Translation": "0, 0, -5",
+              "Scale": "1, 1, 1",
+              "Children": [],
+              "Id": "_mainCamera"
+            }
+          ],
+          "Id": "_cameraMount"
         }
       ],
       "Id": "player"

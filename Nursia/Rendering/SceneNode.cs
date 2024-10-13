@@ -1,6 +1,8 @@
 ﻿using AssetManagementBase;
+using glTFLoader.Schema;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using Nursia.Attributes;
 using Nursia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -19,6 +21,7 @@ namespace Nursia.Rendering
 	/// <summary>
 	/// Base 3D Scene Node
 	/// </summary>
+	[EditorInfo("Folder")]
 	public class SceneNode : ItemWithId
 	{
 		private Vector3 _translation = Vector3.Zero;
@@ -223,6 +226,10 @@ namespace Nursia.Rendering
 
 			return null;
 		}
+
+		public T QueryFirstByType<T>() where T : SceneNode => (T)QueryFirst(s => s is T);
+		public SceneNode QueryFirstById(string id) => QueryFirst(s => s.Id == id);
+
 
 		private void InternalQueryByType<T>(List<T> result) where T : SceneNode
 		{

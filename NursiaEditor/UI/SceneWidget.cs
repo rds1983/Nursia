@@ -284,7 +284,7 @@ namespace NursiaEditor.UI
 							}
 
 							node = (BillboardNode)n.Tag;
-							node.Translation = n.Translation;
+							node.Translation = n.GlobalTransform.Translation;
 							_renderer.AddNode(node);
 
 							break;
